@@ -1,0 +1,34 @@
+name: Preview builds
+
+on:
+  workflow_dispatch: {}
+  pull_request_labeled:
+    labels: ['build-preview']
+
+jobs:
+  validate:
+    name: Validate app configuration
+    environment: preview
+    env:
+      APP_VARIANT: preview
+    steps:
+      - uses: eas/checkout
+      - uses: eas/install_node_modules
+      - name: Validate Expo configuration
+        run: npm run validate:app-config
+
+  build_android:
+    name: Build Android preview
+    needs: [validate]
+    type: build
+    params:
+      platform: android
+      profile: preview
+
+  build_ios:
+    name: Build iOS preview
+    needs: [validate]
+    type: build
+    params:
+      platform: ios
+      profile: preview
