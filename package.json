@@ -1,5 +1,5 @@
 {
-  "name": "rn-expo-template",
+  "name": "baton",
   "main": "expo-router/entry",
   "version": "1.0.0",
   "engines": {
@@ -55,9 +55,14 @@
   },
   "scripts": {
     "start": "expo start",
+    "start:development": "expo start --dev-client",
     "reset-project": "node ./scripts/reset-project.js",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
+    "prebuild:clean": "expo prebuild --clean",
+    "run:android": "expo run:android",
+    "run:ios": "expo run:ios",
+    "build:development": "npx eas-cli@latest build --profile development --platform all",
+    "build:development:android": "npx eas-cli@latest build --profile development --platform android",
+    "build:development:ios": "npx eas-cli@latest build --profile development --platform ios",
     "format": "biome format --write .",
     "format:check": "biome format .",
     "lint": "expo lint",
