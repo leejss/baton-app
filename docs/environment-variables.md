@@ -38,9 +38,8 @@
 | 종류 | 예시 | 저장 위치 | 권장 가시성 |
 | --- | --- | --- | --- |
 | 클라이언트 공개 설정 | `EXPO_PUBLIC_API_URL` | `.env.local`, EAS Environment | Plain text |
-| 클라이언트 공개 식별자 | `EXPO_PUBLIC_SENTRY_DSN` | `.env.local`, EAS Environment | Plain text |
+| 클라이언트 공개 식별자 | `EXPO_PUBLIC_POSTHOG_API_KEY` | `.env.local`, EAS Environment | Plain text |
 | 앱 변형 설정 | `APP_VARIANT` | `eas.json` | 저장소에 커밋 |
-| 빌드 도구 인증값 | `SENTRY_AUTH_TOKEN` | EAS Environment | Sensitive 또는 Secret |
 | 패키지 저장소 인증값 | `NPM_TOKEN` | EAS Environment | Secret |
 | 빌드용 파일 | `GOOGLE_SERVICES_JSON` | EAS file variable | Secret |
 
@@ -56,16 +55,16 @@ EAS의 `Sensitive`와 `Secret`은 빌드 로그와 대시보드에서 값을 숨
 로컬 개발 값은 저장소 루트의 `.env.local`에 둡니다.
 
 ```dotenv
-EXPO_PUBLIC_API_URL=https://dev-api.example.com
-EXPO_PUBLIC_SENTRY_DSN=
+EXPO_PUBLIC_POSTHOG_API_KEY=
+EXPO_PUBLIC_POSTHOG_HOST=https://us.i.posthog.com
 ```
 
 현재 `.gitignore`는 `.env*`를 제외하고 `.env.example`만 허용합니다. 팀원이 필요한
 변수 목록을 알 수 있도록 실제 값이 없는 예시 파일만 커밋합니다.
 
 ```dotenv
-EXPO_PUBLIC_API_URL=
-EXPO_PUBLIC_SENTRY_DSN=
+EXPO_PUBLIC_POSTHOG_API_KEY=
+EXPO_PUBLIC_POSTHOG_HOST=
 ```
 
 EAS의 `development` 환경을 로컬로 가져올 수도 있습니다. 기본 출력 경로는
