@@ -71,6 +71,8 @@
     "format:check": "biome format .",
     "lint": "expo lint",
     "typecheck": "tsc --noEmit",
+    "test": "jest",
+    "test:watch": "jest --watch",
     "validate:app-config": "node ./scripts/validate-app-config.js"
   },
   "jest": {

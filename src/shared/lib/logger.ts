@@ -1,10 +1,10 @@
-import * as Application from 'expo-application';
 import PostHog from 'posthog-react-native';
+
+import { appInfo } from '@/shared/lib/appInfo';
 
 export type LogAttribute = string | number | boolean | null;
 export type LogAttributes = Readonly<Record<string, LogAttribute>>;
 
-type AppEnvironment = 'development' | 'preview' | 'production';
 type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
 const SENSITIVE_ATTRIBUTE_PATTERN =
@@ -13,18 +13,6 @@ const EMAIL_PATTERN = /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi;
 const BEARER_TOKEN_PATTERN = /\bBearer\s+\S+/gi;
 const CREDENTIAL_PATTERN =
   /\b(api[_-]?key|access[_-]?token|refresh[_-]?token|password|secret)\s*[:=]\s*\S+/gi;
-
-function resolveEnvironment(applicationId: string | null): AppEnvironment {
-  if (applicationId === null || applicationId.endsWith('.dev')) {
-    return 'development';
-  }
-
-  if (applicationId.endsWith('.preview')) {
-    return 'preview';
-  }
-
-  return 'production';
-}
 
 function redactMessage(message: string): string {
   return message
@@ -67,8 +55,8 @@ function createPostHogClient(): PostHog | null {
     capturePushNotificationOpened: false,
     logs: {
       serviceName: 'baton-mobile',
-      serviceVersion: Application.nativeApplicationVersion ?? undefined,
-      environment: resolveEnvironment(Application.applicationId),
+      serviceVersion: appInfo.version ?? undefined,
+      environment: appInfo.environment,
     },
   });
 }
