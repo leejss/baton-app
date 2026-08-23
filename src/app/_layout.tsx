@@ -2,11 +2,11 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
-import { AppState, useColorScheme } from 'react-native';
+import { AppState, StyleSheet, useColorScheme } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 
-import { bindQueryManagers, createQueryClient } from '@/shared/api/queryClient';
+import { createQueryClient } from '@/shared/api/queryClient';
 import { logger } from '@/shared/lib/logger';
 import { ErrorState } from '@/shared/ui/ErrorState';
 import { SplashOverlay } from '@/shared/ui/SplashOverlay';
@@ -24,8 +24,6 @@ export default function RootLayout() {
   const colorScheme = useColorScheme();
 
   useEffect(() => {
-    const unbind = bindQueryManagers();
-
     // 백그라운드 전환 시 버퍼된 원격 로그를 내보낸다. 안 하면 종료 시 유실된다.
     const appStateSubscription = AppState.addEventListener('change', (status) => {
       if (status !== 'active') {
@@ -34,19 +32,18 @@ export default function RootLayout() {
     });
 
     return () => {
-      unbind();
       appStateSubscription.remove();
     };
   }, []);
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
+    <GestureHandlerRootView style={styles.root}>
       <KeyboardProvider>
         <QueryClientProvider client={queryClient}>
           <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
             <Stack screenOptions={{ headerShown: false }}>
               <Stack.Screen name="index" />
-              <Stack.Screen name="+not-found" options={{ presentation: 'modal' }} />
+              <Stack.Screen name="+not-found" />
             </Stack>
             <SplashOverlay />
           </ThemeProvider>
@@ -55,3 +52,7 @@ export default function RootLayout() {
     </GestureHandlerRootView>
   );
 }
+
+const styles = StyleSheet.create({
+  root: { flex: 1 },
+});
