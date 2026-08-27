@@ -1,5 +1,5 @@
-import { HomeScreen } from '@/features/home/screens/HomeScreen';
+import { StartScreen } from '@/features/auth/screens/StartScreen';
 
-export default function HomeRoute() {
-  return <HomeScreen />;
+export default function StartRoute() {
+  return <StartScreen />;
 }

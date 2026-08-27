@@ -18,9 +18,29 @@ export const spacing = {
 } as const;
 
 export const radius = {
-  sm: 6,
+  /** 버튼·인풋. "시작(로그인 선택)" 시안의 버튼 radius가 8이다. */
+  sm: 8,
   md: 12,
   lg: 20,
+} as const;
+
+/**
+ * 브랜드 그레이 스케일. Figma의 `B` 필 스타일과 1:1 대응한다.
+ * (Baton_디자인 작업 → 와이어프레임 1차 → 로그인)
+ */
+export const brand = {
+  b01: '#E5E5E5',
+  b02: '#D4D5D9',
+  b03: '#989898',
+  b04: '#6D6D6D',
+} as const;
+
+/**
+ * 외부 서비스의 고정 브랜드 색. 우리 테마가 아니므로 다크모드에서도 바뀌지 않고,
+ * 시맨틱 컬러로 승격시키지도 않는다. 각 사의 브랜드 가이드가 정한 값이다.
+ */
+export const socialBrand = {
+  kakaoYellow: '#FEE500',
 } as const;
 
 /** 중립 그레이만 둔다. 브랜드 팔레트는 디자인 확정 후 채운다. */
@@ -35,10 +55,16 @@ export const palette = {
   gray900: '#212225',
 
   /**
-   * 유일한 예외. `app.config.ts`의 스플래시 배경과 반드시 같아야 하는 값이라
-   * 디자인 시스템과 무관하게 이미 정해져 있다. 스플래시 외에는 쓰지 않는다.
+   * 스플래시(앱 실행) 배경. `app.config.ts`가 이 값을 직접 import 해서 쓰므로
+   * 네이티브 스플래시와 JS 오버레이가 갈라질 일이 없다. 스플래시 외에는 쓰지 않는다.
    */
-  splashBackground: '#208AEF',
+  splashBackground: brand.b04,
 } as const;
 
 export const MAX_CONTENT_WIDTH = 800;
+
+/**
+ * 화면 좌우 기본 여백. 시안 주석("양옆 18px")과 버튼 폭(357 = 393 - 18 × 2)에서 온 값이다.
+ * `spacing` 스케일(4의 배수)에 없는 값이라 별도 상수로 둔다 — 디자인이 2px 그리드를 쓴다.
+ */
+export const SCREEN_PADDING_X = 18;

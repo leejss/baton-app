@@ -5,6 +5,7 @@ import { StyleSheet, View } from 'react-native';
 import Animated, { Easing, Keyframe } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
 
+import { SPLASH_WORDMARK_ASPECT_RATIO, SPLASH_WORDMARK_WIDTH } from '@/theme/splash';
 import { palette } from '@/theme/tokens';
 
 const DURATION = 600;
@@ -31,8 +32,9 @@ export function SplashOverlay() {
 
   const image = (
     <Image
-      style={styles.image}
-      source={require('@/assets/images/splash-icon.png')}
+      style={styles.wordmark}
+      source={require('@/assets/images/splash-wordmark.png')}
+      contentFit="contain"
       accessibilityElementsHidden
       importantForAccessibility="no"
     />
@@ -75,5 +77,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     zIndex: 1000,
   },
-  image: { width: 76, height: 71 },
+  wordmark: {
+    width: SPLASH_WORDMARK_WIDTH,
+    aspectRatio: SPLASH_WORDMARK_ASPECT_RATIO,
+  },
 });

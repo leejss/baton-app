@@ -1,7 +1,7 @@
 import { useColorScheme } from 'react-native';
 
 import { darkColors, lightColors, type ThemeColorName, type ThemeColors } from '@/theme/colors';
-import { MAX_CONTENT_WIDTH, radius, spacing } from '@/theme/tokens';
+import { MAX_CONTENT_WIDTH, radius, SCREEN_PADDING_X, socialBrand, spacing } from '@/theme/tokens';
 import { fonts, typography, type TextVariant } from '@/theme/typography';
 
 export type Theme = {
@@ -31,5 +31,5 @@ export function useTheme(): Theme {
   return useColorScheme() === 'dark' ? darkTheme : lightTheme;
 }
 
-export { MAX_CONTENT_WIDTH, radius, spacing, typography, fonts };
+export { MAX_CONTENT_WIDTH, radius, SCREEN_PADDING_X, socialBrand, spacing, typography, fonts };
 export type { ThemeColorName, ThemeColors, TextVariant };
