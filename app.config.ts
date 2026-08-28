@@ -52,6 +52,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     ...config,
     name: `${APP.name}${variantConfig.nameSuffix}`,
     slug: APP.slug,
+    owner: 'relay-baton',
     version: packageJson.version,
     platforms: ['ios', 'android'],
     orientation: 'portrait',
@@ -60,8 +61,10 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     userInterfaceStyle: 'automatic',
     ios: {
       ...config.ios,
+      appleTeamId: '3PVV8DQPL6',
       bundleIdentifier: `${APP.identifier}${variantConfig.identifierSuffix}`,
       icon: './assets/expo.icon',
+      usesAppleSignIn: true,
     },
     android: {
       ...config.android,
@@ -78,6 +81,8 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       'expo-router',
       'expo-localization',
       'expo-secure-store',
+      'expo-apple-authentication',
+      'expo-notifications',
       [
         'expo-dev-client',
         {
@@ -96,6 +101,12 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     experiments: {
       typedRoutes: true,
       reactCompiler: true,
+    },
+    extra: {
+      ...config.extra,
+      eas: {
+        projectId: '6620825a-30ad-447f-8bfe-e71a619c2ba6',
+      },
     },
   };
 };
