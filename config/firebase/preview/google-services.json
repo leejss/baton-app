@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "532657825473",
+    "project_id": "baton-preview",
+    "storage_bucket": "baton-preview.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:532657825473:android:f16de6c90a8a03d34d1640",
+        "android_client_info": {
+          "package_name": "com.baton.baton.preview"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB-58sDTGuTfIpCotF_cUk05lg6yJeNY44"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
