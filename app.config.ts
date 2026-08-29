@@ -13,22 +13,30 @@ const APP = {
 
 const VARIANTS: Record<
   AppVariant,
-  { nameSuffix: string; identifierSuffix: string; schemeSuffix: string }
+  {
+    nameSuffix: string;
+    identifierSuffix: string;
+    schemeSuffix: string;
+    googleServicesFile: string;
+  }
 > = {
   development: {
     nameSuffix: ' Dev',
     identifierSuffix: '.dev',
     schemeSuffix: '-dev',
+    googleServicesFile: './config/firebase/development/google-services.json',
   },
   preview: {
     nameSuffix: ' Preview',
     identifierSuffix: '.preview',
     schemeSuffix: '-preview',
+    googleServicesFile: './config/firebase/preview/google-services.json',
   },
   production: {
     nameSuffix: '',
     identifierSuffix: '',
     schemeSuffix: '',
+    googleServicesFile: './config/firebase/production/google-services.json',
   },
 };
 
@@ -69,6 +77,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     android: {
       ...config.android,
       package: `${APP.identifier}${variantConfig.identifierSuffix}`,
+      googleServicesFile: variantConfig.googleServicesFile,
       adaptiveIcon: {
         backgroundColor: '#E6F4FE',
         foregroundImage: './assets/images/android-icon-foreground.png',
