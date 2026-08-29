@@ -6,6 +6,7 @@ import { AppState, StyleSheet, useColorScheme } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 
+import { useAuthStore } from '@/features/auth/store/authStore';
 import { createQueryClient } from '@/shared/api/queryClient';
 import { logger } from '@/shared/lib/logger';
 import { ErrorState } from '@/shared/ui/ErrorState';
@@ -22,6 +23,13 @@ export function ErrorBoundary({ error, retry }: { error: Error; retry: () => Pro
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
+  const authStatus = useAuthStore((state) => state.status);
+  const restoreSession = useAuthStore((state) => state.restore);
+
+  useEffect(() => {
+    // 앱 시작 시 한 번. 끝날 때까지 스플래시가 화면을 덮고 있어 깜빡임이 없다.
+    void restoreSession();
+  }, [restoreSession]);
 
   useEffect(() => {
     // 백그라운드 전환 시 버퍼된 원격 로그를 내보낸다. 안 하면 종료 시 유실된다.
@@ -43,10 +51,11 @@ export default function RootLayout() {
           <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
             <Stack screenOptions={{ headerShown: false }}>
               <Stack.Screen name="index" />
-              <Stack.Screen name="home" />
+              <Stack.Screen name="(auth)" />
+              <Stack.Screen name="(app)" />
               <Stack.Screen name="+not-found" />
             </Stack>
-            <SplashOverlay />
+            <SplashOverlay isReady={authStatus !== 'restoring'} />
           </ThemeProvider>
         </QueryClientProvider>
       </KeyboardProvider>

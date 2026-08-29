@@ -105,6 +105,10 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     },
     plugins: [
       'expo-router',
+      // 키가 없는 로컬 빌드에서는 플러그인 자체를 빼서 잘못된 URL scheme이 박히지 않게 한다.
+      ...(kakaoAppKey === undefined
+        ? []
+        : [['@react-native-seoul/kakao-login', { kakaoAppKey }] as [string, object]]),
       'expo-localization',
       'expo-secure-store',
       [

@@ -1,5 +1,13 @@
-import { StartScreen } from '@/features/auth/screens/StartScreen';
+import { Redirect } from 'expo-router';
 
-export default function StartRoute() {
-  return <StartScreen />;
+import { useAuthStore } from '@/features/auth/store/authStore';
+
+export default function IndexRoute() {
+  const status = useAuthStore((state) => state.status);
+
+  if (status === 'restoring') {
+    return null;
+  }
+
+  return <Redirect href={status === 'signedIn' ? '/home' : '/start'} />;
 }
