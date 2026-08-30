@@ -213,6 +213,33 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 - 스크롤 화면은 `KeyboardAvoidingView` 대신 `react-native-keyboard-controller` 를 사용한다.
 - 터치 영역은 최소 44×44pt. 작으면 `hitSlop`으로 확보한다.
 
+### 4.3 Figma에서 옮길 때 (MCP / Dev Mode)
+
+Figma MCP와 Dev Mode는 항상 **원시 CSS**를 준다 — `#2563EB`, `padding: 12px`, `border-radius: 8px`, `box-shadow: 0 4px 8px rgba(0,0,0,.08)`. 그대로 붙여넣지 않는다. **토큰으로 되돌린 뒤에 쓴다.**
+
+| Figma가 주는 것 | 코드에 쓰는 것 |
+|---|---|
+| `color: #2563EB` | `colors.accent` — 시맨틱만. `palette.blue600` 직접 참조도 금지 |
+| `background: #F9FAFB` | `colors.surface` |
+| `padding: 16px` | `spacing.md` |
+| `gap: 8px` | `spacing.sm` |
+| `border-radius: 12px` | `radius.md` |
+| `box-shadow: 0 4px 8px rgba(0,0,0,.08)` | `shadows.default` |
+| `font: 600 16px/28px Pretendard` | `<Text variant="body" weight="semibold">` |
+
+의미색은 `accent`(채운 배경) / `accentOn`(그 위 전경) / `accentSubtle`(옅은 배경) / `accentText`(배경 위 텍스트) 4개가 한 세트다. `danger`·`success`·`warning`도 같은 규칙. 시안에서 그 색이 **어떤 역할로 쓰였는지**를 보고 고른다 — 색값이 같다고 아무 키나 쓰면 다크모드에서 깨진다.
+
+**토큰에 없는 값이 나오면 거기서 멈춘다.** 가까운 값으로 반올림하지 않고, `tokens.ts`에 조용히 추가하지도 않는다.
+
+1. 디자이너에게 의도한 값인지 확인한다.
+2. 답이 오기 전까지 그 부분은 구현하지 않고 남겨둔다.
+
+이유: 토큰 밖 값을 한 번 통과시키면 다음 사람이 그걸 선례로 또 넣는다. 팔레트가 두 벌이 되는 건 대개 이 한 줄에서 시작한다.
+
+실제 예 — `Action Button`의 pressed `#535353`와 disabled 전경 `#8D8D8D`는 팔레트에 없고, padding `10/12/14/20`·radius `8`은 `spacing`·`radius` 스케일로 표현할 수 없다. 그래서 버튼은 구현하지 않고 대기 중이다.
+
+**원본 우선순위**: `src/theme/*`는 Figma primitives 섹션을 옮긴 것이다. 값이 Tailwind 같은 익숙한 팔레트와 달라도 **Figma가 맞다.** 익숙한 값으로 "고치지" 않는다.
+
 ---
 
 ## 5. 상태 관리
@@ -401,6 +428,8 @@ export const orderQueries = {
 
 - ❌ 서버 데이터를 zustand에 복사
 - ❌ 컴포넌트 안에서 색상/사이즈 하드코딩
+- ❌ Figma Dev Mode/MCP가 준 CSS 값을 토큰으로 안 바꾸고 그대로 붙여넣기
+- ❌ 토큰에 없는 값을 만나 근사값으로 반올림하거나 `tokens.ts`에 임의 추가
 - ❌ `useQuery` 결과를 `useEffect`로 로컬 state에 동기화
 - ❌ 큰 리스트에 `ScrollView` + `map`
 - ❌ 라우트 파일(`src/app`)에 비즈니스 로직 작성
