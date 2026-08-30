@@ -22,7 +22,11 @@ export function Button({
   const theme = useTheme();
   const isDisabled = disabled || isLoading;
 
-  // 브랜드색이 정해지기 전까지 primary는 전경/배경을 뒤집은 중립 버튼으로 둔다.
+  /**
+   * Figma에 `Action Button`(tonal pill) / `Action Button_Black`(solid) 두 계열이 있지만
+   * 아직 확정 전이라 여기 옮기지 않는다. 그때까지 primary는 전경/배경을 뒤집은
+   * 중립 버튼으로 둔다 — 확정되면 사이즈(sm/md/lg)와 pressed/disabled 색까지 함께 들어온다.
+   */
   const backgroundColor =
     variant === 'primary'
       ? theme.colors.textPrimary

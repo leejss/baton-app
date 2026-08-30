@@ -1,37 +1,83 @@
 import { Platform, type TextStyle } from 'react-native';
 
-export const fonts = Platform.select({
-  ios: {
-    sans: 'system-ui',
-    serif: 'ui-serif',
-    rounded: 'ui-rounded',
-    mono: 'ui-monospace',
-  },
-  default: {
-    sans: 'normal',
-    serif: 'serif',
-    rounded: 'normal',
-    mono: 'monospace',
-  },
-});
+/**
+ * 타입 스케일. 출처: Figma `Baton-Design System` (node 9:44).
+ *
+ * Figma는 8개 역할 × 3개 굵기(regular/medium/semibold) 그리드로 정의돼 있다.
+ * 여기서도 같은 모양을 유지한다 — `typography.body.semibold` 처럼 접근한다.
+ * letter-spacing은 전 단계 0이라 따로 두지 않는다.
+ *
+ * | 역할 | size / line-height |
+ * |---|---|
+ * | displayLarge | 32 / 42 |
+ * | display | 28 / 36 |
+ * | heading | 24 / 32 |
+ * | subheading | 20 / 28 |
+ * | title | 18 / 26 |
+ * | body | 16 / 28 |
+ * | bodySmall | 14 / 20 |
+ * | caption | 12 / 16 |
+ *
+ * 고정 `height`는 두지 않는다 — 폰트 스케일 대응을 깨지 않기 위해서다.
+ */
 
 /**
- * ⚠️ 디자인 시스템 확정 전 임시값입니다.
+ * Figma 지정 서체 Pretendard. `app.config.ts`의 `expo-font` 플러그인이 네이티브
+ * 번들에 심으므로 런타임 로딩 없이 첫 프레임부터 쓸 수 있다.
  *
- * 타입 스케일(단계 수, 이름, 크기)은 전적으로 디자인 결정 사항이다.
- * 지금은 현재 화면이 쓰는 최소 4단만 두고, 확정되면 통째로 교체한다.
- * 고정 height 없이 fontSize/lineHeight만 정의해 폰트 스케일 대응을 유지한다.
+ * 이름은 iOS에서 PostScript 이름, Android에서 파일명으로 해석되는데 Pretendard는
+ * 둘이 같아서 아래 문자열 하나로 양쪽이 맞는다.
  */
+export const fontFamily = {
+  regular: 'Pretendard-Regular',
+  medium: 'Pretendard-Medium',
+  semibold: 'Pretendard-SemiBold',
+  /** Figma 명세 밖. 값 표시용 고정폭 서체라 플랫폼 기본을 그대로 쓴다. */
+  mono: Platform.select({ ios: 'ui-monospace', default: 'monospace' }),
+} as const;
+
+/**
+ * 굵기 이름 → CSS 수치. Pretendard는 굵기별로 **파일이 따로**라 실제 렌더는
+ * `fontFamily`가 결정한다. 이 값은 mono처럼 단일 파일 서체에만 적용된다.
+ *
+ * Pretendard 쪽에 `fontWeight`를 같이 주면 안 된다 — 이미 굵기가 박힌 페이스 위에
+ * iOS/Android가 합성 볼드를 덧씌워 뭉개진다.
+ */
+export const fontWeight = {
+  regular: '400',
+  medium: '500',
+  semibold: '600',
+} as const satisfies Record<string, TextStyle['fontWeight']>;
+
+export type FontWeightName = keyof typeof fontWeight;
+export type TextFamily = 'sans' | 'mono';
+
+type WeightedStyles = Record<FontWeightName, TextStyle>;
+
+function scale(fontSize: number, lineHeight: number, family: TextFamily = 'sans'): WeightedStyles {
+  const face = (weight: FontWeightName): TextStyle =>
+    family === 'mono'
+      ? { fontFamily: fontFamily.mono, fontWeight: fontWeight[weight] }
+      : { fontFamily: fontFamily[weight] };
+
+  return {
+    regular: { fontSize, lineHeight, ...face('regular') },
+    medium: { fontSize, lineHeight, ...face('medium') },
+    semibold: { fontSize, lineHeight, ...face('semibold') },
+  };
+}
+
 export const typography = {
-  title: { fontSize: 24, lineHeight: 32, fontWeight: '600' },
-  body: { fontSize: 16, lineHeight: 24, fontWeight: '500' },
-  caption: { fontSize: 14, lineHeight: 20, fontWeight: '500' },
-  code: {
-    fontSize: 12,
-    lineHeight: 18,
-    fontFamily: fonts.mono,
-    fontWeight: Platform.select({ android: '700' }) ?? '500',
-  },
-} as const satisfies Record<string, TextStyle>;
+  displayLarge: scale(32, 42),
+  display: scale(28, 36),
+  heading: scale(24, 32),
+  subheading: scale(20, 28),
+  title: scale(18, 26),
+  body: scale(16, 28),
+  bodySmall: scale(14, 20),
+  caption: scale(12, 16),
+  /** Figma 명세 밖. 앱에서 원시 값(버전, ID 등)을 표시할 때만 쓴다. */
+  code: scale(12, 16, 'mono'),
+} as const satisfies Record<string, WeightedStyles>;
 
 export type TextVariant = keyof typeof typography;

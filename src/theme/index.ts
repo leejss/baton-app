@@ -1,15 +1,23 @@
 import { useColorScheme } from 'react-native';
 
 import { darkColors, lightColors, type ThemeColorName, type ThemeColors } from '@/theme/colors';
+import { shadows, type ShadowName } from '@/theme/shadows';
 import { MAX_CONTENT_WIDTH, radius, spacing } from '@/theme/tokens';
-import { fonts, typography, type TextVariant } from '@/theme/typography';
+import {
+  fontFamily,
+  fontWeight,
+  typography,
+  type FontWeightName,
+  type TextVariant,
+} from '@/theme/typography';
 
 export type Theme = {
   colors: ThemeColors;
   spacing: typeof spacing;
   radius: typeof radius;
   typography: typeof typography;
-  fonts: typeof fonts;
+  shadows: typeof shadows;
+  fontFamily: typeof fontFamily;
   isDark: boolean;
 };
 
@@ -18,7 +26,8 @@ const lightTheme: Theme = {
   spacing,
   radius,
   typography,
-  fonts,
+  shadows,
+  fontFamily,
   isDark: false,
 };
 
@@ -31,5 +40,5 @@ export function useTheme(): Theme {
   return useColorScheme() === 'dark' ? darkTheme : lightTheme;
 }
 
-export { MAX_CONTENT_WIDTH, radius, spacing, typography, fonts };
-export type { ThemeColorName, ThemeColors, TextVariant };
+export { MAX_CONTENT_WIDTH, radius, spacing, shadows, typography, fontFamily, fontWeight };
+export type { FontWeightName, ShadowName, TextVariant, ThemeColorName, ThemeColors };

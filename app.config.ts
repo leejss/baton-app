@@ -106,6 +106,25 @@ export default ({ config }: ConfigContext): ExpoConfig => {
           imageWidth: 76,
         },
       ],
+      /**
+       * Pretendard를 네이티브 번들에 심는다. 런타임 로딩(`useFonts`)이 아니라
+       * 빌드 타임 등록이라 첫 프레임부터 적용되고, 루트 레이아웃에 I/O가 생기지 않는다.
+       *
+       * 참조 이름은 iOS는 PostScript 이름, Android는 파일명이 되는데 Pretendard는
+       * 둘이 같다(`Pretendard-Regular` 등). `src/theme/typography.ts`가 이 이름을 쓴다.
+       *
+       * 폰트 파일 추가/삭제는 네이티브 변경이다 — OTA로 못 내보내고 스토어 빌드가 필요하다.
+       */
+      [
+        'expo-font',
+        {
+          fonts: [
+            './assets/fonts/Pretendard-Regular.otf',
+            './assets/fonts/Pretendard-Medium.otf',
+            './assets/fonts/Pretendard-SemiBold.otf',
+          ],
+        },
+      ],
     ],
     experiments: {
       typedRoutes: true,
