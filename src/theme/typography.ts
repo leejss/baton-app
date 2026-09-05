@@ -11,6 +11,7 @@ import { Platform, type TextStyle } from 'react-native';
  * 파일을 추가·삭제하면 `expo prebuild` + 재빌드가 필요하다.
  */
 export const fonts = {
+  regular: 'Pretendard-Regular',
   medium: 'Pretendard-Medium',
   semiBold: 'Pretendard-SemiBold',
   bold: 'Pretendard-Bold',
@@ -19,23 +20,38 @@ export const fonts = {
 } as const;
 
 /**
- * 타입 스케일. 크기·행간·자간은 Figma 시안에서 실측한 값이다.
+ * 타입 스케일. Figma 로그인 플로우 시안(`943:111091`, `943:111106`, `943:111123`)에서 실측했다.
  *
  * ⚠️ 시안의 Typography 섹션(Heading 1 / Title 1 / Body 1 …)과 실제 화면이 쓰는 값이
  * 어긋나 있다. 여기 있는 건 **화면에서 실제로 쓰인 값**이다. 디자인 쪽에서 스케일이
  * 정리되면 이름과 단계를 그에 맞춰 다시 맞춘다.
  */
 export const typography = {
-  /** 화면 제목. 시안 "제목" 노드: Bold 24/32, 자간 -0.55. */
-  title: { fontSize: 24, lineHeight: 32, letterSpacing: -0.55, fontFamily: fonts.bold },
-  body: { fontSize: 16, lineHeight: 24, fontFamily: fonts.medium },
-  caption: { fontSize: 14, lineHeight: 20, fontFamily: fonts.medium },
-
-  /** 아래 4단은 "시작(로그인 선택)" 시안에서 실측한 값이다. */
-  tagline: { fontSize: 16, lineHeight: 24, letterSpacing: -0.18, fontFamily: fonts.medium },
-  button: { fontSize: 16, lineHeight: 19, letterSpacing: -0.32, fontFamily: fonts.medium },
+  /** 화면 제목. "환영합니다." */
+  title: { fontSize: 28, lineHeight: 36, fontFamily: fonts.bold },
+  /** 본문·화면 설명. 시작 화면 태그라인도 같은 값이라 `tagline`을 따로 두지 않는다. */
+  body: { fontSize: 16, lineHeight: 28, fontFamily: fonts.medium },
+  /** 스낵바 제목. `button`과 수치는 같지만 역할이 달라 따로 둔다. */
+  bodyStrong: { fontSize: 16, lineHeight: 28, fontFamily: fonts.semiBold },
+  /** 입력 필드 라벨. "이메일" / "비밀번호" */
+  label: { fontSize: 18, lineHeight: 26, fontFamily: fonts.semiBold },
+  /** 입력 필드 안의 값과 placeholder. */
+  input: { fontSize: 16, lineHeight: 28, fontFamily: fonts.regular },
+  /** 입력 필드 아래 보조 안내·에러. */
+  helper: { fontSize: 12, lineHeight: 16, fontFamily: fonts.regular },
+  /** 인증 남은시간, 스낵바 설명. `helper`와 크기는 같고 굵기만 다르다. */
+  captionSmall: { fontSize: 12, lineHeight: 16, fontFamily: fonts.medium },
+  /** 버튼 라벨. */
+  button: { fontSize: 16, lineHeight: 28, fontFamily: fonts.semiBold },
+  /** "또는", "아직 회원이 아니신가요?" */
   footnote: { fontSize: 14, lineHeight: 17, fontFamily: fonts.medium },
+  /** 푸터 안의 강조 링크. "회원가입" */
   footnoteStrong: { fontSize: 14, lineHeight: 17, fontFamily: fonts.semiBold },
+
+  /** 본문 링크·하단 안내("재전송", "로그인 화면으로 돌아가기"). */
+  caption: { fontSize: 14, lineHeight: 20, fontFamily: fonts.medium },
+  /** 스낵바의 액션 텍스트("확인"). */
+  captionStrong: { fontSize: 14, lineHeight: 20, fontFamily: fonts.bold },
 
   code: {
     fontSize: 12,

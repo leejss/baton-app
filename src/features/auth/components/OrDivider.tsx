@@ -1,19 +1,19 @@
 import { StyleSheet, View } from 'react-native';
 
 import { Text } from '@/shared/ui';
-import { spacing, useTheme } from '@/theme';
+import { useTheme } from '@/theme';
 
-/** 소셜 로그인과 이메일 로그인을 가르는 "또는" 구분선. */
+/** 소셜 로그인과 이메일 로그인을 가르는 "또는" 구분선. 시안 `Line with Text`. */
 export function OrDivider({ label }: { label: string }) {
   const { colors } = useTheme();
 
   return (
     <View style={styles.container}>
-      <View style={[styles.line, { backgroundColor: colors.border }]} />
-      <Text variant="footnote" color="textSecondary">
+      <View style={[styles.line, { backgroundColor: colors.borderStrong }]} />
+      <Text variant="footnote" color="textTertiary">
         {label}
       </Text>
-      <View style={[styles.line, { backgroundColor: colors.border }]} />
+      <View style={[styles.line, { backgroundColor: colors.borderStrong }]} />
     </View>
   );
 }
@@ -22,7 +22,7 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.sm,
+    gap: 8,
   },
   line: {
     flex: 1,

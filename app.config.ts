@@ -124,6 +124,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
         'expo-font',
         {
           fonts: [
+            './assets/fonts/Pretendard-Regular.otf',
             './assets/fonts/Pretendard-Medium.otf',
             './assets/fonts/Pretendard-SemiBold.otf',
             './assets/fonts/Pretendard-Bold.otf',
@@ -138,7 +139,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
           //   backgroundColor → `palette.splashBackground` (src/theme/tokens.ts)
           //   imageWidth      → `SPLASH_WORDMARK_WIDTH`    (src/theme/splash.ts)
           // expo config 로더가 상대 경로 .ts import를 해석하지 못해 import 대신 리터럴로 둔다.
-          backgroundColor: '#6D6D6D',
+          backgroundColor: '#1D4ED8',
           image: './assets/images/splash-wordmark.png',
           imageWidth: 155,
         },

@@ -1,12 +1,12 @@
 import { Image } from 'expo-image';
-import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet } from 'react-native';
 
-import { Text } from '@/shared/ui';
-import { radius, socialBrand, spacing, useTheme } from '@/theme';
+import { buttonMetrics, Text } from '@/shared/ui';
+import { socialBrand, useTheme } from '@/theme';
 
 /**
- * 시작 화면의 로그인 수단 버튼. 카카오·Apple은 각 사의 고정 브랜드 색을 쓰므로
- * 테마를 타지 않고, 이메일만 우리 테마의 배경/테두리를 따른다.
+ * 시작 화면의 로그인 수단 버튼. 시안 `Action Button_square`를 그대로 따르되,
+ * 카카오는 카카오의 고정 브랜드 색을 쓰므로 테마를 타지 않는다.
  */
 type StartButtonProvider = 'kakao' | 'apple' | 'email';
 
@@ -19,9 +19,12 @@ export type StartButtonProps = {
   disabled?: boolean;
 };
 
-const ICON_SIZE = 24;
-/** 시안의 이메일 버튼 아이콘 자리는 아직 회색 원이다. 지름만 24가 아니라 25다. */
-const EMAIL_PLACEHOLDER_SIZE = 25;
+/** 아이콘은 색까지 시안 그대로 구운 PNG다. 그래서 tint를 따로 주지 않는다. */
+const ICONS = {
+  kakao: require('@/assets/images/icon-kakao.png'),
+  apple: require('@/assets/images/icon-apple.png'),
+  email: require('@/assets/images/icon-email.png'),
+} as const;
 
 export function StartButton({
   provider,
@@ -37,10 +40,11 @@ export function StartButton({
     provider === 'kakao'
       ? { backgroundColor: socialBrand.kakaoYellow }
       : provider === 'apple'
-        ? { backgroundColor: colors.staticBlack }
-        : { backgroundColor: colors.background, borderWidth: 1, borderColor: colors.textPrimary };
+        ? { backgroundColor: colors.textPrimary }
+        : { backgroundColor: colors.background, borderWidth: 1, borderColor: colors.borderStrong };
 
-  const labelColor = provider === 'apple' ? 'staticWhite' : 'staticBlack';
+  const labelColor =
+    provider === 'kakao' ? 'staticBlack' : provider === 'apple' ? 'staticWhite' : 'textSecondary';
 
   return (
     <Pressable
@@ -58,25 +62,19 @@ export function StartButton({
     >
       {isLoading ? (
         <ActivityIndicator color={colors[labelColor]} />
-      ) : provider === 'email' ? (
-        <View style={[styles.emailPlaceholder, { backgroundColor: colors.placeholder }]} />
       ) : (
-        <Image
-          style={styles.icon}
-          source={
-            provider === 'kakao'
-              ? require('@/assets/images/icon-kakao.png')
-              : require('@/assets/images/icon-apple.png')
-          }
-          contentFit="contain"
-          accessibilityElementsHidden
-          importantForAccessibility="no"
-        />
-      )}
-      {!isLoading && (
-        <Text variant="button" color={labelColor}>
-          {label}
-        </Text>
+        <>
+          <Image
+            style={styles.icon}
+            source={ICONS[provider]}
+            contentFit="contain"
+            accessibilityElementsHidden
+            importantForAccessibility="no"
+          />
+          <Text variant="button" color={labelColor}>
+            {label}
+          </Text>
+        </>
       )}
     </Pressable>
   );
@@ -84,22 +82,16 @@ export function StartButton({
 
 const styles = StyleSheet.create({
   container: {
-    /** 고정 height 대신 minHeight — 폰트 스케일이 커져도 라벨이 잘리지 않는다. */
-    minHeight: 48,
-    borderRadius: radius.sm,
+    minHeight: buttonMetrics.minHeight,
+    borderRadius: buttonMetrics.radius,
+    paddingHorizontal: buttonMetrics.paddingHorizontal,
+    paddingVertical: buttonMetrics.paddingVertical,
+    gap: buttonMetrics.gap,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: spacing.md,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
   },
   pressed: { opacity: 0.7 },
   disabled: { opacity: 0.4 },
-  icon: { width: ICON_SIZE, height: ICON_SIZE },
-  emailPlaceholder: {
-    width: EMAIL_PLACEHOLDER_SIZE,
-    height: EMAIL_PLACEHOLDER_SIZE,
-    borderRadius: EMAIL_PLACEHOLDER_SIZE / 2,
-  },
+  icon: { width: buttonMetrics.iconSize, height: buttonMetrics.iconSize },
 });

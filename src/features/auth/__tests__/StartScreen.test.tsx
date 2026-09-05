@@ -37,13 +37,12 @@ function renderScreen(ui: ReactElement) {
 }
 
 describe('StartScreen', () => {
-  it('로그인 수단 세 가지와 회원가입을 모두 보여준다', async () => {
+  it('로그인 수단 세 가지를 보여준다', async () => {
     await renderScreen(<StartScreen />);
 
     expect(screen.getByRole('button', { name: '카카오로 시작하기' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Apple로 시작하기' })).toBeTruthy();
     expect(screen.getByRole('button', { name: '이메일로 시작하기' })).toBeTruthy();
-    expect(screen.getByRole('button', { name: '회원가입' })).toBeTruthy();
     expect(screen.getByText('근무자는 바뀌어도 업무는 끊기지 않게')).toBeTruthy();
   });
 
@@ -51,25 +50,21 @@ describe('StartScreen', () => {
     const onStartWithKakao = jest.fn();
     const onStartWithApple = jest.fn();
     const onStartWithEmail = jest.fn();
-    const onSignUp = jest.fn();
 
     await renderScreen(
       <StartScreen
         onStartWithKakao={onStartWithKakao}
         onStartWithApple={onStartWithApple}
         onStartWithEmail={onStartWithEmail}
-        onSignUp={onSignUp}
       />,
     );
 
     await fireEvent.press(screen.getByRole('button', { name: '카카오로 시작하기' }));
     await fireEvent.press(screen.getByRole('button', { name: 'Apple로 시작하기' }));
     await fireEvent.press(screen.getByRole('button', { name: '이메일로 시작하기' }));
-    await fireEvent.press(screen.getByRole('button', { name: '회원가입' }));
 
     expect(onStartWithKakao).toHaveBeenCalledTimes(1);
     expect(onStartWithApple).toHaveBeenCalledTimes(1);
     expect(onStartWithEmail).toHaveBeenCalledTimes(1);
-    expect(onSignUp).toHaveBeenCalledTimes(1);
   });
 });
