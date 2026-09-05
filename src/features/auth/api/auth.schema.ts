@@ -24,3 +24,17 @@ export const sessionSchema = z.object({
 
 export type User = z.infer<typeof userSchema>;
 export type Session = z.infer<typeof sessionSchema>;
+
+/**
+ * 이메일 로그인 결과.
+ *
+ * 비밀번호 불일치와 로그인 제한은 예외가 아니라 **정상적으로 일어나는 결과**라
+ * throw 하지 않고 판별 가능한 union으로 돌려준다. 시안의 오류 상태 3종이 여기서 갈린다:
+ *   invalidCredentials  (n/5) 문구 + 필드 Error
+ *   invalidCredentials  attempts === maxAttempts 이면 스낵바까지
+ *   locked              "로그인 제한 mm:ss" 카운트다운
+ */
+export type SignInOutcome =
+  | { status: 'signedIn'; session: Session }
+  | { status: 'invalidCredentials'; attempts: number; maxAttempts: number }
+  | { status: 'locked'; lockedUntil: string };

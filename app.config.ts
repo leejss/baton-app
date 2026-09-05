@@ -105,6 +105,17 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     },
     plugins: [
       'expo-router',
+      [
+        // 카카오 SDK는 Maven Central에 없고 카카오 자체 저장소에만 있다.
+        // 여기 선언하지 않으면 Android 빌드가 com.kakao.sdk:v2-* 해석에 실패한다.
+        // (`android/build.gradle`을 직접 고치면 prebuild 때마다 날아간다.)
+        'expo-build-properties',
+        {
+          android: {
+            extraMavenRepos: ['https://devrepo.kakao.com/nexus/content/groups/public/'],
+          },
+        },
+      ],
       // 키가 없는 로컬 빌드에서는 플러그인 자체를 빼서 잘못된 URL scheme이 박히지 않게 한다.
       ...(kakaoAppKey === undefined
         ? []

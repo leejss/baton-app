@@ -10,7 +10,7 @@ export default function PasswordResetEmailRoute() {
       onBack={() => goBackOr('/login')}
       // 스택에 로그인 화면이 있으면 그 화면으로 돌아가고, 없으면 새로 연다.
       onBackToSignIn={() => router.navigate('/login')}
-      onRequestCode={() => router.push('/reset-password/code')}
+      onCodeSent={() => router.push('/reset-password/code')}
     />
   );
 }
