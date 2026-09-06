@@ -5,10 +5,13 @@ export { EmptyState } from '@/shared/ui/EmptyState';
 export { ErrorBoundary } from '@/shared/ui/ErrorBoundary';
 export { ErrorState } from '@/shared/ui/ErrorState';
 export { ExternalLink } from '@/shared/ui/ExternalLink';
+export { MainHeader, type MainHeaderModel } from '@/shared/ui/main-header';
 export { Modal, MODAL_ICON_SIZE, type ModalProps } from '@/shared/ui/Modal';
+export { Pressable, type PressableProps } from '@/shared/ui/Pressable';
 export { QueryBoundary } from '@/shared/ui/QueryBoundary';
 export { Snackbar, type SnackbarProps } from '@/shared/ui/Snackbar';
 export { Text, textStyles, type AppTextProps } from '@/shared/ui/Text';
+export { TextInput, type TextInputProps } from '@/shared/ui/TextInput';
 export { TextLink, type TextLinkProps } from '@/shared/ui/TextLink';
 export {
   TextField,

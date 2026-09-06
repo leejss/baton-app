@@ -1,15 +1,20 @@
-import { useLocalSearchParams } from 'expo-router';
+import { useRouter } from 'expo-router';
 
-import { RoutePlaceholderScreen } from '@/features/routes/screens/RoutePlaceholderScreen';
+import { HandoffContentScreen } from '@/features/handoffs/screens/HandoffContentScreen';
 
 export default function HandoffContentRoute() {
-  const { type } = useLocalSearchParams<{ type?: string }>();
+  const router = useRouter();
 
   return (
-    <RoutePlaceholderScreen
-      title="인수인계 내용 작성"
-      description={`인수인계 유형: ${type ?? '미선택'}`}
-      featureIds="HAND-02~06"
+    <HandoffContentScreen
+      onBack={router.back}
+      onRecipientPress={() => router.push('/(main)/handoffs/new/recipient')}
+      onSent={(handoffId) =>
+        router.replace({
+          pathname: '/(main)/handoffs/[handoffId]',
+          params: { handoffId },
+        })
+      }
     />
   );
 }

@@ -1,11 +1,25 @@
-import { RoutePlaceholderScreen } from '@/features/routes/screens/RoutePlaceholderScreen';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+
+import { HandoffListScreen } from '@/features/handoffs/screens/HandoffListScreen';
+import { isHandoffScope, type HandoffScope } from '@/features/handoffs/model/handoff';
 
 export default function HandoffsRoute() {
+  const router = useRouter();
+  const params = useLocalSearchParams<{ scope?: string }>();
+  const scope: HandoffScope = isHandoffScope(params.scope) ? params.scope : 'all';
+
   return (
-    <RoutePlaceholderScreen
-      title="인수인계"
-      description="인수인계 목록 화면이 연결될 자리입니다."
-      featureIds="NAV-03, HAND-07~08"
+    <HandoffListScreen
+      scope={scope}
+      onCreate={() => router.push('/(main)/handoffs/new')}
+      onEdit={(handoffId) =>
+        router.push({ pathname: '/(main)/handoffs/[handoffId]/edit', params: { handoffId } })
+      }
+      onNotificationPress={() => router.push('/(main)/notifications')}
+      onOpen={(handoffId) =>
+        router.push({ pathname: '/(main)/handoffs/[handoffId]', params: { handoffId } })
+      }
+      onScopeChange={(nextScope) => router.setParams({ scope: nextScope })}
     />
   );
 }

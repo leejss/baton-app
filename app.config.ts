@@ -117,6 +117,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     },
     plugins: [
       'expo-router',
+      'expo-image',
       [
         // 카카오 SDK는 Maven Central에 없고 카카오 자체 저장소에만 있다.
         // 여기 선언하지 않으면 Android 빌드가 com.kakao.sdk:v2-* 해석에 실패한다.
@@ -135,7 +136,21 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       'expo-localization',
       'expo-secure-store',
       'expo-apple-authentication',
-      'expo-notifications',
+      [
+        'expo-notifications',
+        {
+          // 식별자만 포함한 APNs data-only 푸시를 iOS 백그라운드에서도 처리한다.
+          enableBackgroundRemoteNotifications: true,
+        },
+      ],
+      [
+        'expo-image-picker',
+        {
+          photosPermission: '인수인계에 사진을 첨부하려면 사진 보관함 접근이 필요합니다.',
+          cameraPermission: false,
+          microphonePermission: false,
+        },
+      ],
       [
         'expo-dev-client',
         {
