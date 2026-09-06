@@ -1,11 +1,14 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Alert, StyleSheet, View } from 'react-native';
 
 import { handoffQueries } from '@/features/handoffs/api/handoff.queries';
 import { mockHandoffRepository } from '@/features/handoffs/api/mockHandoffRepository';
 import { DeleteHandoffDialog } from '@/features/handoffs/components/DeleteHandoffDialog';
-import { HandoffActionSheet } from '@/features/handoffs/components/HandoffActionSheet';
+import {
+  HandoffActionSheet,
+  type HandoffActionSheetMethods,
+} from '@/features/handoffs/components/HandoffActionSheet';
 import { HandoffScopeTabs } from '@/features/handoffs/components/HandoffScopeTabs';
 import { HandoffListContent } from '@/features/handoffs/components/handoff-list-content';
 import type { HandoffScope } from '@/features/handoffs/model/handoff';
@@ -31,6 +34,7 @@ export function HandoffListScreen({
 }: HandoffListScreenProps) {
   const queryClient = useQueryClient();
   const theme = useTheme();
+  const actionSheetRef = useRef<HandoffActionSheetMethods>(null);
   const [managedId, setManagedId] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
@@ -48,18 +52,18 @@ export function HandoffListScreen({
     },
   });
 
-  const handleManagePress = (handoffId: string) => setManagedId(handoffId);
+  const handleManagePress = (handoffId: string) => {
+    setManagedId(handoffId);
+    actionSheetRef.current?.present();
+  };
   const handleCloseSheet = () => setManagedId(null);
   const handleEdit = () => {
     if (managedId === null) return;
-    const handoffId = managedId;
-    setManagedId(null);
-    onEdit(handoffId);
+    onEdit(managedId);
   };
   const handleDelete = () => {
     if (managedId === null) return;
     setDeleteId(managedId);
-    setManagedId(null);
   };
   const handleCancelDelete = () => setDeleteId(null);
   const handleConfirmDelete = () => {
@@ -91,8 +95,8 @@ export function HandoffListScreen({
       </View>
 
       <HandoffActionSheet
-        visible={managedId !== null}
-        onClose={handleCloseSheet}
+        ref={actionSheetRef}
+        onDismiss={handleCloseSheet}
         onDelete={handleDelete}
         onEdit={handleEdit}
       />

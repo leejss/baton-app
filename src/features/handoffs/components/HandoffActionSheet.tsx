@@ -1,96 +1,119 @@
-import { Modal, StyleSheet, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { BottomSheetModal, BottomSheetView } from '@expo/ui/community/bottom-sheet';
+import { type Ref, useCallback, useImperativeHandle, useRef } from 'react';
+import { StyleSheet, useWindowDimensions, View } from 'react-native';
 
 import { Pressable, Text } from '@/shared/ui';
 import { EditFill, Trash, X } from '@/shared/ui/icons';
 import { radius, spacing, useTheme } from '@/theme';
 
+export type HandoffActionSheetMethods = {
+  present: () => void;
+};
+
 type HandoffActionSheetProps = {
-  visible: boolean;
-  onClose: () => void;
+  ref?: Ref<HandoffActionSheetMethods>;
+  onDismiss?: () => void;
   onDelete: () => void;
   onEdit: () => void;
 };
 
-export function HandoffActionSheet({
-  visible,
-  onClose,
-  onDelete,
-  onEdit,
-}: HandoffActionSheetProps) {
-  const insets = useSafeAreaInsets();
+export function HandoffActionSheet({ ref, onDismiss, onDelete, onEdit }: HandoffActionSheetProps) {
   const theme = useTheme();
+  const { width: viewportWidth } = useWindowDimensions();
+  const sheetRef = useRef<BottomSheetModal>(null);
+  const pendingActionRef = useRef<(() => void) | null>(null);
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      // 네이티브 시트의 나머지 명령은 기능 호출부에 노출하지 않는다.
+      present: () => {
+        pendingActionRef.current = null;
+        sheetRef.current?.present();
+      },
+    }),
+    [],
+  );
+
+  const handleDismiss = useCallback(() => {
+    const pendingAction = pendingActionRef.current;
+    pendingActionRef.current = null;
+
+    // 다음 화면이나 확인 모달은 네이티브 시트의 퇴장 전환이 끝난 뒤 연다.
+    onDismiss?.();
+    pendingAction?.();
+  }, [onDismiss]);
+
+  const handleClose = () => {
+    sheetRef.current?.dismiss();
+  };
+
+  const handleEdit = () => {
+    pendingActionRef.current = onEdit;
+    sheetRef.current?.dismiss();
+  };
+
+  const handleDelete = () => {
+    pendingActionRef.current = onDelete;
+    sheetRef.current?.dismiss();
+  };
 
   return (
-    <Modal
-      animationType="slide"
-      transparent
-      visible={visible}
-      statusBarTranslucent
-      onRequestClose={onClose}
+    <BottomSheetModal
+      ref={sheetRef}
+      backgroundStyle={{ backgroundColor: theme.colors.background }}
+      enablePanDownToClose
+      handleComponent={null}
+      onDismiss={handleDismiss}
     >
-      <View style={[styles.overlay, { backgroundColor: theme.colors.overlay }]}>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="메뉴 닫기"
-          onPress={onClose}
-          style={StyleSheet.absoluteFill}
-        />
-        <View
-          accessibilityViewIsModal
-          style={[
-            styles.sheet,
-            {
-              backgroundColor: theme.colors.background,
-              paddingBottom: Math.max(insets.bottom, spacing.lg),
-            },
-          ]}
-        >
-          <View style={[styles.menu, { backgroundColor: theme.colors.surfaceSunken }]}>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="인수인계 수정"
-              onPress={onEdit}
-              style={styles.row}
-            >
-              <EditFill />
-              <Text weight="medium">수정하기</Text>
-            </Pressable>
-            <View style={[styles.divider, { backgroundColor: theme.colors.border }]} />
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="인수인계 삭제"
-              onPress={onDelete}
-              style={styles.row}
-            >
-              <Trash color="danger" />
-              <Text weight="medium" color="danger">
-                삭제하기
-              </Text>
-            </Pressable>
-          </View>
-
+      <BottomSheetView
+        // Expo UI의 fit-to-content가 가로축도 고유 크기로 측정하므로 뷰포트 너비를 명시한다.
+        style={[styles.sheet, { backgroundColor: theme.colors.background, width: viewportWidth }]}
+      >
+        <View style={[styles.menu, { backgroundColor: theme.colors.surfaceSunken }]}>
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="닫기"
-            onPress={onClose}
-            style={[styles.close, { backgroundColor: theme.colors.surfaceSunken }]}
+            accessibilityLabel="인수인계 수정"
+            onPress={handleEdit}
+            style={({ pressed }) => [styles.row, pressed && styles.pressed]}
           >
-            <X />
-            <Text weight="medium">닫기</Text>
+            <EditFill />
+            <Text weight="medium">수정하기</Text>
+          </Pressable>
+          <View style={[styles.divider, { backgroundColor: theme.colors.border }]} />
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="인수인계 삭제"
+            onPress={handleDelete}
+            style={({ pressed }) => [styles.row, pressed && styles.pressed]}
+          >
+            <Trash color="danger" />
+            <Text weight="medium" color="danger">
+              삭제하기
+            </Text>
           </Pressable>
         </View>
-      </View>
-    </Modal>
+
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="닫기"
+          onPress={handleClose}
+          style={({ pressed }) => [
+            styles.close,
+            { backgroundColor: theme.colors.surfaceSunken },
+            pressed && styles.pressed,
+          ]}
+        >
+          <X />
+          <Text weight="medium">닫기</Text>
+        </Pressable>
+      </BottomSheetView>
+    </BottomSheetModal>
   );
 }
 
 const styles = StyleSheet.create({
   // TODO(design-system): 바텀시트의 20px 상단 여백·56px 행 높이를 컴포넌트 토큰으로 동기화한다.
-  overlay: {
-    flex: 1,
-    justifyContent: 'flex-end',
-  },
   sheet: {
     paddingHorizontal: spacing.md,
     paddingTop: 20,
@@ -121,4 +144,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: spacing.sm,
   },
+  pressed: { opacity: 0.72 },
 });
