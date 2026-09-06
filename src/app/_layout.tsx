@@ -43,6 +43,8 @@ export default function RootLayout() {
           <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
             <Stack screenOptions={{ headerShown: false }}>
               <Stack.Screen name="index" />
+              <Stack.Screen name="(main)" />
+              <Stack.Screen name="(store-onboarding)" />
               <Stack.Screen name="+not-found" />
             </Stack>
             <SplashOverlay />
