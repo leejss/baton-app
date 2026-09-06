@@ -12,6 +12,7 @@ import { Box, Button, Snackbar, Text, TextField, textStyles } from '@/shared/ui'
 import { SCREEN_PADDING_X, spacing } from '@/theme';
 
 import { useEmailSignIn } from '@/features/auth/api/auth.mutations';
+import { MAX_SIGN_IN_ATTEMPTS } from '@/features/auth/api/auth.schema';
 import { AuthHeader } from '@/features/auth/components/AuthHeader';
 import { OrDivider } from '@/features/auth/components/OrDivider';
 import { PasswordToggle } from '@/features/auth/components/PasswordToggle';
@@ -77,6 +78,15 @@ export function EmailLoginScreen({
   const [isLimitNoticeVisible, setIsLimitNoticeVisible] = useState(false);
   /** 시안 01-3의 "로그인 제한 mm:ss". 서버가 준 해제 시각(epoch ms). */
   const [lockedUntil, setLockedUntil] = useState<number | null>(null);
+  /**
+   * 시안의 "(n/5)"용 실패 횟수.
+   *
+   * ⚠️ 계약의 `401 AUTH_INVALID_CREDENTIALS`는 횟수를 싣지 않아서 화면이 직접 센다.
+   * 기준은 어디까지나 서버이고(5회 초과 시 `429`), 이 값은 안내 문구 전용이다 —
+   * 화면을 벗어났다 돌아오면 0부터 세므로 서버가 잠근 시점과 어긋날 수 있다.
+   * 서버가 남은 횟수를 응답에 주면 그때 이 상태를 지운다.
+   */
+  const [failedAttempts, setFailedAttempts] = useState(0);
 
   const lockout = useCountdown(lockedUntil);
   const isLocked = lockedUntil !== null && !lockout.isExpired;
@@ -107,14 +117,15 @@ export function EmailLoginScreen({
             // 제한 중에는 횟수 문구 대신 남은 시간만 보여준다(시안 01-3).
             setAttemptMessage(null);
             setIsLimitNoticeVisible(false);
+            setFailedAttempts(0);
             setLockedUntil(Date.parse(outcome.lockedUntil));
             return;
           }
 
-          setAttemptMessage(
-            `비밀번호를 다시 확인해주세요. (${outcome.attempts}/${outcome.maxAttempts})`,
-          );
-          setIsLimitNoticeVisible(outcome.attempts >= outcome.maxAttempts);
+          const attempts = failedAttempts + 1;
+          setFailedAttempts(attempts);
+          setAttemptMessage(`비밀번호를 다시 확인해주세요. (${attempts}/${MAX_SIGN_IN_ATTEMPTS})`);
+          setIsLimitNoticeVisible(attempts >= MAX_SIGN_IN_ATTEMPTS);
         },
         onError: (error) => Alert.alert('로그인하지 못했어요', normalizeError(error).message),
       },

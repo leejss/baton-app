@@ -68,6 +68,22 @@ export function StartScreen({
     }
 
     kakaoSignIn.mutate(undefined, {
+      onSuccess: (outcome) => {
+        if (outcome.status === 'signedIn') {
+          // 세션이 생기면 `(auth)/_layout`의 가드가 알아서 앱 안쪽으로 보낸다.
+          return;
+        }
+
+        /**
+         * 계약상 신규 소셜 식별자는 로그인이 아니라 가입 대기다(§12-1).
+         * 가입 화면이 아직 없어서 조용히 성공한 척하지 않고 여기서 멈춘다.
+         */
+        logger.warn('소셜 가입 플로우가 아직 연결되지 않았습니다', { provider: 'kakao' });
+        Alert.alert(
+          '가입이 필요해요',
+          '카카오 계정으로 처음 오셨어요. 가입 화면은 아직 준비 중이에요.',
+        );
+      },
       onError: (error) => {
         // 사용자가 직접 닫은 경우엔 아무것도 띄우지 않는다.
         if (isCanceled(error)) {

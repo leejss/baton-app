@@ -1,41 +1,41 @@
 import { z } from 'zod';
 
 /**
- * ⚠️ 백엔드가 아직 없다. 여기 스키마는 **합의된 계약이 아니라 프론트가 제안하는 형태**다.
+ * 이메일 인증·비밀번호 재설정 스키마. 출처는 wiki `openapi.yaml`(ADR-026 확정본)이다.
  *
- * `기능명세서_BATON`(AUTH-04~06)이 제시한 엔드포인트를 기준으로 잡았고,
- * 명세에 없는 두 가지는 프론트가 필요해서 추가한 것이라 따로 표시해 둔다.
- *
- *   POST /auth/email/code         { email, resend }          → { expiresAt, resendableAt }
- *   POST /auth/email/code/verify  { email, code }            → { verifyToken }
- *   POST /auth/password/reset     { email, verifyToken, password } → 204
- *
- * - `resendableAt`: 명세에 "직전 발송 후 1분 경과" 정책만 있고 응답 필드는 없다.
- *   클라이언트가 1분을 자체 계산하면 서버 시계와 어긋나므로 서버가 내려주길 제안한다.
- * - `/auth/password/reset`: 비밀번호 재설정은 기능명세서에 아예 없다(확인 필요 #4).
- *   시안 03~04 플로우를 돌리려면 필요해서 제안한다.
+ *   POST /auth/email-verifications          { email, purpose }        → { expiresAt, resendAvailableAt }
+ *   POST /auth/email-verifications/confirm  { email, purpose, code }  → { verificationToken, expiresAt }
+ *   POST /auth/password-resets              { email, emailVerificationToken, newPassword } → 204
  */
 
+/** 인증 코드의 용도. 같은 이메일이라도 목적이 다르면 별개의 token이다. */
+export const verificationPurposeSchema = z.enum(['SIGN_UP', 'PASSWORD_RESET']);
+export type VerificationPurpose = z.infer<typeof verificationPurposeSchema>;
+
 export const verificationChallengeSchema = z.object({
-  /** 인증코드 만료 시각. 정책상 발송 + 3분. */
+  /** 인증코드 만료 시각. */
   expiresAt: z.iso.datetime(),
-  /** 재발송이 가능해지는 시각. 정책상 발송 + 1분. */
-  resendableAt: z.iso.datetime(),
+  /** 재발송이 가능해지는 시각. 이 전에 재요청하면 `429`가 온다. */
+  resendAvailableAt: z.iso.datetime(),
 });
 
-export const verificationResultSchema = z.object({
-  /** 이후 비밀번호 재설정·회원가입 제출에 함께 보내는 단기 토큰. */
-  verifyToken: z.string().min(1),
+export const verificationTokenSchema = z.object({
+  /** 해당 이메일·목적에 묶인 일회성 token. 재설정 제출에 함께 보낸다. */
+  verificationToken: z.string().min(1),
+  /** 발급 시점부터 10분 후. */
+  expiresAt: z.iso.datetime(),
 });
 
 export type VerificationChallenge = z.infer<typeof verificationChallengeSchema>;
-export type VerificationResult = z.infer<typeof verificationResultSchema>;
+export type VerificationToken = z.infer<typeof verificationTokenSchema>;
 
 /**
- * 인증코드 확인 결과. 불일치·만료는 "예외"가 아니라 **정상적으로 일어나는 결과**라
- * throw 하지 않고 판별 가능한 union으로 돌려준다. 네트워크 실패 같은 진짜 예외만 throw 한다.
+ * 인증코드 확인 결과.
+ *
+ * ⚠️ 계약은 코드 불일치와 만료를 구분하지 않는다 — 둘 다 `400 VALIDATION_ERROR`다.
+ * 그래서 서버에서 오는 실패는 `invalid` 하나뿐이고, "만료"는 화면이 자기 카운트다운
+ * (`expiresAt`)으로 판단해 제출 자체를 막는다.
  */
 export type VerifyCodeOutcome =
-  | { status: 'verified'; verifyToken: string }
-  | { status: 'mismatch' }
-  | { status: 'expired' };
+  | { status: 'verified'; verificationToken: string; expiresAt: string }
+  | { status: 'invalid' };

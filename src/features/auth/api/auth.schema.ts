@@ -1,40 +1,113 @@
 import { z } from 'zod';
 
 /**
- * ⚠️ 백엔드가 아직 없어서 이 스키마는 **합의된 계약이 아니라 프론트가 제안하는 형태**다.
- * 실제 응답이 정해지면 여기부터 고치고, 서버 응답을 그대로 복사한 fixture로 테스트를 채운다.
+ * 인증·세션 스키마. 출처는 wiki `openapi.yaml`의 `AuthSessionResponse` 계열이며
+ * ADR-026(인증·계정 API 확정)과 ADR-027(역할 기반 기본 프로필 이미지) 기준이다.
  *
- * 카카오 액세스 토큰을 서버로 보내면 서버가 카카오에 검증을 요청하고,
- * 우리 세션을 발급해 내려주는 흐름을 전제한다.
- * 카카오 토큰을 앱이 직접 보관하지 않는 이유는, 만료·갱신 책임을 서버 한 곳에 두기 위해서다.
+ * 여기 있는 건 **확정된 계약**이다. 임의로 필드를 넓히거나 좁히지 않는다 —
+ * 서버가 먼저 바뀌고 `openapi.yaml`이 갱신된 뒤에 따라온다.
  */
-export const userSchema = z.object({
-  id: z.string().min(1),
-  nickname: z.string(),
-  profileImageUrl: z.url().nullable(),
+
+/**
+ * 프로필 이미지는 업로드가 아니라 **활성 역할에서 파생되는 정적 값**이다(ADR-027).
+ * URL이 아니라 key라서 만료가 없고, 매장 참여·나가기·관리자 승계 후 자동으로 바뀐다.
+ * 앱은 이 세 key를 번들 이미지에 매핑한다.
+ */
+export const profileImageSchema = z.object({
+  source: z.literal('STATIC'),
+  key: z.enum(['DEFAULT_01', 'DEFAULT_MANAGER', 'DEFAULT_EMPLOYEE']),
 });
 
-export const sessionSchema = z.object({
+export const userProfileSchema = z.object({
+  id: z.number().int().positive(),
+  /** 일반·소셜 계정 공통의 정규화된 계정 식별자. */
+  email: z.email(),
+  displayName: z.string().min(2).max(20),
+  profileImage: profileImageSchema,
+  status: z.literal('ACTIVE').optional(),
+});
+
+export const tokenPairSchema = z.object({
   accessToken: z.string().min(1),
   refreshToken: z.string().min(1),
-  /** 우리 액세스 토큰 만료 시각. ISO 8601. */
-  expiresAt: z.iso.datetime(),
-  user: userSchema,
+  /** 계약상 발급 후 30분. */
+  accessTokenExpiresAt: z.iso.datetime(),
+  refreshTokenExpiresAt: z.iso.datetime(),
 });
 
-export type User = z.infer<typeof userSchema>;
+export const storeSchema = z.object({
+  id: z.number().int().positive(),
+  storeName: z.string().min(2).max(50),
+  branchName: z.string().min(1),
+  address: z.string().min(1),
+  detailAddress: z.string().optional(),
+  storeContact: z.string(),
+  status: z.enum(['ACTIVE', 'INACTIVE']),
+  createdAt: z.iso.datetime(),
+  deactivatedAt: z.iso.datetime().optional(),
+});
+
+export const membershipContextSchema = z.object({
+  store: storeSchema,
+  role: z.enum(['MANAGER', 'EMPLOYEE']),
+  status: z.enum(['ACTIVE', 'LEFT']),
+});
+
+/** 활성 매장 소속이 없으면 `membership`이 **생략된다**. null이 아니라 부재다. */
+export const sessionSchema = z.object({
+  user: userProfileSchema,
+  tokens: tokenPairSchema,
+  membership: membershipContextSchema.optional(),
+});
+
+/**
+ * 소셜 인증 응답은 `status`로 갈리는 oneOf다(계약 §12-1).
+ * 연결된 계정이 없으면 로그인이 아니라 **가입 대기 token**이 온다.
+ */
+export const socialAuthenticationSchema = z.discriminatedUnion('status', [
+  sessionSchema.extend({ status: z.literal('LOGGED_IN') }),
+  z.object({
+    status: z.literal('SIGNUP_REQUIRED'),
+    /** provider와 provider subject에 묶인 10분 유효·단회 사용 token. */
+    socialSignupToken: z.string().min(1),
+    expiresAt: z.iso.datetime(),
+    /** 제공자가 준 수정 가능한 기본값. Baton 이메일 인증을 대체하지 않는다. */
+    suggestedEmail: z.email().optional(),
+    suggestedDisplayName: z.string().optional(),
+  }),
+]);
+
+export type ProfileImage = z.infer<typeof profileImageSchema>;
+export type UserProfile = z.infer<typeof userProfileSchema>;
+export type TokenPair = z.infer<typeof tokenPairSchema>;
+export type MembershipContext = z.infer<typeof membershipContextSchema>;
 export type Session = z.infer<typeof sessionSchema>;
+
+/** 계약상 연속 5회 실패 시 5분 제한. 서버가 기준이고 앱은 안내 문구에만 쓴다. */
+export const MAX_SIGN_IN_ATTEMPTS = 5;
 
 /**
  * 이메일 로그인 결과.
  *
- * 비밀번호 불일치와 로그인 제한은 예외가 아니라 **정상적으로 일어나는 결과**라
- * throw 하지 않고 판별 가능한 union으로 돌려준다. 시안의 오류 상태 3종이 여기서 갈린다:
- *   invalidCredentials  (n/5) 문구 + 필드 Error
- *   invalidCredentials  attempts === maxAttempts 이면 스낵바까지
- *   locked              "로그인 제한 mm:ss" 카운트다운
+ * 계약은 실패를 `401 AUTH_INVALID_CREDENTIALS` / `429 AUTH_LOGIN_TEMPORARILY_LOCKED`로 내린다.
+ * 둘 다 화면에서는 **정상적으로 일어나는 결과**라 throw 하지 않고 union으로 돌려준다.
+ * 네트워크 실패 같은 진짜 예외만 throw 한다.
+ *
+ * ⚠️ 시안의 "(n/5)" 시도 횟수는 계약 응답에 없다. 서버가 401에 횟수를 싣지 않으므로
+ * 화면이 로컬로 센다 — 앱을 다시 켜면 0부터다. 서버가 필드를 주면 그때 옮긴다.
  */
 export type SignInOutcome =
   | { status: 'signedIn'; session: Session }
-  | { status: 'invalidCredentials'; attempts: number; maxAttempts: number }
+  | { status: 'invalidCredentials' }
   | { status: 'locked'; lockedUntil: string };
+
+/** 소셜 로그인 결과. 신규 소셜 식별자면 가입 화면으로 이어져야 한다. */
+export type SocialSignInOutcome =
+  | { status: 'signedIn'; session: Session }
+  | {
+      status: 'signupRequired';
+      socialSignupToken: string;
+      expiresAt: string;
+      suggestedEmail?: string;
+      suggestedDisplayName?: string;
+    };

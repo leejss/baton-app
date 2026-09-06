@@ -6,10 +6,10 @@ import { PasswordResetNewPasswordScreen } from '@/features/auth/screens/Password
 import { usePasswordResetStore } from '@/features/auth/store/passwordResetStore';
 
 export default function PasswordResetNewPasswordRoute() {
-  const verifyToken = usePasswordResetStore((state) => state.verifyToken);
+  const verificationToken = usePasswordResetStore((state) => state.verificationToken);
 
   // 이메일 인증을 건너뛰고 들어올 수 없다.
-  if (verifyToken === null) {
+  if (verificationToken === null) {
     return <Redirect href="/reset-password" />;
   }
 

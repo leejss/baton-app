@@ -29,7 +29,7 @@ export function PasswordResetNewPasswordScreen({
   onChanged,
 }: PasswordResetNewPasswordScreenProps) {
   const email = usePasswordResetStore((state) => state.email);
-  const verifyToken = usePasswordResetStore((state) => state.verifyToken);
+  const verificationToken = usePasswordResetStore((state) => state.verificationToken);
   const resetPassword = useResetPassword();
 
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
@@ -43,12 +43,12 @@ export function PasswordResetNewPasswordScreen({
   });
 
   const submit = handleSubmit(({ password }) => {
-    if (email === null || verifyToken === null) {
+    if (email === null || verificationToken === null) {
       return;
     }
 
     resetPassword.mutate(
-      { email, verifyToken, password },
+      { email, emailVerificationToken: verificationToken, newPassword: password },
       {
         onSuccess: onChanged,
         onError: (error) =>

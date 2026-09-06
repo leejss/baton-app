@@ -21,7 +21,7 @@
 | 애니메이션 | **Reanimated 4** + Gesture Handler | 60fps 필요한 건 전부 워크릿으로 |
 | 폼 | **react-hook-form + zod** | |
 | 저장소 | **react-native-mmkv** (동기) / **expo-secure-store** (민감정보) | AsyncStorage 신규 사용 금지 |
-| 테스트 | Jest + @testing-library/react-native, Maestro(E2E) | |
+| 테스트 | *(현재 없음 — §11 참고)* | 재도입 시 Jest + @testing-library/react-native |
 | 린트/포맷 | ESLint (`eslint-config-expo`) + Prettier | |
 
 ---
@@ -398,11 +398,14 @@ export const orderQueries = {
 
 ## 11. 테스트
 
+> **현재 이 저장소에 자동화 테스트가 없다.** 실제 백엔드에 붙이면서 Jest 스위트와
+> 개발용 목을 걷어냈다. 아래는 테스트를 다시 들일 때 따를 기준이다.
+
 - 단위: 순수 로직(`lib`, `mappers`, store 액션)은 Jest로 100% 가깝게.
 - 컴포넌트: `@testing-library/react-native`. **구현이 아니라 사용자 관점**으로 쿼리한다 (`getByRole`, `getByLabelText`). `testID`는 E2E 용도로만.
 - 네트워크는 MSW로 목킹. `jest.mock('axios')` 같은 방식 지양.
 - E2E: Maestro. 핵심 플로우(가입/로그인/결제) 최소 3개는 유지.
-- PR 전 필수: `npx tsc --noEmit && npx eslint . && npx jest`
+- PR 전 필수: `npx tsc --noEmit && npx eslint .`
 
 ---
 

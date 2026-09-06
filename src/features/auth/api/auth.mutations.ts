@@ -3,7 +3,7 @@ import { useMutation } from '@tanstack/react-query';
 import { isAppError, normalizeError } from '@/shared/api/errors';
 import { logger } from '@/shared/lib/logger';
 
-import { exchangeKakaoToken, signInWithEmail } from '@/features/auth/api/auth.api';
+import { authenticateWithKakao, signInWithEmail } from '@/features/auth/api/auth.api';
 import type { SignInOutcome } from '@/features/auth/api/auth.schema';
 import { signInWithKakao } from '@/features/auth/lib/kakaoAuth';
 import { useAuthStore } from '@/features/auth/store/authStore';
@@ -14,8 +14,11 @@ export function isCanceled(error: unknown): boolean {
 }
 
 /**
- * 카카오 로그인 → 서버 세션 교환 → 스토어 반영까지를 한 흐름으로 묶는다.
- * 화면은 `mutate()`와 `isPending`, `error`만 보면 된다.
+ * 카카오 로그인 → 서버 인증 → 스토어 반영까지를 한 흐름으로 묶는다.
+ *
+ * 계약상 응답이 두 갈래다(§12-1). 연결된 계정이면 세션이 오고, 신규 소셜 식별자면
+ * `SIGNUP_REQUIRED`와 10분짜리 가입 token이 온다. 후자는 **로그인이 아니므로**
+ * 세션을 만들지 않고 화면이 가입 플로우로 이어가야 한다.
  */
 export function useKakaoSignIn() {
   const signIn = useAuthStore((state) => state.signIn);
@@ -23,9 +26,13 @@ export function useKakaoSignIn() {
   return useMutation({
     mutationFn: async () => {
       const kakaoAccessToken = await signInWithKakao();
-      return exchangeKakaoToken(kakaoAccessToken);
+      return authenticateWithKakao(kakaoAccessToken);
     },
-    onSuccess: (session) => signIn(session),
+    onSuccess: async (outcome) => {
+      if (outcome.status === 'signedIn') {
+        await signIn(outcome.session);
+      }
+    },
     onError: (error) => {
       const appError = normalizeError(error);
       if (isCanceled(appError)) {
@@ -45,8 +52,13 @@ export function useEmailSignIn() {
   const signIn = useAuthStore((state) => state.signIn);
 
   return useMutation({
-    mutationFn: ({ email, password }: { email: string; password: string }): Promise<SignInOutcome> =>
-      signInWithEmail(email, password),
+    mutationFn: ({
+      email,
+      password,
+    }: {
+      email: string;
+      password: string;
+    }): Promise<SignInOutcome> => signInWithEmail(email, password),
     onSuccess: async (outcome) => {
       if (outcome.status === 'signedIn') {
         await signIn(outcome.session);

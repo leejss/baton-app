@@ -41,8 +41,12 @@ const SPEC = {
  * ⚠️ 시안에 인증코드 입력의 오류 상태가 없어서 문구를 새로 썼다.
  * 디자인이 나오면 여기와 표시 방식을 맞춘다.
  */
+/**
+ * `invalid`는 계약의 `400` 하나에 대응한다 — 서버가 불일치와 만료를 구분하지 않는다.
+ * 만료는 화면이 자기 카운트다운으로 먼저 알아채서 `expired` 문구를 띄운다.
+ */
 const MESSAGES = {
-  mismatch: '인증코드가 일치하지 않아요.',
+  invalid: '인증코드가 일치하지 않아요.',
   expired: '인증 시간이 지났어요. 재전송해주세요.',
 } as const;
 
@@ -54,7 +58,7 @@ export function PasswordResetCodeScreen({
 }: PasswordResetCodeScreenProps) {
   const email = usePasswordResetStore((state) => state.email);
   const expiresAt = usePasswordResetStore((state) => state.expiresAt);
-  const resendableAt = usePasswordResetStore((state) => state.resendableAt);
+  const resendAvailableAt = usePasswordResetStore((state) => state.resendAvailableAt);
   const refreshChallenge = usePasswordResetStore((state) => state.refreshChallenge);
   const completeVerification = usePasswordResetStore((state) => state.completeVerification);
 
@@ -65,7 +69,7 @@ export function PasswordResetCodeScreen({
   const [serverError, setServerError] = useState<string | null>(null);
 
   const expiry = useCountdown(expiresAt);
-  const cooldown = useCountdown(resendableAt);
+  const cooldown = useCountdown(resendAvailableAt);
 
   const { control, handleSubmit, formState, resetField } = useForm<VerificationCodeForm>({
     resolver: zodResolver(verificationCodeFormSchema),
@@ -88,7 +92,7 @@ export function PasswordResetCodeScreen({
       {
         onSuccess: (outcome) => {
           if (outcome.status === 'verified') {
-            completeVerification(outcome.verifyToken);
+            completeVerification(outcome.verificationToken);
             onVerified();
             return;
           }
@@ -107,7 +111,7 @@ export function PasswordResetCodeScreen({
     setServerError(null);
     resetField('code');
     requestCode.mutate(
-      { email, resend: true },
+      { email },
       {
         onSuccess: (challenge) => refreshChallenge(challenge),
         onError: (error) =>

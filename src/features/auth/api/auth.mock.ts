@@ -1,26 +1,45 @@
+import { API_URL } from '@/shared/api/client';
+
+import type { Session, SignInOutcome, SocialSignInOutcome } from '@/features/auth/api/auth.schema';
+import { MAX_SIGN_IN_ATTEMPTS } from '@/features/auth/api/auth.schema';
+import type {
+  VerificationChallenge,
+  VerifyCodeOutcome,
+} from '@/features/auth/api/passwordReset.schema';
+
 /**
- * ⚠️ 개발용 가짜 서버. `EXPO_PUBLIC_API_URL`이 비어 있을 때만 쓰인다.
+ * ⚠️ 개발용 가짜 서버. **백엔드 인프라가 아직 배포되지 않아** 임시로 쓴다.
  *
- * 백엔드가 붙으면 **이 파일을 지우고** 각 api 모듈에서 `USE_MOCK` 분기를 걷어내면 된다.
+ * 서버가 뜨면 이 파일을 지우고 각 api 모듈의 `USE_MOCK_AUTH` 분기를 걷어낸다.
  * 그때까지 화면 플로우와 시안의 상태 변형을 실제로 눌러볼 수 있게 하는 것이 목적이다.
  *
- * 세션(로그인 성공)은 절대 만들지 않는다. 가짜 세션을 저장해 두면 그 위에 다른 화면을
- * 쌓게 되고 진짜 서버가 붙을 때 전부 다시 손대야 한다 — `auth.api.ts`가 세운 원칙과 같다.
+ * 여기서 만드는 값은 전부 확정 계약(wiki `openapi.yaml`, ADR-026)의 형태를 그대로 따른다.
+ * 형태가 서버와 같아야 실제 연동 때 화면을 다시 손대지 않는다.
  */
-import type { VerificationChallenge, VerifyCodeOutcome } from '@/features/auth/api/passwordReset.schema';
 
-/** 정책(`기능명세서_BATON` AUTH-04): 인증코드 유효시간 3분. */
+/**
+ * 목을 쓸지 여부.
+ *
+ * 서버 주소가 없으면 자동으로 켜지므로, `.env`에 주소를 넣는 순간 목이 꺼진다.
+ * 주소가 있어도 강제로 목을 쓰려면 `EXPO_PUBLIC_USE_MOCK_AUTH=true`.
+ */
+export const USE_MOCK_AUTH = API_URL === '' || process.env.EXPO_PUBLIC_USE_MOCK_AUTH === 'true';
+
+/** 정책(AUTH-04): 인증코드 유효시간 3분. */
 const CODE_TTL_MS = 3 * 60_000;
 /** 정책(AUTH-05): 직전 발송 후 1분 경과해야 재발송 가능. */
 const RESEND_COOLDOWN_MS = 60_000;
-/** 시안 01-2 "5분 후 다시 시도해주세요". */
+/** 계약: 연속 5회 실패 시 5분 제한. */
 const LOCKOUT_MS = 5 * 60_000;
 
-/** 시안에 쓰인 값. 이 코드만 통과시켜 성공·불일치 두 경로를 다 눌러볼 수 있게 한다. */
+/** 시안에 쓰인 값. 이 코드만 통과시켜 성공·실패 두 경로를 다 눌러볼 수 있게 한다. */
 export const MOCK_VERIFICATION_CODE = '123456';
 
-/** 로그인 실패 허용 횟수. 시안의 "(n/5)" 표기와 같다. */
-export const MAX_SIGN_IN_ATTEMPTS = 5;
+/**
+ * 이 계정으로만 로그인이 성공한다. 비밀번호는 형식만 맞으면 통과다.
+ * 나머지 이메일은 전부 실패시켜 시안의 오류 상태 3종을 눌러볼 수 있게 한다.
+ */
+export const MOCK_SIGN_IN_EMAIL = 'test@baton.dev';
 
 /** 화면 사이에 유지돼야 해서 모듈 스코프에 둔다. 앱을 다시 켜면 초기화된다. */
 const state = {
@@ -35,47 +54,39 @@ function delay(ms = 400): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-export async function mockRequestVerificationCode(email: string): Promise<VerificationChallenge> {
-  await delay();
+function isoIn(ms: number): string {
+  return new Date(Date.now() + ms).toISOString();
+}
 
-  const now = Date.now();
-  state.challenges.set(email, now + CODE_TTL_MS);
-
+/**
+ * 계약의 `AuthSessionResponse` 와 같은 형태를 만든다.
+ *
+ * 가짜 토큰이라 실제 요청에는 쓸 수 없다 — 목이 켜진 동안에는 인증이 필요한 요청도
+ * 어차피 서버로 나가지 않는다. 형태만 서버와 같으면 화면은 진짜와 구분하지 못한다.
+ */
+function createSession(email: string, displayName = '김지원'): Session {
   return {
-    expiresAt: new Date(now + CODE_TTL_MS).toISOString(),
-    resendableAt: new Date(now + RESEND_COOLDOWN_MS).toISOString(),
+    user: {
+      id: 1,
+      email,
+      displayName,
+      profileImage: { source: 'STATIC', key: 'DEFAULT_01' },
+    },
+    tokens: {
+      accessToken: `mock-access-token-${Date.now()}`,
+      refreshToken: 'mock-refresh-token',
+      /** 계약상 30분. */
+      accessTokenExpiresAt: isoIn(30 * 60_000),
+      refreshTokenExpiresAt: isoIn(30 * 24 * 60 * 60_000),
+    },
   };
 }
 
-export async function mockVerifyCode(email: string, code: string): Promise<VerifyCodeOutcome> {
-  await delay();
+// ─────────────────────────────────────────────────────────────
+// 이메일 로그인
+// ─────────────────────────────────────────────────────────────
 
-  const expiresAt = state.challenges.get(email);
-  if (expiresAt === undefined || Date.now() > expiresAt) {
-    return { status: 'expired' };
-  }
-
-  if (code !== MOCK_VERIFICATION_CODE) {
-    return { status: 'mismatch' };
-  }
-
-  state.challenges.delete(email);
-  return { status: 'verified', verifyToken: `mock-verify-token-${email}` };
-}
-
-export async function mockResetPassword(): Promise<void> {
-  await delay();
-}
-
-export type MockSignInOutcome =
-  | { status: 'invalidCredentials'; attempts: number; maxAttempts: number }
-  | { status: 'locked'; lockedUntil: string };
-
-/**
- * 항상 실패한다. 서버 없이 비밀번호를 검증할 방법이 없기도 하고,
- * 성공시키면 가짜 세션이 생겨서다. 대신 시안의 오류 상태 3종을 모두 거치게 만든다.
- */
-export async function mockSignIn(): Promise<MockSignInOutcome> {
+export async function mockSignIn(email: string): Promise<SignInOutcome> {
   await delay();
 
   const now = Date.now();
@@ -89,22 +100,81 @@ export async function mockSignIn(): Promise<MockSignInOutcome> {
     state.signInAttempts = 0;
   }
 
-  state.signInAttempts += 1;
+  if (email === MOCK_SIGN_IN_EMAIL) {
+    state.signInAttempts = 0;
+    return { status: 'signedIn', session: createSession(email) };
+  }
 
+  state.signInAttempts += 1;
   if (state.signInAttempts >= MAX_SIGN_IN_ATTEMPTS) {
     state.lockedUntil = now + LOCKOUT_MS;
   }
 
+  return { status: 'invalidCredentials' };
+}
+
+// ─────────────────────────────────────────────────────────────
+// 소셜 로그인
+// ─────────────────────────────────────────────────────────────
+
+/**
+ * 카카오 SDK 로그인(`signInWithKakao`)은 목이 아니라 **실제로 동작한다** — 앱 키가 있고
+ * 카카오 서버만 있으면 되기 때문이다. 목이 대신하는 건 그 뒤의 서버 토큰 교환뿐이다.
+ *
+ * 계약이 로그인/가입대기 두 갈래라(§12-1) 어느 쪽을 볼지 env로 고른다:
+ *   EXPO_PUBLIC_MOCK_SOCIAL_OUTCOME=signupRequired   신규 가입 플로우 확인용
+ *   (기본값)                                          기존 계정 로그인
+ */
+export async function mockAuthenticateSocial(): Promise<SocialSignInOutcome> {
+  await delay();
+
+  if (process.env.EXPO_PUBLIC_MOCK_SOCIAL_OUTCOME === 'signupRequired') {
+    return {
+      status: 'signupRequired',
+      socialSignupToken: `mock-social-signup-token-${Date.now()}`,
+      /** 계약상 10분 유효. */
+      expiresAt: isoIn(10 * 60_000),
+      suggestedEmail: 'kakao-user@example.com',
+      suggestedDisplayName: '김지원',
+    };
+  }
+
+  return { status: 'signedIn', session: createSession('kakao-user@example.com') };
+}
+
+// ─────────────────────────────────────────────────────────────
+// 이메일 인증 · 비밀번호 재설정
+// ─────────────────────────────────────────────────────────────
+
+export async function mockRequestVerificationCode(email: string): Promise<VerificationChallenge> {
+  await delay();
+
+  state.challenges.set(email, Date.now() + CODE_TTL_MS);
+
   return {
-    status: 'invalidCredentials',
-    attempts: state.signInAttempts,
-    maxAttempts: MAX_SIGN_IN_ATTEMPTS,
+    expiresAt: isoIn(CODE_TTL_MS),
+    resendAvailableAt: isoIn(RESEND_COOLDOWN_MS),
   };
 }
 
-/** 테스트에서 상태를 격리하려고 쓴다. */
-export function resetMockState() {
-  state.challenges.clear();
-  state.signInAttempts = 0;
-  state.lockedUntil = null;
+export async function mockVerifyCode(email: string, code: string): Promise<VerifyCodeOutcome> {
+  await delay();
+
+  // 계약은 불일치와 만료를 구분하지 않는다 — 둘 다 400이다. 목도 같게 맞춘다.
+  const expiresAt = state.challenges.get(email);
+  if (expiresAt === undefined || Date.now() > expiresAt || code !== MOCK_VERIFICATION_CODE) {
+    return { status: 'invalid' };
+  }
+
+  state.challenges.delete(email);
+  return {
+    status: 'verified',
+    verificationToken: `mock-verification-token-${email}`,
+    /** 계약상 발급 후 10분. */
+    expiresAt: isoIn(10 * 60_000),
+  };
+}
+
+export async function mockResetPassword(): Promise<void> {
+  await delay();
 }

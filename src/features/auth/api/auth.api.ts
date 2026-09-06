@@ -1,44 +1,101 @@
-import { IS_BACKEND_READY, postJson } from '@/shared/api/client';
+import { post } from '@/shared/api/client';
+import { normalizeError } from '@/shared/api/errors';
+import { getDeviceId } from '@/shared/lib/deviceId';
 
-import { mockSignIn } from '@/features/auth/api/auth.mock';
-import { sessionSchema, type Session, type SignInOutcome } from '@/features/auth/api/auth.schema';
+import { mockAuthenticateSocial, mockSignIn, USE_MOCK_AUTH } from '@/features/auth/api/auth.mock';
+import {
+  sessionSchema,
+  socialAuthenticationSchema,
+  type SignInOutcome,
+  type SocialSignInOutcome,
+} from '@/features/auth/api/auth.schema';
 
 /**
- * ⚠️ 백엔드 미구현.
- *
- * 카카오 로그인은 조용히 성공한 척하지 않고 명시적으로 실패시킨다.
- * 가짜 세션을 만들어 두면 그 상태로 다른 화면을 쌓게 되고, 진짜 붙일 때 전부 다시 손대야 한다.
- * (이메일 로그인도 같은 이유로 목이 절대 성공을 돌려주지 않는다 — `auth.mock.ts` 참고.)
- *
- * 백엔드에 필요한 것:
- *   POST {API_URL}/auth/kakao
- *   요청  { "kakaoAccessToken": "..." }
- *   응답  { accessToken, refreshToken, expiresAt(ISO), user { id, nickname, profileImageUrl } }
- *   서버는 받은 토큰을 카카오 `/v2/user/me`로 검증한 뒤 우리 세션을 발급한다.
- *
- *   POST {API_URL}/auth/login
- *   요청  { "email": "...", "password": "..." }
- *   응답  세션과 같은 형태. 비밀번호 불일치·로그인 제한은 4xx가 아니라
- *        200 + 상태값으로 내려주길 제안한다 — 시안이 이 둘을 배너가 아니라
- *        입력 필드 문구로 안내하기 때문이다.
+ * 인증 API. 경로·필드는 wiki `openapi.yaml`(ADR-026 확정본)을 따른다.
+ * 모두 `공개` 엔드포인트라 토큰을 싣지 않는다(`auth: false`).
  */
 
-export async function exchangeKakaoToken(
-  kakaoAccessToken: string,
-  signal?: AbortSignal,
-): Promise<Session> {
-  return postJson('/auth/kakao', { kakaoAccessToken }, sessionSchema, signal);
+/** 계약이 `Retry-After`를 안 줬을 때 쓰는 기본 잠금 시간. 정책상 5분이다. */
+const DEFAULT_LOCK_SECONDS = 5 * 60;
+
+function toLockedUntil(retryAfterSeconds: number | null): string {
+  const seconds = retryAfterSeconds ?? DEFAULT_LOCK_SECONDS;
+  return new Date(Date.now() + seconds * 1000).toISOString();
 }
 
+/**
+ * 카카오 Access Token을 서버로 보내 검증받는다.
+ *
+ * 연결된 활성 계정이면 세션이 오고, 신규 소셜 식별자면 **로그인이 아니라**
+ * 10분짜리 가입 대기 token이 온다(계약 §12-1). 카카오 토큰을 앱이 보관하지 않는 이유는
+ * 만료·갱신 책임을 서버 한 곳에 두기 위해서다.
+ */
+export async function authenticateWithKakao(
+  kakaoAccessToken: string,
+  signal?: AbortSignal,
+): Promise<SocialSignInOutcome> {
+  // 카카오 SDK 로그인은 이미 끝난 뒤다. 목이 대신하는 건 서버 토큰 교환뿐이다.
+  if (USE_MOCK_AUTH) {
+    return mockAuthenticateSocial();
+  }
+
+  const deviceId = await getDeviceId();
+
+  const result = await post(
+    '/auth/social/kakao',
+    { accessToken: kakaoAccessToken, deviceId },
+    socialAuthenticationSchema,
+    { signal, auth: false },
+  );
+
+  if (result.status === 'LOGGED_IN') {
+    const { status: _status, ...session } = result;
+    return { status: 'signedIn', session };
+  }
+
+  return {
+    status: 'signupRequired',
+    socialSignupToken: result.socialSignupToken,
+    expiresAt: result.expiresAt,
+    suggestedEmail: result.suggestedEmail,
+    suggestedDisplayName: result.suggestedDisplayName,
+  };
+}
+
+/**
+ * 이메일 로그인. 사용자당 활성 세션 1개라 새 로그인은 기존 세션을 폐기한다.
+ *
+ * 자격 증명 불일치(`401`)와 5회 실패 잠금(`429`)은 화면이 필드 문구·카운트다운으로
+ * 안내하는 정상 결과라 throw 하지 않고 결과값으로 돌려준다.
+ */
 export async function signInWithEmail(
   email: string,
   password: string,
   signal?: AbortSignal,
 ): Promise<SignInOutcome> {
-  if (!IS_BACKEND_READY) {
-    return mockSignIn();
+  if (USE_MOCK_AUTH) {
+    return mockSignIn(email);
   }
 
-  const session = await postJson('/auth/login', { email, password }, sessionSchema, signal);
-  return { status: 'signedIn', session };
+  const deviceId = await getDeviceId();
+
+  try {
+    const session = await post('/auth/login', { email, password, deviceId }, sessionSchema, {
+      signal,
+      auth: false,
+    });
+    return { status: 'signedIn', session };
+  } catch (error) {
+    const appError = normalizeError(error);
+
+    if (appError.errorCode === 'AUTH_INVALID_CREDENTIALS') {
+      return { status: 'invalidCredentials' };
+    }
+
+    if (appError.errorCode === 'AUTH_LOGIN_TEMPORARILY_LOCKED') {
+      return { status: 'locked', lockedUntil: toLockedUntil(appError.retryAfterSeconds) };
+    }
+
+    throw appError;
+  }
 }

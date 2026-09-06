@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 
+import { registerAuthBridge, type RefreshedTokens } from '@/shared/api/client';
 import { logger } from '@/shared/lib/logger';
 import { secureStorage } from '@/shared/lib/secureStorage';
 
@@ -25,11 +26,13 @@ type AuthActions = {
   restore: () => Promise<void>;
   signIn: (session: Session) => Promise<void>;
   signOut: () => Promise<void>;
+  /** 토큰만 교체한다. `client`가 401을 만나 갱신에 성공했을 때 호출한다. */
+  applyTokens: (tokens: RefreshedTokens) => Promise<void>;
 };
 
 export type AuthStore = AuthSnapshot & AuthActions;
 
-export const useAuthStore = create<AuthStore>()((set) => ({
+export const useAuthStore = create<AuthStore>()((set, get) => ({
   status: 'restoring',
   session: null,
 
@@ -62,4 +65,33 @@ export const useAuthStore = create<AuthStore>()((set) => ({
     await secureStorage.remove(SESSION_KEY);
     set({ status: 'signedOut', session: null });
   },
+
+  applyTokens: async (tokens) => {
+    const { session } = get();
+    if (session === null) {
+      return;
+    }
+
+    const next: Session = { ...session, tokens };
+    await secureStorage.set(SESSION_KEY, JSON.stringify(next));
+    set({ status: 'signedIn', session: next });
+  },
 }));
+
+/**
+ * 토큰 보관은 여기가, 주입은 `shared/api/client`가 한다. 서로 import 하면 순환이라
+ * 스토어가 자기 자신을 등록하는 방향으로만 연결한다.
+ *
+ * 이 모듈이 로드되는 시점에 등록된다 — 루트 레이아웃이 앱 시작 시 `restore()`를
+ * 부르므로 첫 요청보다 항상 먼저다.
+ */
+registerAuthBridge({
+  getAccessToken: () => useAuthStore.getState().session?.tokens.accessToken ?? null,
+  getRefreshToken: () => useAuthStore.getState().session?.tokens.refreshToken ?? null,
+  onTokensRefreshed: (tokens) => useAuthStore.getState().applyTokens(tokens),
+  onSessionExpired: async () => {
+    // Refresh Token까지 죽었으면 되살릴 방법이 없다. 조용히 로그아웃 상태로 되돌린다.
+    logger.warn('세션이 만료되어 로그아웃했습니다');
+    await useAuthStore.getState().signOut();
+  },
+});

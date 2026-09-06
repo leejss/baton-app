@@ -38,7 +38,7 @@ export function HomeScreen() {
             <InfoRow label="버전" value={appInfo.version ?? '—'} />
             <InfoRow label="빌드" value={appInfo.buildNumber ?? '—'} />
             <InfoRow label="식별자" value={appInfo.applicationId ?? '—'} />
-            <InfoRow label="로그인" value={session?.user.nickname ?? '—'} />
+            <InfoRow label="로그인" value={session?.user.displayName ?? '—'} />
           </Box>
 
           <Button label="로그아웃" variant="ghost" onPress={() => void signOut()} />
