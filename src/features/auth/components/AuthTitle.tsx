@@ -19,11 +19,11 @@ export function AuthTitle({ title, description, isCentered = false }: AuthTitleP
 
   return (
     <View style={styles.container}>
-      <Text variant="title" style={alignment}>
+      <Text variant="display" weight="bold" style={alignment}>
         {title}
       </Text>
       {description !== undefined && (
-        <Text variant="body" color="textSecondary" style={alignment}>
+        <Text variant="body" weight="medium" color="textSecondary" style={alignment}>
           {description}
         </Text>
       )}

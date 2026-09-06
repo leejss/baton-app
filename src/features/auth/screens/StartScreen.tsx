@@ -96,7 +96,12 @@ export function StartScreen({
           contentFit="contain"
           accessibilityLabel="baton"
         />
-        <Text variant="body" color="textSecondary" style={[textStyles.center, styles.tagline]}>
+        <Text
+          variant="body"
+          weight="medium"
+          color="textSecondary"
+          style={[textStyles.center, styles.tagline]}
+        >
           근무자는 바뀌어도 업무는 끊기지 않게
         </Text>
 

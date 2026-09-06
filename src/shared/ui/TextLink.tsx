@@ -11,12 +11,17 @@ import { spacing, type ThemeColorName } from '@/theme';
 export type TextLinkProps = {
   label: string;
   onPress: () => void;
-  color?: Extract<ThemeColorName, 'link' | 'textTertiary'>;
+  color?: Extract<ThemeColorName, 'accentText' | 'textTertiary'>;
   /** 재발송 쿨다운처럼 잠시 못 누르는 상태. 색이 죽고 탭이 막힌다. */
   disabled?: boolean;
 };
 
-export function TextLink({ label, onPress, color = 'link', disabled = false }: TextLinkProps) {
+export function TextLink({
+  label,
+  onPress,
+  color = 'accentText',
+  disabled = false,
+}: TextLinkProps) {
   return (
     <Pressable
       accessibilityRole="button"
@@ -28,7 +33,7 @@ export function TextLink({ label, onPress, color = 'link', disabled = false }: T
       hitSlop={spacing.md}
       style={[styles.container, disabled && styles.disabled]}
     >
-      <Text variant="caption" color={disabled ? 'textTertiary' : color}>
+      <Text variant="bodySmall" weight="medium" color={disabled ? 'textTertiary' : color}>
         {label}
       </Text>
     </Pressable>

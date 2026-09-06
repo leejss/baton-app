@@ -160,7 +160,7 @@ export function PasswordResetCodeScreen({
 
       <View style={styles.helpers}>
         <View style={styles.resendRow}>
-          <Text variant="caption" color="textSecondary">
+          <Text variant="bodySmall" weight="medium" color="textSecondary">
             인증코드를 받지 못했나요?
           </Text>
           <TextLink label="재전송" onPress={handleResend} disabled={!canResend} />

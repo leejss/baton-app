@@ -11,7 +11,7 @@ type EmptyStateProps = {
 export function EmptyState({ title, description }: EmptyStateProps) {
   return (
     <View style={styles.container}>
-      <Text variant="title" style={textStyles.center}>
+      <Text variant="display" weight="bold" style={textStyles.center}>
         {title}
       </Text>
       {description !== undefined && (

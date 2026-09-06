@@ -7,7 +7,7 @@ import { spacing } from '@/theme';
 export default function NotFoundRoute() {
   return (
     <View style={styles.container}>
-      <Text variant="title" style={textStyles.center}>
+      <Text variant="display" weight="bold" style={textStyles.center}>
         페이지를 찾을 수 없어요
       </Text>
       <Link href="/" accessibilityRole="link" accessibilityLabel="홈으로 이동">

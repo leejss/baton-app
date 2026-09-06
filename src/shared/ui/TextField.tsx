@@ -1,11 +1,5 @@
 import { type ReactNode, useState } from 'react';
-import {
-  Platform,
-  StyleSheet,
-  TextInput,
-  View,
-  type TextInputProps,
-} from 'react-native';
+import { Platform, StyleSheet, TextInput, View, type TextInputProps } from 'react-native';
 
 import { Text } from '@/shared/ui/Text';
 import { radius, typography, useTheme, type ThemeColorName } from '@/theme';
@@ -31,10 +25,7 @@ export type TextFieldStatus = 'none' | 'error' | 'success';
 /** 시안 `state` 배리언트와 1:1 대응한다. 배색 표를 찾을 때 쓰는 키다. */
 type TextFieldState = 'default' | 'focus' | 'filled' | 'error' | 'success' | 'disabled';
 
-export type TextFieldProps = Omit<
-  TextInputProps,
-  'style' | 'placeholderTextColor' | 'editable'
-> & {
+export type TextFieldProps = Omit<TextInputProps, 'style' | 'placeholderTextColor' | 'editable'> & {
   label?: string;
   /**
    * 입력 아래 보조 영역. 문자열이면 상태에 맞는 색으로 그려주고,
@@ -63,7 +54,12 @@ const SPEC = {
 /** 시안 배리언트별 배색. 한 곳에 모아 두고 상태 판정만 아래에서 한다. */
 const PALETTE: Record<
   TextFieldState,
-  { border: ThemeColorName; background: ThemeColorName; value: ThemeColorName; subtitle: ThemeColorName }
+  {
+    border: ThemeColorName;
+    background: ThemeColorName;
+    value: ThemeColorName;
+    subtitle: ThemeColorName;
+  }
 > = {
   default: {
     border: 'border',
@@ -157,7 +153,7 @@ export function TextField({
   return (
     <View style={styles.container}>
       {label !== undefined && (
-        <Text variant="label" color="textSecondary">
+        <Text variant="title" weight="semibold" color="textSecondary">
           {label}
         </Text>
       )}
@@ -189,7 +185,7 @@ export function TextField({
         />
 
         {timer !== undefined && (
-          <Text variant="captionSmall" color="danger">
+          <Text variant="caption" weight="medium" color="danger">
             {timer}
           </Text>
         )}
@@ -197,7 +193,7 @@ export function TextField({
       </View>
 
       {typeof subtitle === 'string' ? (
-        <Text variant="helper" color={tone.subtitle}>
+        <Text variant="caption" color={tone.subtitle}>
           {subtitle}
         </Text>
       ) : (
@@ -225,8 +221,8 @@ const styles = StyleSheet.create({
   },
   textInput: {
     flex: 1,
-    fontFamily: typography.input.fontFamily,
-    fontSize: typography.input.fontSize,
+    fontFamily: typography.body.regular.fontFamily,
+    fontSize: typography.body.regular.fontSize,
     /**
      * `lineHeight`를 주지 않는다. TextInput에 넣으면 Android에서 글자가 위로 붙거나
      * 커서 높이가 어긋난다. 높이는 컨테이너의 minHeight와 padding이 잡는다.

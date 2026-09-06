@@ -134,8 +134,10 @@ export function EmailLoginScreen({
         keyboardShouldPersistTaps="handled"
       >
         <View style={styles.title}>
-          <Text variant="title">환영합니다.</Text>
-          <Text variant="body" color="textSecondary">
+          <Text variant="display" weight="bold">
+            환영합니다.
+          </Text>
+          <Text variant="body" weight="medium" color="textSecondary">
             {'Baton을 통해 놓치는 인수인계 없이\n깔끔하게 업무를 전달해요.'}
           </Text>
         </View>
@@ -198,7 +200,7 @@ export function EmailLoginScreen({
                 }
                 subtitle={
                   isLocked ? (
-                    <Text variant="helper" color="danger">
+                    <Text variant="caption" color="danger">
                       {`로그인 제한 ${lockout.formatted}`}
                     </Text>
                   ) : (
@@ -210,7 +212,7 @@ export function EmailLoginScreen({
                         onPress={onForgotPassword}
                         hitSlop={spacing.sm}
                       >
-                        <Text variant="helper" color="textTertiary" style={textStyles.right}>
+                        <Text variant="caption" color="textTertiary" style={textStyles.right}>
                           비밀번호를 잊으셨나요?
                         </Text>
                       </Pressable>
@@ -248,7 +250,7 @@ export function EmailLoginScreen({
           </View>
 
           <View style={styles.footer}>
-            <Text variant="footnote" color="textSecondary">
+            <Text variant="bodySmall" weight="medium" color="textSecondary">
               아직 회원이 아니신가요?
             </Text>
             <Pressable
@@ -257,7 +259,9 @@ export function EmailLoginScreen({
               onPress={onSignUp}
               hitSlop={spacing.md}
             >
-              <Text variant="footnoteStrong">회원가입</Text>
+              <Text variant="bodySmall" weight="semibold">
+                회원가입
+              </Text>
             </Pressable>
           </View>
         </View>

@@ -71,7 +71,7 @@ export function StartButton({
             accessibilityElementsHidden
             importantForAccessibility="no"
           />
-          <Text variant="button" color={labelColor}>
+          <Text variant="body" weight="semibold" color={labelColor}>
             {label}
           </Text>
         </>

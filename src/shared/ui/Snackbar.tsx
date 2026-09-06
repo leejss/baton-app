@@ -36,7 +36,7 @@ export function Snackbar({ title, description, actionLabel, onAction }: Snackbar
       accessibilityRole="alert"
       style={[
         styles.container,
-        { backgroundColor: colors.dangerSurface, borderColor: colors.dangerBorder },
+        { backgroundColor: colors.dangerSubtle, borderColor: colors.dangerBorder },
       ]}
     >
       <Image
@@ -48,9 +48,11 @@ export function Snackbar({ title, description, actionLabel, onAction }: Snackbar
       />
 
       <View style={styles.message}>
-        <Text variant="bodyStrong">{title}</Text>
+        <Text variant="body" weight="semibold">
+          {title}
+        </Text>
         {description !== undefined && (
-          <Text variant="captionSmall" color="textTertiary">
+          <Text variant="caption" weight="medium" color="textTertiary">
             {description}
           </Text>
         )}
@@ -63,7 +65,7 @@ export function Snackbar({ title, description, actionLabel, onAction }: Snackbar
           onPress={onAction}
           hitSlop={SPEC.paddingVertical}
         >
-          <Text variant="captionStrong" color="danger">
+          <Text variant="bodySmall" weight="bold" color="danger">
             {actionLabel}
           </Text>
         </Pressable>

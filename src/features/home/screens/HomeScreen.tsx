@@ -25,7 +25,7 @@ export function HomeScreen() {
         ]}
       >
         <View style={styles.inner}>
-          <Text variant="title" style={textStyles.center}>
+          <Text variant="display" weight="bold" style={textStyles.center}>
             Baton
           </Text>
           <Text color="textSecondary" style={textStyles.center}>
@@ -53,7 +53,7 @@ function InfoRow({ label, value }: { label: string; value: string }) {
 
   return (
     <View style={styles.row}>
-      <Text variant="caption" color="textSecondary">
+      <Text variant="bodySmall" weight="medium" color="textSecondary">
         {label}
       </Text>
       <Box background="surface" style={[styles.valueChip, { borderColor: theme.colors.border }]}>

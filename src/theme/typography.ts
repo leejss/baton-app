@@ -1,64 +1,90 @@
 import { Platform, type TextStyle } from 'react-native';
 
 /**
- * Pretendard는 굵기마다 별도 파일이라 `fontWeight`가 아니라 `fontFamily`로 고른다.
- * 이름은 각 .otf의 PostScript 이름과 같고, 파일명과도 같아서 iOS(PostScript 이름 참조)와
- * Android(파일명 참조) 양쪽에서 이 문자열 하나로 동작한다.
+ * 타입 스케일. 출처: Figma `Baton-Design System` (node 9:44).
  *
- * ⚠️ `fontWeight`를 같이 주면 안 된다. 이미 굵은 파일에 OS가 합성 볼드를 덧씌워 뭉개진다.
+ * Figma는 8개 역할 × 3개 굵기(regular/medium/semibold) 그리드로 정의돼 있다.
+ * 여기서도 같은 모양을 유지한다 — `typography.body.semibold` 처럼 접근한다.
  *
- * 폰트 실물은 `app.config.ts`의 expo-font 플러그인이 네이티브에 심는다.
- * 파일을 추가·삭제하면 `expo prebuild` + 재빌드가 필요하다.
+ * ⚠️ `bold`(700)는 Figma 그리드 밖이다. 로그인 플로우 시안이 화면 제목과 스낵바
+ * 액션에서 Bold를 쓰고 있어 굵기 축에만 더해 뒀다. Figma Typography 섹션과 실제
+ * 화면 값이 어긋나 있는 상태이며, 디자인 쪽에서 정리되면 이 축을 도로 뺀다.
+ * letter-spacing은 전 단계 0이라 따로 두지 않는다.
+ *
+ * | 역할 | size / line-height |
+ * |---|---|
+ * | displayLarge | 32 / 42 |
+ * | display | 28 / 36 |
+ * | heading | 24 / 32 |
+ * | subheading | 20 / 28 |
+ * | title | 18 / 26 |
+ * | body | 16 / 28 |
+ * | bodySmall | 14 / 20 |
+ * | caption | 12 / 16 |
+ *
+ * 고정 `height`는 두지 않는다 — 폰트 스케일 대응을 깨지 않기 위해서다.
  */
-export const fonts = {
+
+/**
+ * Figma 지정 서체 Pretendard. `app.config.ts`의 `expo-font` 플러그인이 네이티브
+ * 번들에 심으므로 런타임 로딩 없이 첫 프레임부터 쓸 수 있다.
+ *
+ * 이름은 iOS에서 PostScript 이름, Android에서 파일명으로 해석되는데 Pretendard는
+ * 둘이 같아서 아래 문자열 하나로 양쪽이 맞는다.
+ */
+export const fontFamily = {
   regular: 'Pretendard-Regular',
   medium: 'Pretendard-Medium',
-  semiBold: 'Pretendard-SemiBold',
+  semibold: 'Pretendard-SemiBold',
   bold: 'Pretendard-Bold',
-  /** 코드·식별자용. 번들 용량을 위해 별도 폰트를 넣지 않고 시스템 고정폭을 쓴다. */
+  /** Figma 명세 밖. 값 표시용 고정폭 서체라 플랫폼 기본을 그대로 쓴다. */
   mono: Platform.select({ ios: 'ui-monospace', default: 'monospace' }),
 } as const;
 
 /**
- * 타입 스케일. Figma 로그인 플로우 시안(`943:111091`, `943:111106`, `943:111123`)에서 실측했다.
+ * 굵기 이름 → CSS 수치. Pretendard는 굵기별로 **파일이 따로**라 실제 렌더는
+ * `fontFamily`가 결정한다. 이 값은 mono처럼 단일 파일 서체에만 적용된다.
  *
- * ⚠️ 시안의 Typography 섹션(Heading 1 / Title 1 / Body 1 …)과 실제 화면이 쓰는 값이
- * 어긋나 있다. 여기 있는 건 **화면에서 실제로 쓰인 값**이다. 디자인 쪽에서 스케일이
- * 정리되면 이름과 단계를 그에 맞춰 다시 맞춘다.
+ * Pretendard 쪽에 `fontWeight`를 같이 주면 안 된다 — 이미 굵기가 박힌 페이스 위에
+ * iOS/Android가 합성 볼드를 덧씌워 뭉개진다.
  */
+export const fontWeight = {
+  regular: '400',
+  medium: '500',
+  semibold: '600',
+  bold: '700',
+} as const satisfies Record<string, TextStyle['fontWeight']>;
+
+export type FontWeightName = keyof typeof fontWeight;
+export type TextFamily = 'sans' | 'mono';
+
+type WeightedStyles = Record<FontWeightName, TextStyle>;
+
+function scale(fontSize: number, lineHeight: number, family: TextFamily = 'sans'): WeightedStyles {
+  const face = (weight: FontWeightName): TextStyle =>
+    family === 'mono'
+      ? { fontFamily: fontFamily.mono, fontWeight: fontWeight[weight] }
+      : { fontFamily: fontFamily[weight] };
+
+  return {
+    regular: { fontSize, lineHeight, ...face('regular') },
+    medium: { fontSize, lineHeight, ...face('medium') },
+    semibold: { fontSize, lineHeight, ...face('semibold') },
+    bold: { fontSize, lineHeight, ...face('bold') },
+  };
+}
+
 export const typography = {
-  /** 화면 제목. "환영합니다." */
-  title: { fontSize: 28, lineHeight: 36, fontFamily: fonts.bold },
-  /** 본문·화면 설명. 시작 화면 태그라인도 같은 값이라 `tagline`을 따로 두지 않는다. */
-  body: { fontSize: 16, lineHeight: 28, fontFamily: fonts.medium },
-  /** 스낵바 제목. `button`과 수치는 같지만 역할이 달라 따로 둔다. */
-  bodyStrong: { fontSize: 16, lineHeight: 28, fontFamily: fonts.semiBold },
-  /** 입력 필드 라벨. "이메일" / "비밀번호" */
-  label: { fontSize: 18, lineHeight: 26, fontFamily: fonts.semiBold },
-  /** 입력 필드 안의 값과 placeholder. */
-  input: { fontSize: 16, lineHeight: 28, fontFamily: fonts.regular },
-  /** 입력 필드 아래 보조 안내·에러. */
-  helper: { fontSize: 12, lineHeight: 16, fontFamily: fonts.regular },
-  /** 인증 남은시간, 스낵바 설명. `helper`와 크기는 같고 굵기만 다르다. */
-  captionSmall: { fontSize: 12, lineHeight: 16, fontFamily: fonts.medium },
-  /** 버튼 라벨. */
-  button: { fontSize: 16, lineHeight: 28, fontFamily: fonts.semiBold },
-  /** "또는", "아직 회원이 아니신가요?" */
-  footnote: { fontSize: 14, lineHeight: 17, fontFamily: fonts.medium },
-  /** 푸터 안의 강조 링크. "회원가입" */
-  footnoteStrong: { fontSize: 14, lineHeight: 17, fontFamily: fonts.semiBold },
-
-  /** 본문 링크·하단 안내("재전송", "로그인 화면으로 돌아가기"). */
-  caption: { fontSize: 14, lineHeight: 20, fontFamily: fonts.medium },
-  /** 스낵바의 액션 텍스트("확인"). */
-  captionStrong: { fontSize: 14, lineHeight: 20, fontFamily: fonts.bold },
-
-  code: {
-    fontSize: 12,
-    lineHeight: 18,
-    fontFamily: fonts.mono,
-    fontWeight: Platform.select({ android: '700' }) ?? '500',
-  },
-} as const satisfies Record<string, TextStyle>;
+  displayLarge: scale(32, 42),
+  display: scale(28, 36),
+  heading: scale(24, 32),
+  subheading: scale(20, 28),
+  title: scale(18, 26),
+  body: scale(16, 28),
+  bodySmall: scale(14, 20),
+  caption: scale(12, 16),
+  /** Figma 명세 밖. 앱에서 원시 값(버전, ID 등)을 표시할 때만 쓴다. */
+  code: scale(12, 16, 'mono'),
+} as const satisfies Record<string, WeightedStyles>;
 
 export type TextVariant = keyof typeof typography;

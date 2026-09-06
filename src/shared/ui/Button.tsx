@@ -45,6 +45,11 @@ export function Button({
   // 진행 중에는 눌린 상태를 유지하는 게 맞아서 비활성 배색을 입히지 않는다.
   const isMuted = disabled && !isLoading;
 
+  /**
+   * Figma에 `Action Button`(tonal pill) / `Action Button_Black`(solid) 두 계열이 있지만
+   * 아직 확정 전이라 여기 옮기지 않는다. 확정되면 사이즈(sm/md/lg)와 pressed 색까지
+   * 함께 들어온다. 그때까지는 로그인 시안이 실제로 쓰는 두 배색만 둔다.
+   */
   const containerStyle =
     variant === 'primary' || variant === 'accent'
       ? {
@@ -78,7 +83,7 @@ export function Button({
       {isLoading ? (
         <ActivityIndicator color={colors[labelColor]} />
       ) : (
-        <Text variant="button" color={labelColor}>
+        <Text variant="body" weight="semibold" color={labelColor}>
           {label}
         </Text>
       )}
