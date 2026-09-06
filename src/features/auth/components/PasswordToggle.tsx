@@ -1,7 +1,7 @@
-import { Image } from 'expo-image';
-import { Pressable, StyleSheet } from 'react-native';
+import { Pressable } from 'react-native';
 
 import { TEXT_FIELD_ICON_SIZE } from '@/shared/ui';
+import { EyeOffLine } from '@/shared/ui/icons';
 
 export type PasswordToggleProps = {
   isVisible: boolean;
@@ -23,17 +23,7 @@ export function PasswordToggle({ isVisible, onToggle }: PasswordToggleProps) {
       onPress={onToggle}
       hitSlop={10}
     >
-      <Image
-        style={styles.icon}
-        source={require('@/assets/images/icon-eye-off.png')}
-        contentFit="contain"
-        accessibilityElementsHidden
-        importantForAccessibility="no"
-      />
+      <EyeOffLine size={TEXT_FIELD_ICON_SIZE} color="textTertiary" />
     </Pressable>
   );
 }
-
-const styles = StyleSheet.create({
-  icon: { width: TEXT_FIELD_ICON_SIZE, height: TEXT_FIELD_ICON_SIZE },
-});

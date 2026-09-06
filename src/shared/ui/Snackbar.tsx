@@ -1,7 +1,7 @@
-import { Image } from 'expo-image';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Text } from '@/shared/ui/Text';
+import { AlertCircleFill } from '@/shared/ui/icons';
 import { radius, useTheme } from '@/theme';
 
 /**
@@ -39,13 +39,7 @@ export function Snackbar({ title, description, actionLabel, onAction }: Snackbar
         { backgroundColor: colors.dangerSubtle, borderColor: colors.dangerBorder },
       ]}
     >
-      <Image
-        style={styles.icon}
-        source={require('@/assets/images/icon-alert-circle.png')}
-        contentFit="contain"
-        accessibilityElementsHidden
-        importantForAccessibility="no"
-      />
+      <AlertCircleFill size={SPEC.iconSize} color="danger" />
 
       <View style={styles.message}>
         <Text variant="body" weight="semibold">
@@ -84,7 +78,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: SPEC.gap,
   },
-  icon: { width: SPEC.iconSize, height: SPEC.iconSize },
   /** 메시지가 길어지면 이 블록만 늘어나고 아이콘·액션은 제자리를 지킨다. */
   message: { flex: 1, gap: SPEC.messageGap },
 });

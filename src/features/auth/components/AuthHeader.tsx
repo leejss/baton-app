@@ -1,6 +1,6 @@
-import { Image } from 'expo-image';
 import { Pressable, StyleSheet, View } from 'react-native';
 
+import { ArrowLeftS } from '@/shared/ui/icons';
 import { SCREEN_PADDING_X, spacing } from '@/theme';
 
 /**
@@ -27,13 +27,7 @@ export function AuthHeader({ onBack }: AuthHeaderProps) {
           // 아이콘이 24라 최소 터치 영역 44×44에 못 미친다. hitSlop으로 채운다.
           hitSlop={spacing.sm + 2}
         >
-          <Image
-            style={styles.icon}
-            source={require('@/assets/images/icon-arrow-left.png')}
-            contentFit="contain"
-            accessibilityElementsHidden
-            importantForAccessibility="no"
-          />
+          <ArrowLeftS size={ICON_SIZE} />
         </Pressable>
       )}
     </View>

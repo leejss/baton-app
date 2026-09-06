@@ -2,6 +2,7 @@ import { Image } from 'expo-image';
 import { ActivityIndicator, Pressable, StyleSheet } from 'react-native';
 
 import { buttonMetrics, Text } from '@/shared/ui';
+import { EmailLine } from '@/shared/ui/icons';
 import { socialBrand, useTheme } from '@/theme';
 
 /**
@@ -19,11 +20,13 @@ export type StartButtonProps = {
   disabled?: boolean;
 };
 
-/** 아이콘은 색까지 시안 그대로 구운 PNG다. 그래서 tint를 따로 주지 않는다. */
-const ICONS = {
+/**
+ * 외부 서비스 로고는 각 사가 정한 색·형태를 그대로 써야 해서 PNG로 둔다.
+ * 우리 아이콘셋(글리프)에 없고, 테마에 따라 색이 바뀌어서도 안 된다.
+ */
+const BRAND_ICONS = {
   kakao: require('@/assets/images/icon-kakao.png'),
   apple: require('@/assets/images/icon-apple.png'),
-  email: require('@/assets/images/icon-email.png'),
 } as const;
 
 export function StartButton({
@@ -64,13 +67,17 @@ export function StartButton({
         <ActivityIndicator color={colors[labelColor]} />
       ) : (
         <>
-          <Image
-            style={styles.icon}
-            source={ICONS[provider]}
-            contentFit="contain"
-            accessibilityElementsHidden
-            importantForAccessibility="no"
-          />
+          {provider === 'email' ? (
+            <EmailLine size={buttonMetrics.iconSize} color={labelColor} />
+          ) : (
+            <Image
+              style={styles.icon}
+              source={BRAND_ICONS[provider]}
+              contentFit="contain"
+              accessibilityElementsHidden
+              importantForAccessibility="no"
+            />
+          )}
           <Text variant="body" weight="semibold" color={labelColor}>
             {label}
           </Text>
