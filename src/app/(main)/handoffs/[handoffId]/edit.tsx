@@ -1,14 +1,15 @@
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 
-import { RoutePlaceholderScreen } from '@/features/routes/screens/RoutePlaceholderScreen';
+import { HandoffEditScreen } from '@/features/handoffs/screens/HandoffEditScreen';
+import { QueryBoundary } from '@/shared/ui';
 
 export default function HandoffEditRoute() {
+  const router = useRouter();
   const { handoffId } = useLocalSearchParams<{ handoffId: string }>();
+
   return (
-    <RoutePlaceholderScreen
-      title="인수인계 수정"
-      description={`인수인계 ID: ${handoffId}`}
-      featureIds="HAND-11"
-    />
+    <QueryBoundary resetKey={handoffId}>
+      <HandoffEditScreen handoffId={handoffId} onBack={router.back} onSaved={router.back} />
+    </QueryBoundary>
   );
 }
