@@ -11,7 +11,7 @@ import {
 } from '@/features/handoffs/model/handoffDraftStore';
 import { useUnsavedHandoffGuard } from '@/features/handoffs/model/useUnsavedHandoffGuard';
 import { Text } from '@/shared/ui';
-import { spacing, useTheme } from '@/theme';
+import { SCREEN_PADDING_X, useTheme } from '@/theme';
 
 type HandoffTypeSelectScreenProps = {
   onExit: () => void;
@@ -24,9 +24,10 @@ const OPTIONS: readonly {
   description: string;
 }[] = [
   { type: 'WORK_TASK', label: '업무 처리', description: '못 끝낸 일, 정산 등' },
-  { type: 'STORE_STATUS', label: '매장 상태', description: '장비 · 기기, 재고 등' },
+  { type: 'STORE_STATUS', label: '매장 상태', description: '장비 ∙ 기기, 재고 등' },
   { type: 'OTHER', label: '기타', description: '고객, 특이사항 등' },
 ];
+const DEFAULT_HANDOFF_TYPE: HandoffTypeDto = 'WORK_TASK';
 
 export function HandoffTypeSelectScreen({ onExit, onNext }: HandoffTypeSelectScreenProps) {
   const insets = useSafeAreaInsets();
@@ -35,6 +36,8 @@ export function HandoffTypeSelectScreen({ onExit, onNext }: HandoffTypeSelectScr
   const hasChanges = useHandoffDraftStore(hasHandoffDraftChanges);
   const setType = useHandoffDraftStore((state) => state.setType);
   const reset = useHandoffDraftStore((state) => state.reset);
+  // 시안의 기본 선택은 표시 단계에서만 파생하고, 다음 단계로 갈 때 초안에 확정한다.
+  const selectedType = type ?? DEFAULT_HANDOFF_TYPE;
   const handleExit = useUnsavedHandoffGuard({
     hasChanges,
     title: '작성을 그만할까요?',
@@ -42,10 +45,14 @@ export function HandoffTypeSelectScreen({ onExit, onNext }: HandoffTypeSelectScr
     onDiscard: reset,
     onLeave: onExit,
   });
+  const handleNext = () => {
+    if (type === null) setType(DEFAULT_HANDOFF_TYPE);
+    onNext();
+  };
 
   return (
     <View
-      style={[styles.root, { backgroundColor: theme.colors.surfaceSunken, paddingTop: insets.top }]}
+      style={[styles.root, { backgroundColor: theme.colors.background, paddingTop: insets.top }]}
     >
       <HandoffHeader leading="close" onLeadingPress={handleExit} />
       <ScrollView
@@ -54,25 +61,21 @@ export function HandoffTypeSelectScreen({ onExit, onNext }: HandoffTypeSelectScr
         keyboardShouldPersistTaps="handled"
         style={styles.scroll}
       >
-        <Text variant="heading" weight="semibold">
-          어떤 내용을{`\n`}전달해야 하나요?
+        <Text variant="subheading" weight="semibold" style={styles.heading}>
+          어떤 내용을 전달해야하나요?
         </Text>
         <View style={styles.options}>
           {OPTIONS.map((option) => (
             <HandoffTypeOption
               key={option.type}
               {...option}
-              selected={type === option.type}
+              selected={selectedType === option.type}
               onSelect={setType}
             />
           ))}
         </View>
       </ScrollView>
-      <HandoffFooterActions
-        primaryLabel="다음"
-        primaryDisabled={type === null}
-        onPrimaryPress={onNext}
-      />
+      <HandoffFooterActions primaryLabel="다음" onPrimaryPress={handleNext} />
     </View>
   );
 }
@@ -81,11 +84,13 @@ const styles = StyleSheet.create({
   root: { flex: 1 },
   scroll: { flex: 1 },
   content: {
-    paddingHorizontal: 18,
-    paddingTop: spacing.lg,
-    paddingBottom: spacing.xl,
-    gap: spacing.xl,
-    // TODO(design-system): 작성 화면의 18px 좌우 여백을 레이아웃 토큰으로 동기화한다.
+    paddingHorizontal: SCREEN_PADDING_X,
+    paddingTop: 28,
+    paddingBottom: 32,
+    gap: 20,
+    // TODO(design-system): Figma 732:21450의 28/20px 간격을 레이아웃 토큰으로 동기화한다.
   },
-  options: { gap: 12 },
+  options: { gap: 16 },
+  // TODO(design-system): foreground/strong가 시맨틱 컬러에 추가되면 원시값을 교체한다.
+  heading: { color: '#1F2937' },
 });

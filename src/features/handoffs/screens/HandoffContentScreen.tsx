@@ -1,11 +1,11 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useController, useForm } from 'react-hook-form';
 import { Alert, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useShallow } from 'zustand/react/shallow';
 
-import { getHandoffTypeLabel, toCreateRequest } from '@/features/handoffs/api/handoff.mappers';
+import { toCreateRequest } from '@/features/handoffs/api/handoff.mappers';
 import { handoffQueries } from '@/features/handoffs/api/handoff.queries';
 import { mockHandoffRepository } from '@/features/handoffs/api/mockHandoffRepository';
 import { HandoffAttachmentStrip } from '@/features/handoffs/components/HandoffAttachmentStrip';
@@ -20,7 +20,7 @@ import {
 import { useHandoffDraftStore } from '@/features/handoffs/model/handoffDraftStore';
 import { useHandoffImagePicker } from '@/features/handoffs/model/useHandoffImagePicker';
 import { Text } from '@/shared/ui';
-import { spacing, useTheme } from '@/theme';
+import { SCREEN_PADDING_X, useTheme } from '@/theme';
 
 type HandoffContentScreenProps = {
   onBack: () => void;
@@ -60,7 +60,7 @@ export function HandoffContentScreen({
     })),
   );
 
-  const { control, formState, getValues, handleSubmit } = useForm<HandoffContentFormValues>({
+  const { control, getValues, handleSubmit } = useForm<HandoffContentFormValues>({
     defaultValues: { title, body },
     mode: 'onChange',
     resolver: zodResolver(handoffContentFormSchema),
@@ -71,11 +71,17 @@ export function HandoffContentScreen({
     attachmentCount: attachments.length,
     onSelected: addAttachments,
   });
+  const recipientsQuery = useQuery(handoffQueries.recipients());
+  // 추천값은 화면 기본 선택으로만 사용하고, 사용자가 고른 값만 작성 상태에 저장한다.
+  const effectiveRecipient =
+    recipient ?? recipientsQuery.data?.find((item) => item.isRecommended) ?? null;
 
   const createMutation = useMutation({
     mutationFn: mockHandoffRepository.create,
     onSuccess: async (created) => {
-      await queryClient.invalidateQueries({ queryKey: handoffQueries.all() });
+      // 전송 직후 상세 화면이 추가 요청을 기다리지 않고 생성 응답을 바로 사용한다.
+      queryClient.setQueryData(handoffQueries.detail(created.id).queryKey, created);
+      await queryClient.invalidateQueries({ queryKey: [...handoffQueries.all(), 'list'] });
       reset();
       onSent(created.id);
     },
@@ -97,66 +103,72 @@ export function HandoffContentScreen({
   };
 
   const submit = handleSubmit((values) => {
+    if (type === null || effectiveRecipient === null) {
+      Alert.alert('전송할 수 없어요', '인수인계 유형과 받는 사람을 확인해 주세요.');
+      return;
+    }
+
     setContent(values.title, values.body);
-    createMutation.mutate(toCreateRequest({ type, ...values, recipient, attachments }));
+    createMutation.mutate(
+      toCreateRequest({ type, ...values, recipient: effectiveRecipient, attachments }),
+    );
   });
 
   return (
     <View
-      style={[styles.root, { backgroundColor: theme.colors.surfaceSunken, paddingTop: insets.top }]}
+      style={[styles.root, { backgroundColor: theme.colors.background, paddingTop: insets.top }]}
     >
       <HandoffHeader onLeadingPress={onBack} />
       <ScrollView
         automaticallyAdjustKeyboardInsets
         contentInsetAdjustmentBehavior="automatic"
-        contentContainerStyle={styles.content}
+        contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
         style={styles.scroll}
       >
-        <View style={styles.heading}>
-          <Text variant="heading" weight="semibold">
-            전달할 내용을{`\n`}작성해 주세요
-          </Text>
-          <Text variant="bodySmall" color="textSecondary">
-            {type === null ? '유형 미선택' : getHandoffTypeLabel(type)}
-          </Text>
-        </View>
+        <View style={styles.content}>
+          <View style={styles.mainSection}>
+            <Text variant="subheading" weight="semibold" style={styles.heading}>
+              어떤 내용을 전달해야하나요?
+            </Text>
 
-        <HandoffEditorFields
-          title={titleController.field.value}
-          body={bodyController.field.value}
-          titleError={titleController.fieldState.error?.message}
-          bodyError={bodyController.fieldState.error?.message}
-          onBlurTitle={titleController.field.onBlur}
-          onBlurBody={bodyController.field.onBlur}
-          onChangeTitle={handleTitleChange}
-          onChangeBody={handleBodyChange}
-        />
+            <HandoffEditorFields
+              title={titleController.field.value}
+              body={bodyController.field.value}
+              titleError={titleController.fieldState.error?.message}
+              bodyError={bodyController.fieldState.error?.message}
+              onBlurTitle={titleController.field.onBlur}
+              onBlurBody={bodyController.field.onBlur}
+              onChangeTitle={handleTitleChange}
+              onChangeBody={handleBodyChange}
+            />
 
-        <View style={styles.section}>
-          <Text weight="semibold">사진</Text>
-          <HandoffAttachmentStrip
-            attachments={attachments}
-            isPicking={isPickingImages}
-            onAdd={addImages}
-            onRemove={removeAttachment}
-          />
-        </View>
+            <HandoffAttachmentStrip
+              attachments={attachments}
+              isPicking={isPickingImages}
+              onAdd={addImages}
+              onRemove={removeAttachment}
+            />
+          </View>
 
-        <View style={styles.section}>
-          <Text weight="semibold">받는 사람</Text>
-          <HandoffRecipientCard
-            recipient={recipient?.member ?? null}
-            isRecommended={recipient?.isRecommended}
-            onPress={onRecipientPress}
-          />
+          <View style={styles.recipientSection}>
+            <Text variant="bodySmall" weight="semibold" style={styles.sectionLabel}>
+              받는 사람
+            </Text>
+            <HandoffRecipientCard
+              recipient={effectiveRecipient?.member ?? null}
+              isRecommended={effectiveRecipient?.isRecommended}
+              onPress={onRecipientPress}
+            />
+          </View>
         </View>
       </ScrollView>
       <HandoffFooterActions
         secondaryLabel="이전"
-        primaryLabel="전송"
-        primaryDisabled={!formState.isValid || recipient === null || type === null}
+        primaryLabel="이대로 보내기"
+        primaryDisabled={effectiveRecipient === null || type === null}
         primaryLoading={createMutation.isPending}
+        primaryTone="accent"
         onPrimaryPress={() => void submit()}
         onSecondaryPress={onBack}
       />
@@ -167,13 +179,17 @@ export function HandoffContentScreen({
 const styles = StyleSheet.create({
   root: { flex: 1 },
   scroll: { flex: 1 },
-  content: {
-    paddingHorizontal: 18,
-    paddingTop: spacing.md,
-    paddingBottom: spacing.xl,
-    gap: spacing.lg,
-    // TODO(design-system): 작성 화면의 18px 좌우 여백을 레이아웃 토큰으로 동기화한다.
+  scrollContent: {
+    alignItems: 'center',
+    paddingHorizontal: SCREEN_PADDING_X,
+    paddingTop: 28,
+    paddingBottom: 32,
   },
-  heading: { gap: spacing.xs },
-  section: { gap: spacing.sm },
+  content: { width: '100%', gap: 32 },
+  mainSection: { gap: 20 },
+  recipientSection: { gap: 11 },
+  // TODO(design-system): Figma 732:21494의 foreground/strong·subtle 색상을 시맨틱 컬러에 추가한다.
+  heading: { color: '#1F2937' },
+  sectionLabel: { color: '#9CA3AF' },
+  // TODO(design-system): 작성 화면의 28/32/20/11px 간격을 레이아웃 토큰으로 동기화한다.
 });

@@ -2,7 +2,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { Pressable, Text } from '@/shared/ui';
 import { ArrowLeftS, NavNotificationBadge, X } from '@/shared/ui/icons';
-import { spacing, useTheme } from '@/theme';
+import { SCREEN_PADDING_X, spacing, useTheme } from '@/theme';
 
 type HandoffHeaderProps = {
   title?: string;
@@ -23,7 +23,12 @@ export function HandoffHeader({
   const leadingLabel = leading === 'close' ? '작성 취소' : '뒤로 가기';
 
   return (
-    <View style={styles.root}>
+    <View
+      style={[
+        styles.root,
+        { backgroundColor: theme.colors.background, borderBottomColor: theme.colors.surfaceSunken },
+      ]}
+    >
       <View style={styles.side}>
         {leading !== 'none' && (
           <Pressable
@@ -71,22 +76,25 @@ export function HandoffHeader({
 }
 
 const styles = StyleSheet.create({
-  // TODO(design-system): 인수인계 헤더의 56px 높이와 44px 액션 영역을 헤더 토큰으로 동기화한다.
+  // TODO(design-system): Figma 732:21496의 62px 높이와 14/20px 세로 여백을 헤더 토큰으로 동기화한다.
   root: {
-    minHeight: 56,
-    paddingHorizontal: spacing.md,
+    height: 62,
+    paddingHorizontal: SCREEN_PADDING_X,
+    paddingTop: 14,
+    paddingBottom: 20,
     flexDirection: 'row',
     alignItems: 'center',
+    borderBottomWidth: StyleSheet.hairlineWidth,
   },
   side: {
-    width: 44,
-    minHeight: 44,
+    width: 24,
+    height: 24,
     alignItems: 'center',
     justifyContent: 'center',
   },
   iconButton: {
     width: 44,
-    minHeight: 44,
+    height: 44,
     alignItems: 'center',
     justifyContent: 'center',
   },

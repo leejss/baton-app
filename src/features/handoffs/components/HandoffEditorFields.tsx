@@ -1,7 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 
 import { Text, TextInput } from '@/shared/ui';
-import { radius, spacing, useTheme } from '@/theme';
+import { radius, spacing, typography, useTheme } from '@/theme';
 
 type HandoffEditorFieldsProps = {
   body: string;
@@ -43,19 +43,19 @@ export function HandoffEditorFields({
           maxLength={20}
           onBlur={onBlurTitle}
           onChangeText={onChangeTitle}
-          placeholder="제목을 입력해 주세요"
+          placeholder="제목을 입력해주세요."
           returnKeyType="next"
           style={styles.titleInput}
           value={title}
         />
-        <View style={[styles.divider, { backgroundColor: theme.colors.border }]} />
+        <View style={[styles.divider, { backgroundColor: theme.colors.surfaceSunken }]} />
         <TextInput
           accessibilityLabel="인수인계 내용"
           maxLength={200}
           multiline
           onBlur={onBlurBody}
           onChangeText={onChangeBody}
-          placeholder="전달할 내용을 입력해 주세요"
+          placeholder="인수인계 할 내용을 입력해주세요."
           style={styles.bodyInput}
           textAlignVertical="top"
           value={body}
@@ -84,29 +84,35 @@ export function HandoffEditorFields({
 }
 
 const styles = StyleSheet.create({
-  // TODO(design-system): 작성 필드의 264px 최소 높이·12px 내부 여백을 토큰화한다.
+  // TODO(design-system): 작성 필드의 264px 높이·20px 세로 여백을 토큰화한다.
   group: { gap: spacing.xs },
   card: {
-    minHeight: 264,
-    padding: spacing.md,
+    height: 264,
+    paddingHorizontal: spacing.md,
+    paddingVertical: 20,
     borderWidth: 1,
     borderRadius: radius.md,
     borderCurve: 'continuous',
   },
   titleInput: {
+    ...typography.body.medium,
     padding: 0,
-    paddingBottom: 12,
+    color: '#1F2937',
   },
-  divider: { height: StyleSheet.hairlineWidth },
+  divider: {
+    height: StyleSheet.hairlineWidth,
+    marginTop: 10,
+  },
   bodyInput: {
+    ...typography.bodySmall.medium,
     flex: 1,
-    minHeight: 144,
     padding: 0,
-    paddingTop: 12,
-    paddingBottom: spacing.lg,
+    paddingTop: 10,
+    color: '#1F2937',
   },
   counter: {
     alignSelf: 'flex-end',
     fontVariant: ['tabular-nums'],
   },
+  // TODO(design-system): Figma foreground/strong가 시맨틱 컬러에 추가되면 입력 원시 색상을 교체한다.
 });

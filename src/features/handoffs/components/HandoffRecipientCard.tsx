@@ -1,7 +1,7 @@
+import { Image } from 'expo-image';
 import { StyleSheet, View } from 'react-native';
 
 import type { MemberDto } from '@/features/handoffs/api/handoff.schema';
-import { HandoffAvatar } from '@/features/handoffs/components/HandoffAvatar';
 import { Pressable, Text } from '@/shared/ui';
 import { ArrowRightS } from '@/shared/ui/icons';
 import { radius, spacing, useTheme } from '@/theme';
@@ -35,48 +35,56 @@ export function HandoffRecipientCard({
         pressed && styles.pressed,
       ]}
     >
-      {recipient === null ? (
-        <View style={[styles.emptyAvatar, { backgroundColor: theme.colors.surfaceSunken }]} />
-      ) : (
-        <HandoffAvatar name={recipient.displayName} />
-      )}
+      <View style={[styles.avatarFrame, { borderColor: theme.colors.surfaceSunken }]}>
+        <Image
+          source={require('@/assets/images/home/profile-placeholder.png')}
+          contentFit="cover"
+          accessible={false}
+          accessibilityElementsHidden
+          importantForAccessibility="no"
+          style={styles.avatar}
+        />
+      </View>
       <View style={styles.copy}>
-        <Text weight="semibold">{recipient?.displayName ?? '받는 사람을 선택해 주세요'}</Text>
-        <Text variant="caption" color="textSecondary">
-          {recipient === null ? '한 명을 선택할 수 있어요' : recipient.email}
+        <Text weight="semibold" style={styles.name}>
+          {recipient === null ? '받는 사람을 선택해주세요.' : `${recipient.displayName} 님`}
+        </Text>
+        <Text variant="caption" weight="medium" style={styles.description}>
+          {recipient === null
+            ? '한 명을 선택할 수 있어요'
+            : isRecommended
+              ? '다음 근무자'
+              : recipient.email}
         </Text>
       </View>
-      {recipient !== null && isRecommended && (
-        <View style={[styles.badge, { backgroundColor: theme.colors.surfaceSunken }]}>
-          <Text variant="caption" weight="medium">
-            다음 근무자
-          </Text>
-        </View>
-      )}
-      <ArrowRightS />
+      <ArrowRightS size={22} color="textDisabled" />
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
   root: {
-    minHeight: 76,
-    paddingHorizontal: spacing.md,
-    paddingVertical: 12,
+    minHeight: 80,
+    padding: spacing.md,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: 10,
     borderWidth: 1,
     borderRadius: radius.md,
     borderCurve: 'continuous',
-    // TODO(design-system): 수신자 카드의 12px 내부 간격을 토큰화한다.
+    // TODO(design-system): Figma 291:8370의 요소 간 10px 간격을 spacing 토큰과 동기화한다.
   },
   pressed: { opacity: 0.72 },
-  copy: { flex: 1, minWidth: 0 },
-  emptyAvatar: { width: 44, height: 44, borderRadius: 999 },
-  badge: {
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-    borderRadius: 999,
+  avatarFrame: {
+    width: 33,
+    height: 33,
+    borderWidth: 1.375,
+    borderRadius: 30,
+    overflow: 'hidden',
   },
+  avatar: { width: '100%', height: '100%' },
+  copy: { flex: 1, minWidth: 0, gap: spacing.xs },
+  // TODO(design-system): Figma foreground/strong·subtle가 시맨틱 컬러에 추가되면 원시값을 교체한다.
+  name: { color: '#1F2937' },
+  description: { color: '#9CA3AF' },
 });
