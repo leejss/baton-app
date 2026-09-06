@@ -3,6 +3,7 @@ import { describe, expect, it } from '@jest/globals';
 import {
   toCreateRequest,
   toHandoffCardModel,
+  toHandoffDetailModel,
   toHandoffScopeDto,
   toRecipientModels,
 } from '@/features/handoffs/api/handoff.mappers';
@@ -45,6 +46,42 @@ describe('handoff mapper', () => {
     if (thirdParty === undefined) return;
 
     expect(toHandoffCardModel(thirdParty, CURRENT_USER_ID).canOpenDetail).toBe(false);
+  });
+
+  it('상세 응답을 작성자 화면 모델로 변환한다', () => {
+    const detail = toHandoffDetailModel(
+      {
+        ...ownUnconfirmed,
+        attachments: [
+          {
+            id: 'attachment-visible',
+            purpose: 'HANDOVER',
+            contentType: 'image/jpeg',
+            sizeBytes: 100,
+            status: 'LINKED',
+            downloadUrl: 'https://example.com/photo.jpg',
+          },
+          {
+            id: 'attachment-hidden',
+            purpose: 'HANDOVER',
+            contentType: 'image/jpeg',
+            sizeBytes: 100,
+            status: 'LINKED',
+          },
+        ],
+      },
+      CURRENT_USER_ID,
+      new Date(ownUnconfirmed.sentAt),
+    );
+
+    expect(detail).toMatchObject({
+      typeLabel: '업무 처리',
+      dateLabel: '오늘',
+      recipientLabel: '박민주님께',
+      statusActionLabel: '확인중',
+      canManage: true,
+      attachments: [{ id: 'attachment-visible', uri: 'https://example.com/photo.jpg' }],
+    });
   });
 
   it('작성 요청의 문자열을 정리하고 검증된 첨부 ID만 보낸다', () => {

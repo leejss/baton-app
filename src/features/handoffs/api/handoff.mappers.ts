@@ -1,6 +1,7 @@
 import type {
   AttachmentDto,
   HandoffCreateRequestDto,
+  HandoffDto,
   HandoffListItemDto,
   HandoffScopeDto,
   HandoffStatusDto,
@@ -9,6 +10,7 @@ import type {
 } from '@/features/handoffs/api/handoff.schema';
 import type {
   HandoffCardModel,
+  HandoffDetailModel,
   HandoffDraft,
   HandoffScope,
   RecipientModel,
@@ -23,6 +25,12 @@ const TYPE_LABELS: Record<HandoffTypeDto, string> = {
 
 const STATUS_LABELS: Record<HandoffStatusDto, string> = {
   UNCONFIRMED: '확인 전',
+  CONFIRMED: '확인 완료',
+  TERMINATED: '처리 종료',
+};
+
+const DETAIL_STATUS_ACTION_LABELS: Record<HandoffStatusDto, string> = {
+  UNCONFIRMED: '확인중',
   CONFIRMED: '확인 완료',
   TERMINATED: '처리 종료',
 };
@@ -62,6 +70,26 @@ export function toHandoffCardModel(
     recipientName: item.recipient.user.displayName,
     canManage: scope !== 'received' && isSender && item.status === 'UNCONFIRMED',
     canOpenDetail: isSender || isRecipient,
+  };
+}
+
+export function toHandoffDetailModel(
+  handoff: HandoffDto,
+  viewerId: string,
+  now = new Date(),
+): HandoffDetailModel {
+  return {
+    id: handoff.id,
+    typeLabel: getHandoffTypeLabel(handoff.type),
+    title: handoff.title,
+    body: handoff.body,
+    dateLabel: formatHandoffDate(handoff.sentAt, now),
+    recipientLabel: `${handoff.recipient.user.displayName}님께`,
+    statusActionLabel: DETAIL_STATUS_ACTION_LABELS[handoff.status],
+    attachments: handoff.attachments.flatMap(({ id, downloadUrl }) =>
+      downloadUrl === undefined ? [] : [{ id, uri: downloadUrl }],
+    ),
+    canManage: handoff.sender.userId === viewerId && handoff.status === 'UNCONFIRMED',
   };
 }
 

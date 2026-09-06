@@ -9,8 +9,11 @@ export default function HandoffContentRoute() {
     <HandoffContentScreen
       onBack={router.back}
       onRecipientPress={() => router.push('/(main)/handoffs/new/recipient')}
-      onSent={() =>
-        router.navigate({ pathname: '/(main)/(tabs)/handoffs', params: { scope: 'sent' } })
+      onSent={(handoffId) =>
+        router.replace({
+          pathname: '/(main)/handoffs/[handoffId]',
+          params: { handoffId },
+        })
       }
     />
   );

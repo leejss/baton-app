@@ -1,14 +1,33 @@
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 
-import { RoutePlaceholderScreen } from '@/features/routes/screens/RoutePlaceholderScreen';
+import { HandoffDetailScreen } from '@/features/handoffs/screens/HandoffDetailScreen';
+import { QueryBoundary } from '@/shared/ui';
 
 export default function HandoffDetailRoute() {
+  const router = useRouter();
   const { handoffId } = useLocalSearchParams<{ handoffId: string }>();
+
+  const handleBack = () => {
+    if (router.canGoBack()) {
+      router.back();
+      return;
+    }
+    router.replace({ pathname: '/(main)/(tabs)/handoffs', params: { scope: 'all' } });
+  };
+
   return (
-    <RoutePlaceholderScreen
-      title="인수인계 상세"
-      description={`인수인계 ID: ${handoffId}`}
-      featureIds="HAND-09~13"
-    />
+    <QueryBoundary resetKey={handoffId}>
+      <HandoffDetailScreen
+        handoffId={handoffId}
+        onBack={handleBack}
+        onDeleted={() =>
+          router.replace({ pathname: '/(main)/(tabs)/handoffs', params: { scope: 'sent' } })
+        }
+        onEdit={() =>
+          router.push({ pathname: '/(main)/handoffs/[handoffId]/edit', params: { handoffId } })
+        }
+        onHome={() => router.navigate('/(main)/(tabs)/home')}
+      />
+    </QueryBoundary>
   );
 }

@@ -25,6 +25,23 @@ export type HandoffCardModel = {
   canOpenDetail: boolean;
 };
 
+export type HandoffDetailAttachmentModel = {
+  id: string;
+  uri: string;
+};
+
+export type HandoffDetailModel = {
+  id: string;
+  typeLabel: string;
+  title: string;
+  body: string;
+  dateLabel: string;
+  recipientLabel: string;
+  statusActionLabel: string;
+  attachments: HandoffDetailAttachmentModel[];
+  canManage: boolean;
+};
+
 export type RecipientModel = {
   member: MemberDto;
   isRecommended: boolean;
