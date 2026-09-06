@@ -120,10 +120,28 @@ export const palette = {
   /**
    * 디자인 시스템 바깥의 값. `app.config.ts`의 스플래시 배경과 반드시 같아야 한다.
    * 스플래시 외에는 쓰지 않는다.
+   *
+   * 값은 `blue700`과 같다. 객체 리터럴 안에서 자기 참조가 안 돼 리터럴로 둔다 —
+   * blue700을 바꾸면 여기와 `app.config.ts`도 같이 바꿔야 한다.
    */
-  splashBackground: '#208AEF',
+  splashBackground: '#1D4ED8',
 } as const;
 
 export type PaletteName = keyof typeof palette;
 
 export const MAX_CONTENT_WIDTH = 800;
+
+/**
+ * 외부 서비스의 고정 브랜드 색. 우리 디자인 시스템이 아니므로 Figma primitives에 없고,
+ * 다크모드에서도 바뀌지 않으며, 시맨틱 컬러로 승격시키지도 않는다.
+ * 각 사의 브랜드 가이드가 정한 값이라 우리가 조정할 수 없다.
+ */
+export const socialBrand = {
+  kakaoYellow: '#FEE500',
+} as const;
+
+/**
+ * 화면 좌우 기본 여백. 로그인 시안의 버튼 폭(357 = 393 - 18 x 2)에서 온 값이다.
+ * `spacing` 스케일(4의 배수)에 없는 값이라 별도 상수로 둔다 - 디자인이 2px 그리드를 쓴다.
+ */
+export const SCREEN_PADDING_X = 18;

@@ -1,4 +1,4 @@
-import { StyleSheet, Text as RNText, type TextProps } from 'react-native';
+import { Platform, StyleSheet, Text as RNText, type TextProps } from 'react-native';
 
 import { useTheme, type FontWeightName, type TextVariant, type ThemeColorName } from '@/theme';
 
@@ -9,6 +9,16 @@ export type AppTextProps = TextProps & {
   weight?: FontWeightName;
   color?: ThemeColorName;
 };
+
+/**
+ * Android는 폰트 메트릭에서 온 위아래 여백을 기본으로 더한다. 시안처럼 행간이 글자 크기보다
+ * 훨씬 큰 경우(16/28) 그 여백까지 얹혀서 iOS보다 텍스트가 아래로 밀리고 블록이 커진다.
+ * 끄면 양쪽이 같은 위치에 그려진다.
+ */
+const platformTextStyle = Platform.select({
+  android: { includeFontPadding: false },
+  default: {},
+});
 
 /**
  * 앱 전역 텍스트. RN의 `Text`를 직접 쓰지 않고 항상 이 컴포넌트를 쓴다.
@@ -25,7 +35,12 @@ export function Text({
 
   return (
     <RNText
-      style={[theme.typography[variant][weight], { color: theme.colors[color] }, style]}
+      style={[
+        theme.typography[variant][weight],
+        platformTextStyle,
+        { color: theme.colors[color] },
+        style,
+      ]}
       {...rest}
     />
   );
@@ -33,4 +48,5 @@ export function Text({
 
 export const textStyles = StyleSheet.create({
   center: { textAlign: 'center' },
+  right: { textAlign: 'right' },
 });

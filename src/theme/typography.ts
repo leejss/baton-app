@@ -5,6 +5,10 @@ import { Platform, type TextStyle } from 'react-native';
  *
  * Figma는 8개 역할 × 3개 굵기(regular/medium/semibold) 그리드로 정의돼 있다.
  * 여기서도 같은 모양을 유지한다 — `typography.body.semibold` 처럼 접근한다.
+ *
+ * ⚠️ `bold`(700)는 Figma 그리드 밖이다. 로그인 플로우 시안이 화면 제목과 스낵바
+ * 액션에서 Bold를 쓰고 있어 굵기 축에만 더해 뒀다. Figma Typography 섹션과 실제
+ * 화면 값이 어긋나 있는 상태이며, 디자인 쪽에서 정리되면 이 축을 도로 뺀다.
  * letter-spacing은 전 단계 0이라 따로 두지 않는다.
  *
  * | 역할 | size / line-height |
@@ -32,6 +36,7 @@ export const fontFamily = {
   regular: 'Pretendard-Regular',
   medium: 'Pretendard-Medium',
   semibold: 'Pretendard-SemiBold',
+  bold: 'Pretendard-Bold',
   /** Figma 명세 밖. 값 표시용 고정폭 서체라 플랫폼 기본을 그대로 쓴다. */
   mono: Platform.select({ ios: 'ui-monospace', default: 'monospace' }),
 } as const;
@@ -47,6 +52,7 @@ export const fontWeight = {
   regular: '400',
   medium: '500',
   semibold: '600',
+  bold: '700',
 } as const satisfies Record<string, TextStyle['fontWeight']>;
 
 export type FontWeightName = keyof typeof fontWeight;
@@ -64,6 +70,7 @@ function scale(fontSize: number, lineHeight: number, family: TextFamily = 'sans'
     regular: { fontSize, lineHeight, ...face('regular') },
     medium: { fontSize, lineHeight, ...face('medium') },
     semibold: { fontSize, lineHeight, ...face('semibold') },
+    bold: { fontSize, lineHeight, ...face('bold') },
   };
 }
 

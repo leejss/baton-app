@@ -15,7 +15,7 @@ export function ErrorState({ error, onRetry }: ErrorStateProps) {
 
   return (
     <View style={styles.container}>
-      <Text variant="title" style={textStyles.center}>
+      <Text variant="display" weight="bold" style={textStyles.center}>
         문제가 발생했어요
       </Text>
       <Text color="textSecondary" style={textStyles.center}>

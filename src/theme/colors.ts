@@ -22,6 +22,10 @@ import { palette } from '@/theme/tokens';
  * - `textDisabled`는 비활성 텍스트라 WCAG 대비 요건에서 제외된다.
  * - `border`는 장식용 구분선이다. 입력 필드 테두리처럼 **의미를 전달하는**
  *   경계는 3:1을 넘는 `borderStrong`을 쓴다.
+ *
+ * ## 테마 무관 값
+ * `static*`은 라이트/다크 어느 쪽에서도 뒤집히지 않는 고정색이다. 카카오 노랑처럼
+ * 우리가 못 바꾸는 배경 위의 전경에만 쓴다. 테마에 따라 뒤집혀야 하면 `textInverse`다.
  */
 const light = {
   /** 화면 바닥. */
@@ -30,6 +34,13 @@ const light = {
   surface: palette.gray50,
   /** surface보다 한 단 더 눌린 면(입력 필드 바닥, 코드 칩). */
   surfaceSunken: palette.gray100,
+  /** 비활성 버튼·입력 배경. `border`와 값은 같지만 의미가 달라 키를 나눈다. */
+  surfaceDisabled: palette.gray200,
+  /**
+   * 아직 일러스트가 안 나온 자리를 채우는 회색 사각형. 아트워크가 들어오면 이 키를
+   * 쓰는 `Illustration` 컴포넌트와 함께 사라진다.
+   */
+  placeholder: palette.gray200,
 
   textPrimary: palette.gray900,
   textSecondary: palette.gray600,
@@ -46,6 +57,10 @@ const light = {
 
   border: palette.gray200,
   borderStrong: palette.gray500,
+  /** 포커스된 입력 필드. 로그인 시안에서 유일하게 gray950이 쓰이는 자리다. */
+  borderFocus: palette.gray950,
+  /** 비활성 입력 필드 테두리. `border`보다 더 옅어 존재감을 낮춘다. */
+  borderSubtle: palette.gray100,
 
   accent: palette.blue600,
   accentOn: palette.white,
@@ -56,6 +71,8 @@ const light = {
   dangerOn: palette.white,
   dangerSubtle: palette.red50,
   dangerText: palette.red700,
+  /** 에러 입력 필드·스낵바 테두리. 문구색(`dangerText`)보다 한 단 밝다. */
+  dangerBorder: palette.red500,
 
   /** green600은 흰 글자와 3.30:1이라 fill로 못 쓴다. 그래서 700이 solid다. */
   success: palette.green700,
@@ -68,6 +85,9 @@ const light = {
   warningOn: palette.gray900,
   warningSubtle: palette.yellow50,
   warningText: palette.yellow700,
+
+  staticWhite: palette.white,
+  staticBlack: palette.black,
 
   /** 모달·바텀시트 뒤에 까는 막. Figma 명세 없음 — 필요해서 파생한 값이다. */
   overlay: 'rgba(0, 0, 0, 0.48)',
@@ -83,6 +103,8 @@ export const darkColors: ThemeColors = {
   background: palette.gray950,
   surface: palette.gray900,
   surfaceSunken: palette.gray800,
+  surfaceDisabled: palette.gray800,
+  placeholder: palette.gray800,
 
   textPrimary: palette.gray50,
   textSecondary: palette.gray300,
@@ -95,6 +117,10 @@ export const darkColors: ThemeColors = {
 
   border: palette.gray800,
   borderStrong: palette.gray500,
+  /** 어두운 면에서는 흰 테두리가 포커스를 가장 분명하게 드러낸다. */
+  borderFocus: palette.white,
+  /** 배경(gray950)에서 한 단만 올라온다 — `border`보다 더 물러난 톤. */
+  borderSubtle: palette.gray900,
 
   /** solid는 light와 같은 단계를 쓴다 — 어두운 배경에서도 흰 전경이 5.17:1로 통과한다. */
   accent: palette.blue600,
@@ -106,6 +132,7 @@ export const darkColors: ThemeColors = {
   dangerOn: palette.white,
   dangerSubtle: palette.red950,
   dangerText: palette.red400,
+  dangerBorder: palette.red500,
 
   success: palette.green700,
   successOn: palette.white,
@@ -116,6 +143,9 @@ export const darkColors: ThemeColors = {
   warningOn: palette.gray900,
   warningSubtle: palette.yellow950,
   warningText: palette.yellow400,
+
+  staticWhite: palette.white,
+  staticBlack: palette.black,
 
   overlay: 'rgba(0, 0, 0, 0.64)',
 };

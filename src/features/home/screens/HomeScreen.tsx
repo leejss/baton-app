@@ -1,8 +1,9 @@
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { useAuthStore } from '@/features/auth/store/authStore';
 import { appInfo } from '@/shared/lib/appInfo';
-import { Box, Text, textStyles } from '@/shared/ui';
+import { Box, Button, Text, textStyles } from '@/shared/ui';
 import { MAX_CONTENT_WIDTH, radius, spacing, useTheme } from '@/theme';
 
 /**
@@ -11,6 +12,8 @@ import { MAX_CONTENT_WIDTH, radius, spacing, useTheme } from '@/theme';
  */
 export function HomeScreen() {
   const insets = useSafeAreaInsets();
+  const session = useAuthStore((state) => state.session);
+  const signOut = useAuthStore((state) => state.signOut);
 
   return (
     <Box background="background" style={styles.root}>
@@ -22,7 +25,7 @@ export function HomeScreen() {
         ]}
       >
         <View style={styles.inner}>
-          <Text variant="title" style={textStyles.center}>
+          <Text variant="display" weight="bold" style={textStyles.center}>
             Baton
           </Text>
           <Text color="textSecondary" style={textStyles.center}>
@@ -35,7 +38,10 @@ export function HomeScreen() {
             <InfoRow label="버전" value={appInfo.version ?? '—'} />
             <InfoRow label="빌드" value={appInfo.buildNumber ?? '—'} />
             <InfoRow label="식별자" value={appInfo.applicationId ?? '—'} />
+            <InfoRow label="로그인" value={session?.user.displayName ?? '—'} />
           </Box>
+
+          <Button label="로그아웃" variant="ghost" onPress={() => void signOut()} />
         </View>
       </ScrollView>
     </Box>
@@ -47,7 +53,7 @@ function InfoRow({ label, value }: { label: string; value: string }) {
 
   return (
     <View style={styles.row}>
-      <Text variant="caption" color="textSecondary">
+      <Text variant="bodySmall" weight="medium" color="textSecondary">
         {label}
       </Text>
       <Box background="surface" style={[styles.valueChip, { borderColor: theme.colors.border }]}>

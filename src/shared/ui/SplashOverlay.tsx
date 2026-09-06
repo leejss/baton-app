@@ -5,6 +5,7 @@ import { StyleSheet, View } from 'react-native';
 import Animated, { Easing, Keyframe } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
 
+import { SPLASH_WORDMARK_ASPECT_RATIO, SPLASH_WORDMARK_WIDTH } from '@/theme/splash';
 import { palette } from '@/theme/tokens';
 
 const DURATION = 600;
@@ -21,9 +22,18 @@ const fadeOutKeyframe = new Keyframe({
  * 네이티브 스플래시를 감추고 JS 스플래시로 자연스럽게 이어붙인다.
  * 첫 레이아웃이 끝난 뒤에 감추므로 흰 화면 깜빡임이 없다.
  */
-export function SplashOverlay() {
-  const [isAnimating, setIsAnimating] = useState(false);
+export type SplashOverlayProps = {
+  /**
+   * 앱이 첫 화면을 그릴 준비가 됐는지. 세션 복원처럼 화면 분기를 좌우하는 작업이
+   * 끝나기 전에 사라지면 로그인 화면이 한 번 깜빡였다가 바뀐다.
+   */
+  isReady?: boolean;
+};
+
+export function SplashOverlay({ isReady = true }: SplashOverlayProps) {
+  const [hasHiddenNativeSplash, setHasHiddenNativeSplash] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
+  const isAnimating = hasHiddenNativeSplash && isReady;
 
   if (!isVisible) {
     return null;
@@ -31,8 +41,9 @@ export function SplashOverlay() {
 
   const image = (
     <Image
-      style={styles.image}
-      source={require('@/assets/images/splash-icon.png')}
+      style={styles.wordmark}
+      source={require('@/assets/images/splash-wordmark.png')}
+      contentFit="contain"
       accessibilityElementsHidden
       importantForAccessibility="no"
     />
@@ -43,7 +54,7 @@ export function SplashOverlay() {
       <View
         style={styles.overlay}
         onLayout={() => {
-          SplashScreen.hideAsync().finally(() => setIsAnimating(true));
+          SplashScreen.hideAsync().finally(() => setHasHiddenNativeSplash(true));
         }}
       >
         {image}
@@ -75,5 +86,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     zIndex: 1000,
   },
-  image: { width: 76, height: 71 },
+  wordmark: {
+    width: SPLASH_WORDMARK_WIDTH,
+    aspectRatio: SPLASH_WORDMARK_ASPECT_RATIO,
+  },
 });

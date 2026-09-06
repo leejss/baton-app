@@ -1,26 +1,69 @@
 /**
- * 앱 전역 에러 표현. UI는 `message` 문자열이 아니라 `code`로 분기한다.
+ * 앱 전역 에러 표현. UI는 `message` 문자열이 아니라 코드로 분기한다.
  *
- * 코드 집합은 지금 실제로 발생시킬 수 있는 것만 둔다.
- * HTTP 상태 매핑(401/404/5xx 등)은 백엔드 에러 응답 형식이 정해진 뒤
- * API 레이어와 함께 추가한다 — 미리 지어내면 어차피 다시 쓴다.
+ * 코드가 두 층이다:
+ * - `code`   전송 계층의 실패 종류. 네트워크·타임아웃·취소처럼 서버에 닿지도 못한 경우.
+ * - `errorCode` 서버 계약(`meta.errorCode`)이 내려준 안정적 문자열. 서버에 닿았을 때만 있다.
+ *
+ * 화면이 "비밀번호가 틀렸다"와 "인터넷이 끊겼다"를 같은 자리에서 다르게 안내해야 해서
+ * 둘을 한 필드에 섞지 않는다.
  */
-export type AppErrorCode = 'network' | 'timeout' | 'canceled' | 'unknown';
+export type AppErrorCode = 'network' | 'timeout' | 'canceled' | 'server' | 'unknown';
+
+/**
+ * 계약에 정의된 오류 코드. 화면 분기에 실제로 쓰는 것만 좁혀 둔다.
+ * 목록 전체는 wiki `wiki/api-spec.md` §11에 있다.
+ */
+export type ServerErrorCode =
+  | 'VALIDATION_ERROR'
+  | 'UNAUTHORIZED'
+  | 'FORBIDDEN'
+  | 'NOT_FOUND'
+  | 'CONFLICT'
+  | 'SERVICE_UNAVAILABLE'
+  | 'AUTH_INVALID_CREDENTIALS'
+  | 'AUTH_LOGIN_TEMPORARILY_LOCKED'
+  | 'AUTH_ACCOUNT_ALREADY_EXISTS'
+  | 'AUTH_ACCOUNT_NOT_FOUND'
+  | 'SOCIAL_AUTHENTICATION_FAILED'
+  | 'SOCIAL_SIGNUP_TOKEN_INVALID'
+  | 'SAME_AS_CURRENT_PASSWORD'
+  | 'EMAIL_VERIFICATION_RESEND_TOO_SOON';
 
 const FALLBACK_MESSAGE = '알 수 없는 문제가 발생했어요.';
 
+type AppErrorOptions = {
+  cause?: unknown;
+  /** 서버 계약의 `meta.errorCode`. */
+  errorCode?: string | null;
+  status?: number | null;
+  /** `429` 응답의 `Retry-After`(초). 로그인 잠금·코드 재발송 두 곳에서 쓴다. */
+  retryAfterSeconds?: number | null;
+};
+
 export class AppError extends Error {
   readonly code: AppErrorCode;
+  readonly errorCode: string | null;
+  readonly status: number | null;
+  readonly retryAfterSeconds: number | null;
 
-  constructor(code: AppErrorCode, message: string, options?: { cause?: unknown }) {
+  constructor(code: AppErrorCode, message: string, options?: AppErrorOptions) {
     super(message, { cause: options?.cause });
     this.name = 'AppError';
     this.code = code;
+    this.errorCode = options?.errorCode ?? null;
+    this.status = options?.status ?? null;
+    this.retryAfterSeconds = options?.retryAfterSeconds ?? null;
   }
 }
 
 export function isAppError(value: unknown): value is AppError {
   return value instanceof AppError;
+}
+
+/** 서버가 특정 계약 오류를 돌려줬는지. 화면 분기의 기본 수단이다. */
+export function hasServerErrorCode(value: unknown, code: ServerErrorCode): boolean {
+  return isAppError(value) && value.errorCode === code;
 }
 
 /**
@@ -34,6 +77,12 @@ export function normalizeError(error: unknown): AppError {
 
   if (error instanceof DOMException && error.name === 'AbortError') {
     return new AppError('canceled', '요청이 취소됐어요.', { cause: error });
+  }
+
+  if (error instanceof Error && error.name === 'TimeoutError') {
+    return new AppError('timeout', '응답이 너무 늦어요. 잠시 후 다시 시도해주세요.', {
+      cause: error,
+    });
   }
 
   if (error instanceof TypeError) {
