@@ -49,6 +49,12 @@ const light = {
   /** 어두운 면 위에 올라가는 텍스트. */
   textInverse: palette.white,
 
+  /**
+   * Figma 하단 탭(node 13:1916)의 고정 전경색.
+   * TODO(design-system): `textPrimary`와 역할·값을 다시 맞춘 뒤 전용 키 유지 여부를 결정해야 한다.
+   */
+  navigationForeground: palette.gray800,
+
   border: palette.gray200,
   borderStrong: palette.gray500,
   /** 포커스된 입력 필드. 로그인 시안에서 유일하게 gray950이 쓰이는 자리다. */
@@ -105,6 +111,9 @@ export const darkColors: ThemeColors = {
   textTertiary: palette.gray400,
   textDisabled: palette.gray600,
   textInverse: palette.gray900,
+
+  /** 하단 탭은 Figma 명세대로 흰 배경을 고정하므로 다크모드에서도 같은 전경색을 쓴다. */
+  navigationForeground: palette.gray800,
 
   border: palette.gray800,
   borderStrong: palette.gray500,

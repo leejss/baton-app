@@ -31,4 +31,6 @@ export default function IndexRoute() {
 
   // TODO(STORE-01): signedIn 이어도 membership 이 없으면 /(store) 로 보내야 한다.
   return <Redirect href={status === 'signedIn' ? '/home' : '/start'} />;
+export default function IndexRoute() {
+  return <Redirect href="/home" />;
 }
