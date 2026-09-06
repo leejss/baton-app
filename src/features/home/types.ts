@@ -1,0 +1,54 @@
+export type HomeRole = 'MANAGER' | 'EMPLOYEE';
+
+export type HomeProfileImageKey = 'DEFAULT_01' | 'DEFAULT_MANAGER' | 'DEFAULT_EMPLOYEE';
+
+export type HomeHandoffStatus = 'UNCONFIRMED' | 'CONFIRMED' | 'TERMINATED';
+
+export type HomeHeaderModel = {
+  badgeText?: string;
+  displayName: string;
+  roleLabel: '관리자' | '직원';
+  storeLabel: string;
+};
+
+export type HomeHandoffItem = {
+  canConfirm: boolean;
+  id: number;
+  status: HomeHandoffStatus;
+  title: string;
+};
+
+export type HomeWeekDay = {
+  accessibilityLabel: string;
+  date: string;
+  day: number;
+  isSelected: boolean;
+};
+
+export type HomeShiftItem = {
+  canCreateHandoff: boolean;
+  endTime: string;
+  id: number;
+  name: string;
+  profileImageKey: HomeProfileImageKey;
+  startTime: string;
+  userId: number;
+};
+
+export type HomeHandoffSectionModel = {
+  items: HomeHandoffItem[];
+  totalCount: number;
+};
+
+export type HomeScheduleModel = {
+  items: HomeShiftItem[];
+  selectedDate: string;
+  title: string;
+  weekDays: HomeWeekDay[];
+};
+
+export type HomeScreenModel = {
+  handoffs: HomeHandoffSectionModel;
+  header: HomeHeaderModel;
+  schedule: HomeScheduleModel;
+};

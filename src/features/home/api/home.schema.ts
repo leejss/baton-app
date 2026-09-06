@@ -1,0 +1,146 @@
+import { z } from 'zod';
+
+const idSchema = z.number().int().positive();
+const dateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
+const timeSchema = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/);
+const endTimeSchema = z.string().regex(/^(([01]\d|2[0-3]):[0-5]\d|24:00)$/);
+
+const responseMetaSchema = z.object({
+  result: z.enum(['SUCCESS', 'FAIL']),
+  errorCode: z.string().nullable(),
+  message: z.string().nullable(),
+});
+
+export const profileImageSchema = z.object({
+  source: z.literal('STATIC'),
+  key: z.enum(['DEFAULT_01', 'DEFAULT_MANAGER', 'DEFAULT_EMPLOYEE']),
+});
+
+export const userProfileSchema = z.object({
+  id: idSchema,
+  email: z.string().email(),
+  displayName: z.string().min(2).max(20),
+  profileImage: profileImageSchema,
+  status: z.literal('ACTIVE').optional(),
+});
+
+export const storeSchema = z.object({
+  id: idSchema,
+  storeName: z.string().min(2).max(50),
+  branchName: z.string().min(1),
+  address: z.string().min(1),
+  detailAddress: z.string().optional(),
+  storeContact: z.string(),
+  status: z.enum(['ACTIVE', 'INACTIVE']),
+  createdAt: z.string().datetime(),
+  deactivatedAt: z.string().datetime().optional(),
+});
+
+export const membershipContextSchema = z.object({
+  store: storeSchema,
+  role: z.enum(['MANAGER', 'EMPLOYEE']),
+  status: z.enum(['ACTIVE', 'LEFT']),
+});
+
+export const memberSchema = z.object({
+  userId: idSchema,
+  email: z.string().email(),
+  displayName: z.string(),
+  profileImage: profileImageSchema,
+  role: z.enum(['MANAGER', 'EMPLOYEE']),
+  status: z.enum(['ACTIVE', 'LEFT']),
+});
+
+const scheduleSchema = z.object({
+  id: idSchema,
+  employee: memberSchema,
+  workDate: dateSchema,
+  startTime: timeSchema,
+  endTime: endTimeSchema,
+  status: z.literal('ACTIVE'),
+});
+
+const handoverRecipientSchema = z.object({
+  user: memberSchema,
+  status: z.enum(['ACTIVE', 'PARTICIPATION_ENDED']),
+  confirmedAt: z.string().datetime().optional(),
+  participationEndedAt: z.string().datetime().optional(),
+});
+
+export const handoverListItemSchema = z.object({
+  id: idSchema,
+  type: z.enum(['WORK_TASK', 'STORE_STATUS', 'OTHER']),
+  title: z.string().max(20),
+  sender: memberSchema,
+  recipient: handoverRecipientSchema,
+  status: z.enum(['UNCONFIRMED', 'CONFIRMED', 'TERMINATED']),
+  sentAt: z.string().datetime(),
+});
+
+const handoverSchema = handoverListItemSchema.extend({
+  body: z.string().max(200),
+  attachments: z.array(z.unknown()).max(10),
+});
+
+const notificationSchema = z.object({
+  id: idSchema,
+  type: z.enum([
+    'HANDOVER_RECEIVED',
+    'HANDOVER_CONFIRMED',
+    'SCHEDULE_CHANGED',
+    'UPDATE_ANNOUNCEMENT',
+  ]),
+  title: z.string().max(100),
+  body: z.string().max(500).optional(),
+  handoverId: idSchema.optional(),
+  scheduleId: idSchema.optional(),
+  status: z.enum(['UNREAD', 'READ']),
+  createdAt: z.string().datetime(),
+  readAt: z.string().datetime().optional(),
+  expiresAt: z.string().datetime().optional(),
+});
+
+export const userProfileResponseSchema = z.object({
+  meta: responseMetaSchema,
+  data: userProfileSchema,
+});
+
+export const myStoreResponseSchema = z.object({
+  meta: responseMetaSchema,
+  data: z.object({ membership: membershipContextSchema.optional() }),
+});
+
+export const homeSummaryResponseSchema = z.object({
+  meta: responseMetaSchema,
+  data: z.object({
+    date: dateSchema,
+    schedulePreview: z.array(scheduleSchema).max(3),
+    receivedHandoverCount: z.number().int().nonnegative(),
+    receivedHandovers: z.array(handoverListItemSchema).max(3),
+  }),
+});
+
+export const notificationListResponseSchema = z.object({
+  meta: responseMetaSchema,
+  data: z.object({
+    items: z.array(notificationSchema),
+    unreadCount: z.number().int().nonnegative(),
+    badgeText: z.string(),
+  }),
+});
+
+export const handoverResponseSchema = z.object({
+  meta: responseMetaSchema,
+  data: handoverSchema,
+});
+
+export type UserProfileDto = z.infer<typeof userProfileSchema>;
+export type MembershipContextDto = z.infer<typeof membershipContextSchema>;
+export type MemberDto = z.infer<typeof memberSchema>;
+export type ScheduleDto = z.infer<typeof scheduleSchema>;
+export type HandoverListItemDto = z.infer<typeof handoverListItemSchema>;
+export type UserProfileResponseDto = z.infer<typeof userProfileResponseSchema>;
+export type MyStoreResponseDto = z.infer<typeof myStoreResponseSchema>;
+export type HomeSummaryResponseDto = z.infer<typeof homeSummaryResponseSchema>;
+export type NotificationListResponseDto = z.infer<typeof notificationListResponseSchema>;
+export type HandoverResponseDto = z.infer<typeof handoverResponseSchema>;
