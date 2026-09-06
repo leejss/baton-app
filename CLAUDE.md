@@ -17,6 +17,7 @@
 | 서버 상태 | **TanStack Query v5** | 서버 데이터는 절대 Zustand에 복사하지 않는다 |
 | 리스트 | **FlashList v2** | 100개 이상 가능성 있는 리스트는 무조건 |
 | 이미지 | **expo-image** | `Image` (RN 기본) 사용 금지 |
+| 아이콘 | **react-native-svg** | 글리프는 `shared/ui/icons/glyphs`에 컴포넌트로. 색은 시맨틱 토큰만 |
 | 애니메이션 | **Reanimated 4** + Gesture Handler | 60fps 필요한 건 전부 워크릿으로 |
 | 폼 | **react-hook-form + zod** | |
 | 저장소 | **react-native-mmkv** (동기) / **expo-secure-store** (민감정보) | AsyncStorage 신규 사용 금지 |
