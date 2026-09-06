@@ -5,6 +5,7 @@ export { EmptyState } from '@/shared/ui/EmptyState';
 export { ErrorBoundary } from '@/shared/ui/ErrorBoundary';
 export { ErrorState } from '@/shared/ui/ErrorState';
 export { ExternalLink } from '@/shared/ui/ExternalLink';
+export { Modal, MODAL_ICON_SIZE, type ModalProps } from '@/shared/ui/Modal';
 export { QueryBoundary } from '@/shared/ui/QueryBoundary';
 export { Snackbar, type SnackbarProps } from '@/shared/ui/Snackbar';
 export { Text, textStyles, type AppTextProps } from '@/shared/ui/Text';

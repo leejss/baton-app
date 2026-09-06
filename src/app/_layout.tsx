@@ -6,6 +6,7 @@ import { AppState, StyleSheet, useColorScheme } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 
+import { ForcedLogoutModal } from '@/features/auth/components/ForcedLogoutModal';
 import { useAuthStore } from '@/features/auth/store/authStore';
 import { createQueryClient } from '@/shared/api/queryClient';
 import { logger } from '@/shared/lib/logger';
@@ -56,6 +57,8 @@ export default function RootLayout() {
               <Stack.Screen name="+not-found" />
             </Stack>
             <SplashOverlay isReady={authStatus !== 'restoring'} />
+            {/* 어느 화면에 있든 위에 떠야 해서 라우트 트리 바깥에 둔다. */}
+            <ForcedLogoutModal />
           </ThemeProvider>
         </QueryClientProvider>
       </KeyboardProvider>

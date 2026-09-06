@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { Alert, Pressable, StyleSheet, View } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
@@ -18,6 +18,7 @@ import { OrDivider } from '@/features/auth/components/OrDivider';
 import { PasswordToggle } from '@/features/auth/components/PasswordToggle';
 import { SocialCircleButton } from '@/features/auth/components/SocialCircleButton';
 import { signInFormSchema, type SignInForm } from '@/features/auth/lib/validation';
+import { useAuthStore } from '@/features/auth/store/authStore';
 
 /**
  * 세로 리듬은 Figma "03 (이메일)로그인 화면"(`943:111123`, 393×852) 실측값이다.
@@ -87,6 +88,14 @@ export function EmailLoginScreen({
    * 서버가 남은 횟수를 응답에 주면 그때 이 상태를 지운다.
    */
   const [failedAttempts, setFailedAttempts] = useState(0);
+
+  /**
+   * 강제 로그아웃 안내(시안 01-2). 모달에서 넘어온 경우에만 뜬다.
+   * 화면을 벗어나면 지운다 — 남겨두면 다음에 로그인 화면에 올 때 또 뜬다.
+   */
+  const signOutReason = useAuthStore((state) => state.signOutReason);
+  const clearSignOutReason = useAuthStore((state) => state.clearSignOutReason);
+  useEffect(() => clearSignOutReason, [clearSignOutReason]);
 
   const lockout = useCountdown(lockedUntil);
   const isLocked = lockedUntil !== null && !lockout.isExpired;
@@ -278,17 +287,25 @@ export function EmailLoginScreen({
         </View>
       </KeyboardAwareScrollView>
 
-      {isLimitNoticeVisible && (
+      {(isLimitNoticeVisible || signOutReason === 'sessionRevoked') && (
         <View
           style={[styles.notice, { bottom: insets.bottom + SPEC.noticeBottom }]}
           pointerEvents="box-none"
         >
-          <Snackbar
-            title="비밀번호 입력 횟수 초과"
-            description="5분 후 다시 시도해주세요"
-            actionLabel="확인"
-            onAction={() => setIsLimitNoticeVisible(false)}
-          />
+          {/* 방금 누른 동작에 대한 응답이 먼저다. 강제 로그아웃 안내는 그 뒤로 물러난다. */}
+          {isLimitNoticeVisible ? (
+            <Snackbar
+              title="비밀번호 입력 횟수 초과"
+              description="5분 후 다시 시도해주세요"
+              actionLabel="확인"
+              onAction={() => setIsLimitNoticeVisible(false)}
+            />
+          ) : (
+            <Snackbar
+              title="로그아웃 되었어요."
+              description="다른 기기에서 로그인 되어 로그아웃 되었어요."
+            />
+          )}
         </View>
       )}
     </Box>
