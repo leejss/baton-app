@@ -1,97 +1,142 @@
+import { useQuery } from '@tanstack/react-query';
+import { useRouter } from 'expo-router';
 import { ScrollView, StyleSheet, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { useAuthStore } from '@/features/auth/store/authStore';
-import { appInfo } from '@/shared/lib/appInfo';
-import { Box, Button, Text, textStyles } from '@/shared/ui';
-import { MAX_CONTENT_WIDTH, radius, spacing, useTheme } from '@/theme';
+import type { HomeDataSource } from '@/features/home/api/home.dataSource';
+import { mapHomeHeaderModel } from '@/features/home/api/home.mapper';
+import { mockHomeDataSource } from '@/features/home/api/home.mockDataSource';
+import { homeQueries } from '@/features/home/api/home.queries';
+import { HandoffCard } from '@/features/home/components/HandoffCard';
+import { HomeHeader } from '@/features/home/components/HomeHeader';
+import { HomeMessageState } from '@/features/home/components/HomeMessageState';
+import { WeekScheduleCard } from '@/features/home/components/WeekScheduleCard';
+import { getTodayInSeoul } from '@/features/home/lib/homeDate';
+import { Text } from '@/shared/ui';
+import { spacing } from '@/theme';
 
-/**
- * 임시 홈 화면. 실제 기능이 정해지면 이 화면을 대체한다.
- * 지금은 QA가 어느 변형·버전을 설치했는지 확인하는 용도로 쓴다.
- */
-export function HomeScreen() {
-  const insets = useSafeAreaInsets();
-  const session = useAuthStore((state) => state.session);
-  const signOut = useAuthStore((state) => state.signOut);
+type HomeScreenProps = {
+  dataSource?: HomeDataSource;
+  initialDate?: string;
+};
 
-  return (
-    <Box background="background" style={styles.root}>
+const HOME_ERROR_MESSAGE = '홈 정보를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.';
+
+export function HomeScreen({
+  dataSource = mockHomeDataSource,
+  initialDate = getTodayInSeoul(),
+}: HomeScreenProps) {
+  const router = useRouter();
+
+  const contextQuery = useQuery(homeQueries.context(dataSource));
+  const storeId = contextQuery.data?.membership.store.id;
+  const notificationsQuery = useQuery({
+    ...homeQueries.notifications(dataSource, storeId ?? 0),
+    enabled: storeId !== undefined,
+  });
+
+  const handleContextRetry = () => {
+    void contextQuery.refetch();
+  };
+  const handleNotificationPress = () => router.push('/notifications');
+  const handleHandoffDetailsPress = () => router.navigate('/handoffs?scope=ALL');
+  const handleScheduleDetailsPress = (selectedDate: string) =>
+    router.navigate({ pathname: '/schedules', params: { selectedDate } });
+  const handleCreateHandoff = (recipientId: number) =>
+    router.push({ pathname: '/handoffs/new', params: { recipientId: String(recipientId) } });
+
+  if (contextQuery.isPending) {
+    return (
       <ScrollView
         contentInsetAdjustmentBehavior="automatic"
-        contentContainerStyle={[
-          styles.content,
-          { paddingTop: insets.top + spacing.xl, paddingBottom: insets.bottom + spacing.xl },
-        ]}
+        contentContainerStyle={styles.fullPageState}
+        style={styles.root}
       >
-        <View style={styles.inner}>
-          <Text variant="display" weight="bold" style={textStyles.center}>
-            Baton
-          </Text>
-          <Text color="textSecondary" style={textStyles.center}>
-            아직 화면이 없습니다. 첫 기능은{'\n'}
-            <Text variant="code">src/features/</Text> 아래에 추가하세요.
-          </Text>
-
-          <Box background="surface" style={styles.card}>
-            <InfoRow label="환경" value={appInfo.environment} />
-            <InfoRow label="버전" value={appInfo.version ?? '—'} />
-            <InfoRow label="빌드" value={appInfo.buildNumber ?? '—'} />
-            <InfoRow label="식별자" value={appInfo.applicationId ?? '—'} />
-            <InfoRow label="로그인" value={session?.user.displayName ?? '—'} />
-          </Box>
-
-          <Button label="로그아웃" variant="ghost" onPress={() => void signOut()} />
-        </View>
+        <HomeMessageState message="홈 정보를 불러오는 중입니다." />
       </ScrollView>
-    </Box>
-  );
-}
+    );
+  }
 
-function InfoRow({ label, value }: { label: string; value: string }) {
-  const theme = useTheme();
+  if (contextQuery.isError) {
+    return (
+      <ScrollView
+        contentInsetAdjustmentBehavior="automatic"
+        contentContainerStyle={styles.fullPageState}
+        style={styles.root}
+      >
+        <HomeMessageState
+          message={HOME_ERROR_MESSAGE}
+          isLoading={contextQuery.isFetching}
+          onRetry={handleContextRetry}
+        />
+      </ScrollView>
+    );
+  }
+
+  const header = mapHomeHeaderModel(contextQuery.data, notificationsQuery.data);
 
   return (
-    <View style={styles.row}>
-      <Text variant="bodySmall" weight="medium" color="textSecondary">
-        {label}
-      </Text>
-      <Box background="surface" style={[styles.valueChip, { borderColor: theme.colors.border }]}>
-        <Text variant="code">{value}</Text>
-      </Box>
+    <View style={styles.root}>
+      <HomeHeader model={header} onNotificationPress={handleNotificationPress} />
+      <ScrollView
+        contentInsetAdjustmentBehavior="automatic"
+        contentContainerStyle={styles.scrollContent}
+      >
+        <View style={styles.content}>
+          <Text weight="semibold" style={styles.greeting}>
+            {header.displayName}님
+          </Text>
+
+          <View style={styles.cards}>
+            <HandoffCard
+              dataSource={dataSource}
+              date={initialDate}
+              storeId={contextQuery.data.membership.store.id}
+              onDetailsPress={handleHandoffDetailsPress}
+            />
+            <WeekScheduleCard
+              currentUserId={contextQuery.data.profile.id}
+              dataSource={dataSource}
+              initialDate={initialDate}
+              storeId={contextQuery.data.membership.store.id}
+              onCreateHandoff={handleCreateHandoff}
+              onDetailsPress={handleScheduleDetailsPress}
+            />
+          </View>
+        </View>
+      </ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1 },
-  content: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    paddingHorizontal: spacing.md,
-  },
-  inner: {
+  // TODO(design-system): Figma node 732:17460의 홈 전용 배경과 393px 기준 폭은 공용 토큰에 없다.
+  root: {
     flex: 1,
-    maxWidth: MAX_CONTENT_WIDTH,
-    gap: spacing.md,
+    backgroundColor: '#F1F6FF',
   },
-  card: {
-    marginTop: spacing.md,
-    borderRadius: radius.lg,
-    padding: spacing.md,
-    gap: spacing.sm,
-  },
-  row: {
-    flexDirection: 'row',
+  fullPageState: {
+    flexGrow: 1,
     alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: spacing.sm,
-    minHeight: 32,
+    justifyContent: 'center',
   },
-  valueChip: {
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-    borderRadius: radius.sm,
-    flexShrink: 1,
+  scrollContent: {
+    alignItems: 'center',
+    paddingTop: spacing.xs,
+    paddingHorizontal: 18,
+    paddingBottom: 52,
+  },
+  content: {
+    width: '100%',
+    maxWidth: 357,
+    gap: 22,
+  },
+  greeting: {
+    // TODO(design-system): Figma node 732:17465의 22px Bold는 토큰/폰트가 없어 Semibold로 대체한다.
+    fontSize: 22,
+    lineHeight: 32,
+    color: '#000000',
+  },
+  cards: {
+    gap: spacing.md,
   },
 });
