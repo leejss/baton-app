@@ -61,7 +61,6 @@ export function isAppTabName(value: string | undefined): value is AppTabName {
   return APP_TAB_NAMES.some((tabName) => tabName === value);
 }
 
-/** iOS와 Android에서 동일한 Figma 하단 탭을 렌더링한다. */
 export function AppTabBar({
   activeTab,
   onComposePress,
@@ -115,7 +114,6 @@ export function AppTabBar({
 
 function TabButton({ isSelected, name, onLongPress, onPress }: TabButtonProps) {
   const { ActiveIcon, InactiveIcon, label } = TAB_ITEMS[name];
-  // Figma의 Active 상태는 fill 아이콘과 파란 전경색을 함께 사용한다.
   const Icon = isSelected ? ActiveIcon : InactiveIcon;
   const foregroundColor = isSelected ? 'accent' : 'navigationForeground';
 

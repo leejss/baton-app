@@ -10,7 +10,6 @@ type RoutePlaceholderScreenProps = {
   title: string;
 };
 
-/** 라우트 구조를 먼저 검증할 수 있도록 기능 구현 전 화면의 경계를 표시한다. */
 export function RoutePlaceholderScreen({
   description,
   featureIds,

@@ -2,7 +2,6 @@ import { Tabs, useRouter } from 'expo-router';
 
 import { AppTabBar, isAppTabName, type AppTabName } from '@/shared/ui/AppTabBar';
 
-/** NAV-01~05: 네 개의 실제 탭과 가운데 인수인계 작성 액션을 연결한다. */
 export function AppTabs() {
   const router = useRouter();
 
