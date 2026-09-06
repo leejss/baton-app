@@ -25,6 +25,9 @@ describe('HandoffCard', () => {
 
     fireEvent.press(screen.getByLabelText('마감 정산 확인 수정 및 삭제 메뉴'));
     expect(onManagePress).toHaveBeenCalledWith('handoff-1');
+    expect(screen.getByText('오늘')).toBeOnTheScreen();
+    expect(screen.getByText('확인 전')).toBeOnTheScreen();
+    expect(screen.queryByText('김지우 → 박민주')).not.toBeOnTheScreen();
   });
 
   it('수신 카드와 확인 완료 발신 카드에는 관리 메뉴를 표시하지 않는다', async () => {
