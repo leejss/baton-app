@@ -60,11 +60,14 @@ export function Button({
               : colors.accent,
         }
       : variant === 'secondary'
-        ? { backgroundColor: colors.surface }
+        ? /** 회원가입 시안의 "인증번호 재전송" 비활성 배색(#F3F4F6 / #9CA3AF). */
+          { backgroundColor: isMuted ? colors.surfaceSunken : colors.surface }
         : { backgroundColor: colors.background, borderWidth: 1, borderColor: colors.borderStrong };
 
   const labelColor = isMuted
-    ? 'textTertiary'
+    ? variant === 'secondary'
+      ? 'textDisabled'
+      : 'textTertiary'
     : variant === 'primary' || variant === 'accent'
       ? 'staticWhite'
       : variant === 'secondary'

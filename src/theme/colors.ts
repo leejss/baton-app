@@ -91,6 +91,12 @@ const light = {
 
   /** 모달·바텀시트 뒤에 까는 막. Figma 명세 없음 — 필요해서 파생한 값이다. */
   overlay: 'rgba(0, 0, 0, 0.48)',
+  /**
+   * 하단 토스트(`Notification`, 73:6524)의 반투명 배경. Figma `tag/surface/fill/neutral`
+   * (gray500) 위에 `opacity/52`를 얹은 값이라 rgba로 둔다 — View `opacity`로 처리하면
+   * 위의 글자까지 같이 흐려진다. 전경은 항상 `staticWhite`.
+   */
+  toastBackground: 'rgba(107, 114, 128, 0.52)',
 } as const;
 
 /** 값은 문자열로 넓힌다 — light/dark가 같은 키 집합만 공유하면 된다. */
@@ -148,4 +154,6 @@ export const darkColors: ThemeColors = {
   staticBlack: palette.black,
 
   overlay: 'rgba(0, 0, 0, 0.64)',
+  /** 어두운 바닥에서는 같은 회색이 묻혀서 한 단 밝은 gray400(#9CA3AF)을 쓴다. */
+  toastBackground: 'rgba(156, 163, 175, 0.52)',
 };

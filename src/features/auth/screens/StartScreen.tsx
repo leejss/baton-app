@@ -11,6 +11,7 @@ import { isCanceled, useKakaoSignIn } from '@/features/auth/api/auth.mutations';
 import { AuthHeader } from '@/features/auth/components/AuthHeader';
 import { OrDivider } from '@/features/auth/components/OrDivider';
 import { StartButton } from '@/features/auth/components/StartButton';
+import { useSignupStore } from '@/features/auth/store/signupStore';
 
 /**
  * 세로 리듬은 Figma "02 시작(로그인 선택) 화면"(`943:111106`, 393×852) 실측값이다.
@@ -46,6 +47,11 @@ export type StartScreenProps = {
   onStartWithKakao?: () => void;
   onStartWithApple?: () => void;
   onStartWithEmail?: () => void;
+  /**
+   * 소셜 인증은 됐지만 연결된 Baton 계정이 없을 때(계약 §12-1 `SIGNUP_REQUIRED`).
+   * 가입 정보는 이미 `signupStore`에 채워진 뒤이므로 라우트는 가입 첫 화면으로만 보내면 된다.
+   */
+  onSocialSignupRequired?: () => void;
 };
 
 /** 아직 연결할 화면·API가 없는 동작. 조용히 삼키지 않고 로그로 남긴다. */
@@ -57,9 +63,11 @@ export function StartScreen({
   onStartWithKakao,
   onStartWithApple = notWired('apple'),
   onStartWithEmail = notWired('email'),
+  onSocialSignupRequired = notWired('socialSignup'),
 }: StartScreenProps) {
   const insets = useSafeAreaInsets();
   const kakaoSignIn = useKakaoSignIn();
+  const startSocialSignup = useSignupStore((state) => state.startSocialSignup);
 
   const handleKakaoPress = () => {
     if (onStartWithKakao !== undefined) {
@@ -74,15 +82,14 @@ export function StartScreen({
           return;
         }
 
-        /**
-         * 계약상 신규 소셜 식별자는 로그인이 아니라 가입 대기다(§12-1).
-         * 가입 화면이 아직 없어서 조용히 성공한 척하지 않고 여기서 멈춘다.
-         */
-        logger.warn('소셜 가입 플로우가 아직 연결되지 않았습니다', { provider: 'kakao' });
-        Alert.alert(
-          '가입이 필요해요',
-          '카카오 계정으로 처음 오셨어요. 가입 화면은 아직 준비 중이에요.',
-        );
+        // 계약상 신규 소셜 식별자는 로그인이 아니라 가입 대기다(§12-1). 추가정보 입력으로 잇는다(AUTH-12).
+        startSocialSignup({
+          provider: 'kakao',
+          socialSignupToken: outcome.socialSignupToken,
+          suggestedDisplayName: outcome.suggestedDisplayName,
+          suggestedEmail: outcome.suggestedEmail,
+        });
+        onSocialSignupRequired();
       },
       onError: (error) => {
         // 사용자가 직접 닫은 경우엔 아무것도 띄우지 않는다.
