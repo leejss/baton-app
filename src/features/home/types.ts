@@ -4,13 +4,6 @@ export type HomeProfileImageKey = 'DEFAULT_01' | 'DEFAULT_MANAGER' | 'DEFAULT_EM
 
 export type HomeHandoffStatus = 'UNCONFIRMED' | 'CONFIRMED' | 'TERMINATED';
 
-export type HomeHeaderModel = {
-  badgeText?: string;
-  displayName: string;
-  roleLabel: '관리자' | '직원';
-  storeLabel: string;
-};
-
 export type HomeHandoffItem = {
   canConfirm: boolean;
   id: number;
@@ -45,10 +38,4 @@ export type HomeScheduleModel = {
   selectedDate: string;
   title: string;
   weekDays: HomeWeekDay[];
-};
-
-export type HomeScreenModel = {
-  handoffs: HomeHandoffSectionModel;
-  header: HomeHeaderModel;
-  schedule: HomeScheduleModel;
 };

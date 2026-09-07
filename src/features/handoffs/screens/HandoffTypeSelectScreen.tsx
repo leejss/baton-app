@@ -1,19 +1,20 @@
 import { ScrollView, StyleSheet, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type { HandoffTypeDto } from '@/features/handoffs/api/handoff.schema';
 import { HandoffFooterActions } from '@/features/handoffs/components/HandoffFooterActions';
-import { HandoffHeader } from '@/features/handoffs/components/HandoffHeader';
 import { HandoffTypeOption } from '@/features/handoffs/components/HandoffTypeOption';
+import { HandoffPresetRecipientNext } from '@/features/handoffs/components/HandoffPresetRecipientNext';
 import {
   hasHandoffDraftChanges,
   useHandoffDraftStore,
 } from '@/features/handoffs/model/handoffDraftStore';
 import { useUnsavedHandoffGuard } from '@/features/handoffs/model/useUnsavedHandoffGuard';
+import { ScreenHeader } from '@/shared/ui/ScreenHeader';
 import { Text } from '@/shared/ui';
 import { SCREEN_PADDING_X, useTheme } from '@/theme';
 
 type HandoffTypeSelectScreenProps = {
+  initialRecipientId?: string;
   onExit: () => void;
   onNext: () => void;
 };
@@ -29,8 +30,11 @@ const OPTIONS: readonly {
 ];
 const DEFAULT_HANDOFF_TYPE: HandoffTypeDto = 'WORK_TASK';
 
-export function HandoffTypeSelectScreen({ onExit, onNext }: HandoffTypeSelectScreenProps) {
-  const insets = useSafeAreaInsets();
+export function HandoffTypeSelectScreen({
+  onExit,
+  onNext,
+  initialRecipientId,
+}: HandoffTypeSelectScreenProps) {
   const theme = useTheme();
   const type = useHandoffDraftStore((state) => state.type);
   const hasChanges = useHandoffDraftStore(hasHandoffDraftChanges);
@@ -51,10 +55,8 @@ export function HandoffTypeSelectScreen({ onExit, onNext }: HandoffTypeSelectScr
   };
 
   return (
-    <View
-      style={[styles.root, { backgroundColor: theme.colors.background, paddingTop: insets.top }]}
-    >
-      <HandoffHeader leading="close" onLeadingPress={handleExit} />
+    <View style={[styles.root, { backgroundColor: theme.colors.background }]}>
+      <ScreenHeader onClose={handleExit} />
       <ScrollView
         contentInsetAdjustmentBehavior="automatic"
         contentContainerStyle={styles.content}
@@ -75,7 +77,11 @@ export function HandoffTypeSelectScreen({ onExit, onNext }: HandoffTypeSelectScr
           ))}
         </View>
       </ScrollView>
-      <HandoffFooterActions primaryLabel="다음" onPrimaryPress={handleNext} />
+      {initialRecipientId ? (
+        <HandoffPresetRecipientNext recipientId={initialRecipientId} onNext={handleNext} />
+      ) : (
+        <HandoffFooterActions primaryLabel="다음" onPrimaryPress={handleNext} />
+      )}
     </View>
   );
 }

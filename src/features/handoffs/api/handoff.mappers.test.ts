@@ -77,7 +77,7 @@ describe('handoff mapper', () => {
     expect(detail).toMatchObject({
       typeLabel: '업무 처리',
       dateLabel: '오늘',
-      recipientLabel: '박민주님께',
+      recipientLabel: '이서연님께',
       statusActionLabel: '확인중',
       canManage: true,
       attachments: [{ id: 'attachment-visible', uri: 'https://example.com/photo.jpg' }],

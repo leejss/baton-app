@@ -15,7 +15,6 @@ export default function HandoffsRoute() {
       onEdit={(handoffId) =>
         router.push({ pathname: '/(main)/handoffs/[handoffId]/edit', params: { handoffId } })
       }
-      onNotificationPress={() => router.push('/(main)/notifications')}
       onOpen={(handoffId) =>
         router.push({ pathname: '/(main)/handoffs/[handoffId]', params: { handoffId } })
       }

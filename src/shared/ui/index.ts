@@ -5,7 +5,7 @@ export { EmptyState } from '@/shared/ui/EmptyState';
 export { ErrorBoundary } from '@/shared/ui/ErrorBoundary';
 export { ErrorState } from '@/shared/ui/ErrorState';
 export { ExternalLink } from '@/shared/ui/ExternalLink';
-export { MainHeader, type MainHeaderModel } from '@/shared/ui/main-header';
+export { ScreenHeader } from '@/shared/ui/ScreenHeader';
 export { Modal, MODAL_ICON_SIZE, type ModalProps } from '@/shared/ui/Modal';
 export { Pressable, type PressableProps } from '@/shared/ui/Pressable';
 export { QueryBoundary } from '@/shared/ui/QueryBoundary';

@@ -2,7 +2,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useController, useForm } from 'react-hook-form';
 import { Alert, ScrollView, StyleSheet, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useShallow } from 'zustand/react/shallow';
 
 import { toCreateRequest } from '@/features/handoffs/api/handoff.mappers';
@@ -11,7 +10,6 @@ import { mockHandoffRepository } from '@/features/handoffs/api/mockHandoffReposi
 import { HandoffAttachmentStrip } from '@/features/handoffs/components/HandoffAttachmentStrip';
 import { HandoffEditorFields } from '@/features/handoffs/components/HandoffEditorFields';
 import { HandoffFooterActions } from '@/features/handoffs/components/HandoffFooterActions';
-import { HandoffHeader } from '@/features/handoffs/components/HandoffHeader';
 import { HandoffRecipientCard } from '@/features/handoffs/components/HandoffRecipientCard';
 import {
   handoffContentFormSchema,
@@ -19,6 +17,7 @@ import {
 } from '@/features/handoffs/model/handoffForm';
 import { useHandoffDraftStore } from '@/features/handoffs/model/handoffDraftStore';
 import { useHandoffImagePicker } from '@/features/handoffs/model/useHandoffImagePicker';
+import { ScreenHeader } from '@/shared/ui/ScreenHeader';
 import { Text } from '@/shared/ui';
 import { SCREEN_PADDING_X, useTheme } from '@/theme';
 
@@ -33,7 +32,6 @@ export function HandoffContentScreen({
   onRecipientPress,
   onSent,
 }: HandoffContentScreenProps) {
-  const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
   const theme = useTheme();
   const {
@@ -115,10 +113,8 @@ export function HandoffContentScreen({
   });
 
   return (
-    <View
-      style={[styles.root, { backgroundColor: theme.colors.background, paddingTop: insets.top }]}
-    >
-      <HandoffHeader onLeadingPress={onBack} />
+    <View style={[styles.root, { backgroundColor: theme.colors.background }]}>
+      <ScreenHeader onBack={onBack} />
       <ScrollView
         automaticallyAdjustKeyboardInsets
         contentInsetAdjustmentBehavior="automatic"

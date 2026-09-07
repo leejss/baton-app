@@ -34,6 +34,8 @@ const FALLBACK_MESSAGE = '알 수 없는 문제가 발생했어요.';
 
 type AppErrorOptions = {
   cause?: unknown;
+  /** 중복 확인처럼 오류 응답의 data에 포함되는 추가 정보. 사용하는 feature에서 검증한다. */
+  details?: unknown;
   /** 서버 계약의 `meta.errorCode`. */
   errorCode?: string | null;
   status?: number | null;
@@ -42,6 +44,7 @@ type AppErrorOptions = {
 };
 
 export class AppError extends Error {
+  readonly details: unknown;
   readonly code: AppErrorCode;
   readonly errorCode: string | null;
   readonly status: number | null;
@@ -50,6 +53,7 @@ export class AppError extends Error {
   constructor(code: AppErrorCode, message: string, options?: AppErrorOptions) {
     super(message, { cause: options?.cause });
     this.name = 'AppError';
+    this.details = options?.details;
     this.code = code;
     this.errorCode = options?.errorCode ?? null;
     this.status = options?.status ?? null;

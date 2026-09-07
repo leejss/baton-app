@@ -2,15 +2,14 @@ import { FlashList, type ListRenderItem } from '@shopify/flash-list';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { handoffQueries } from '@/features/handoffs/api/handoff.queries';
 import { HandoffFooterActions } from '@/features/handoffs/components/HandoffFooterActions';
-import { HandoffHeader } from '@/features/handoffs/components/HandoffHeader';
 import { HandoffRecipientRow } from '@/features/handoffs/components/HandoffRecipientRow';
 import type { RecipientModel } from '@/features/handoffs/model/handoff';
 import { useHandoffDraftStore } from '@/features/handoffs/model/handoffDraftStore';
 import { EmptyState } from '@/shared/ui';
+import { ScreenHeader } from '@/shared/ui/ScreenHeader';
 import { useTheme } from '@/theme';
 
 type HandoffRecipientSelectScreenProps = {
@@ -22,7 +21,6 @@ export function HandoffRecipientSelectScreen({
   onBack,
   onConfirm,
 }: HandoffRecipientSelectScreenProps) {
-  const insets = useSafeAreaInsets();
   const theme = useTheme();
   const { data } = useSuspenseQuery(handoffQueries.recipients());
   const recipient = useHandoffDraftStore((state) => state.recipient);
@@ -50,10 +48,8 @@ export function HandoffRecipientSelectScreen({
   );
 
   return (
-    <View
-      style={[styles.root, { backgroundColor: theme.colors.background, paddingTop: insets.top }]}
-    >
-      <HandoffHeader title="받는 사람 선택" onLeadingPress={onBack} />
+    <View style={[styles.root, { backgroundColor: theme.colors.background }]}>
+      <ScreenHeader title="받는 사람 선택" onBack={onBack} />
       <FlashList
         data={data}
         contentInsetAdjustmentBehavior="automatic"

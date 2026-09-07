@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { afterEach, describe, expect, it, jest } from '@jest/globals';
-import { cleanup, render, screen } from '@testing-library/react-native';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { handoffQueries } from '@/features/handoffs/api/handoff.queries';
@@ -26,23 +26,30 @@ describe('HandoffDetailScreen', () => {
     });
     queryClient.setQueryData(handoffQueries.detail(handoff.id).queryKey, handoff);
 
+    const onBack = jest.fn();
+    const onHome = jest.fn();
     await render(
       <SafeAreaProvider initialMetrics={INITIAL_METRICS}>
         <QueryClientProvider client={queryClient}>
           <HandoffDetailScreen
             handoffId={handoff.id}
-            onBack={jest.fn()}
+            onBack={onBack}
             onDeleted={jest.fn()}
             onEdit={jest.fn()}
-            onHome={jest.fn()}
+            onHome={onHome}
           />
         </QueryClientProvider>
       </SafeAreaProvider>,
     );
 
+    await fireEvent.press(screen.getByLabelText('뒤로 가기'));
+    await fireEvent.press(screen.getByLabelText('홈으로 이동'));
+    expect(onBack).toHaveBeenCalledTimes(1);
+    expect(onHome).toHaveBeenCalledTimes(1);
+
     expect(screen.getByText('업무 처리')).toBeOnTheScreen();
     expect(screen.getByText(handoff.title)).toBeOnTheScreen();
-    expect(screen.getByText('박민주님께')).toBeOnTheScreen();
+    expect(screen.getByText('이서연님께')).toBeOnTheScreen();
     expect(screen.getByText('확인중')).toBeOnTheScreen();
     expect(screen.getByLabelText('인수인계 수정 및 삭제 메뉴')).toBeOnTheScreen();
   });

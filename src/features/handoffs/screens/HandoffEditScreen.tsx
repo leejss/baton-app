@@ -3,7 +3,6 @@ import { useMutation, useQueryClient, useSuspenseQueries } from '@tanstack/react
 import { useState } from 'react';
 import { useController, useForm } from 'react-hook-form';
 import { Alert, ScrollView, StyleSheet, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { getHandoffTypeLabel, toLocalAttachments } from '@/features/handoffs/api/handoff.mappers';
 import { handoffQueries } from '@/features/handoffs/api/handoff.queries';
@@ -11,7 +10,6 @@ import { mockHandoffRepository } from '@/features/handoffs/api/mockHandoffReposi
 import { HandoffAttachmentStrip } from '@/features/handoffs/components/HandoffAttachmentStrip';
 import { HandoffEditorFields } from '@/features/handoffs/components/HandoffEditorFields';
 import { HandoffFooterActions } from '@/features/handoffs/components/HandoffFooterActions';
-import { HandoffHeader } from '@/features/handoffs/components/HandoffHeader';
 import { HandoffRecipientCard } from '@/features/handoffs/components/HandoffRecipientCard';
 import { HandoffRecipientPickerModal } from '@/features/handoffs/components/HandoffRecipientPickerModal';
 import type { LocalAttachment, RecipientModel } from '@/features/handoffs/model/handoff';
@@ -21,6 +19,7 @@ import {
 } from '@/features/handoffs/model/handoffForm';
 import { useHandoffImagePicker } from '@/features/handoffs/model/useHandoffImagePicker';
 import { useUnsavedHandoffGuard } from '@/features/handoffs/model/useUnsavedHandoffGuard';
+import { ScreenHeader } from '@/shared/ui/ScreenHeader';
 import { Text } from '@/shared/ui';
 import { spacing, useTheme } from '@/theme';
 
@@ -31,7 +30,6 @@ type HandoffEditScreenProps = {
 };
 
 export function HandoffEditScreen({ handoffId, onBack, onSaved }: HandoffEditScreenProps) {
-  const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
   const theme = useTheme();
   const [{ data: handoff }, { data: recipients }] = useSuspenseQueries({
@@ -111,10 +109,8 @@ export function HandoffEditScreen({ handoffId, onBack, onSaved }: HandoffEditScr
   const submit = handleSubmit((values) => updateMutation.mutate(values));
 
   return (
-    <View
-      style={[styles.root, { backgroundColor: theme.colors.surfaceSunken, paddingTop: insets.top }]}
-    >
-      <HandoffHeader title="인수인계 수정" onLeadingPress={handleBack} />
+    <View style={[styles.root, { backgroundColor: theme.colors.surfaceSunken }]}>
+      <ScreenHeader title="인수인계 수정" onBack={handleBack} />
       <ScrollView
         automaticallyAdjustKeyboardInsets
         contentInsetAdjustmentBehavior="automatic"
