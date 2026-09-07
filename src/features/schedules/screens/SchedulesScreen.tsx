@@ -9,7 +9,8 @@ import { CalendarMonthHeader } from '@/features/schedules/components/CalendarMon
 import { DaySchedules } from '@/features/schedules/components/DaySchedules';
 import { MonthlyCalendar } from '@/features/schedules/components/MonthlyCalendar';
 import { ScheduleActions } from '@/features/schedules/components/ScheduleActions';
-import { ScheduleHeader } from '@/features/schedules/components/ScheduleHeader';
+import { MainHeader } from '@/features/tabs/components/MainHeader';
+import { ScreenHeader } from '@/shared/ui/ScreenHeader';
 import { ScheduleManageButton } from '@/features/schedules/components/ScheduleManageButton';
 import { ScheduleMessage } from '@/features/schedules/components/ScheduleMessage';
 import { useScheduleClock } from '@/features/schedules/hooks/useScheduleClock';
@@ -55,12 +56,11 @@ export function SchedulesScreen({
   const handleBack = () => (router.canGoBack() ? router.back() : router.navigate('/home'));
   return (
     <View style={[styles.root, { backgroundColor: colors.surfaceSunken }]}>
-      <ScheduleHeader
-        title={isManaging ? '근무수정/삭제' : '근무표'}
-        source={source}
-        onBack={handleBack}
-        showStore={!isManaging}
-      />
+      {isManaging ? (
+        <ScreenHeader title="근무수정/삭제" titleAlign="left" onBack={handleBack} />
+      ) : (
+        <MainHeader title="근무표" />
+      )}
       <ScrollView contentInsetAdjustmentBehavior="automatic" contentContainerStyle={styles.scroll}>
         <View style={[styles.calendar, { backgroundColor: colors.background }]}>
           <CalendarMonthHeader

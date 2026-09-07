@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -5,12 +6,14 @@ import { Box, Text, textStyles } from '@/shared/ui';
 import { MAX_CONTENT_WIDTH, spacing } from '@/theme';
 
 type RoutePlaceholderScreenProps = {
+  header?: ReactNode;
   description: string;
   featureIds: string;
   title: string;
 };
 
 export function RoutePlaceholderScreen({
+  header,
   description,
   featureIds,
   title,
@@ -19,20 +22,23 @@ export function RoutePlaceholderScreen({
 
   return (
     <Box background="background" style={styles.root}>
+      {header}
       <ScrollView
         contentInsetAdjustmentBehavior="automatic"
         contentContainerStyle={[
           styles.content,
           {
-            paddingTop: insets.top + spacing.xl,
+            paddingTop: (header ? 0 : insets.top) + spacing.xl,
             paddingBottom: insets.bottom + spacing.xl,
           },
         ]}
       >
         <View style={styles.inner}>
-          <Text variant="heading" style={textStyles.center}>
-            {title}
-          </Text>
+          {!header && (
+            <Text variant="heading" style={textStyles.center}>
+              {title}
+            </Text>
+          )}
           <Text color="textSecondary" style={textStyles.center}>
             {description}
           </Text>

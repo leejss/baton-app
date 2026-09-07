@@ -12,14 +12,14 @@ import {
 import { HandoffScopeTabs } from '@/features/handoffs/components/HandoffScopeTabs';
 import { HandoffListContent } from '@/features/handoffs/components/handoff-list-content';
 import type { HandoffScope } from '@/features/handoffs/model/handoff';
-import { MainHeader, Pressable, QueryBoundary, Text } from '@/shared/ui';
+import { Pressable, QueryBoundary, Text } from '@/shared/ui';
+import { MainHeader } from '@/features/tabs/components/MainHeader';
 import { SCREEN_PADDING_X, spacing, useTheme } from '@/theme';
 
 type HandoffListScreenProps = {
   scope: HandoffScope;
   onCreate: () => void;
   onEdit: (handoffId: string) => void;
-  onNotificationPress: () => void;
   onOpen: (handoffId: string) => void;
   onScopeChange: (scope: HandoffScope) => void;
 };
@@ -28,7 +28,6 @@ export function HandoffListScreen({
   scope,
   onCreate,
   onEdit,
-  onNotificationPress,
   onOpen,
   onScopeChange,
 }: HandoffListScreenProps) {
@@ -72,7 +71,7 @@ export function HandoffListScreen({
 
   return (
     <View style={[styles.root, { backgroundColor: theme.colors.surfaceSunken }]}>
-      <MainHeader model={HANDOFF_HEADER_MODEL} onNotificationPress={onNotificationPress} />
+      <MainHeader title="인수인계" />
 
       <View style={styles.toolbar}>
         <HandoffScopeTabs value={scope} onChange={onScopeChange} />
@@ -109,13 +108,6 @@ export function HandoffListScreen({
     </View>
   );
 }
-
-// TODO(api): 전역 매장 컨텍스트가 연결되면 홈과 같은 응답 모델에서 이 값을 공급한다.
-const HANDOFF_HEADER_MODEL = {
-  badgeText: '3',
-  roleLabel: '관리자',
-  storeLabel: '카페 바톤 강남점',
-} as const;
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
