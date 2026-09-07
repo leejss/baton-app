@@ -6,6 +6,9 @@ import type {
 } from '@/features/home/api/home.schema';
 import { HomeDataSourceError, type HomeDataSource } from '@/features/home/api/home.dataSource';
 import { getTodayInSeoul } from '@/features/home/lib/homeDate';
+import { mockScheduleDataSource } from '@/features/schedules/api/mockScheduleDataSource';
+import { monthlyScheduleSchema } from '@/features/schedules/api/schedule.schema';
+import { homeSummaryResponseSchema } from '@/features/home/api/home.schema';
 
 type MockHomeDataSourceOptions = {
   alreadyConfirmedOnConfirmIds?: number[];
@@ -247,4 +250,24 @@ export function createMockHomeDataSource(options: MockHomeDataSourceOptions = {}
   };
 }
 
-export const mockHomeDataSource = createMockHomeDataSource();
+const baseHomeDataSource = createMockHomeDataSource();
+
+/** 앱에서 사용하는 singleton은 근무표와 같은 mock 저장소를 조회한다. */
+export const mockHomeDataSource: HomeDataSource = {
+  ...baseHomeDataSource,
+  async getHome(storeId, date, signal) {
+    const summary = await baseHomeDataSource.getHome(storeId, date, signal);
+    const response = homeSummaryResponseSchema.parse(summary);
+    const month = monthlyScheduleSchema.parse(
+      await mockScheduleDataSource.month(storeId, date.slice(0, 7), signal),
+    );
+    const all = month.schedules.filter((item) => item.workDate === date);
+    const own = all
+      .filter((item) => item.employee.userId === 1)
+      .sort((a, b) => b.endTime.localeCompare(a.endTime))[0];
+    response.data.schedulePreview = (
+      own ? all.filter((item) => item.employee.userId !== 1 && item.startTime >= own.endTime) : all
+    ).slice(0, 3);
+    return response;
+  },
+};
