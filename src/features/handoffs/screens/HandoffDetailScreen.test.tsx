@@ -42,7 +42,7 @@ describe('HandoffDetailScreen', () => {
 
     expect(screen.getByText('업무 처리')).toBeOnTheScreen();
     expect(screen.getByText(handoff.title)).toBeOnTheScreen();
-    expect(screen.getByText('박민주님께')).toBeOnTheScreen();
+    expect(screen.getByText('이서연님께')).toBeOnTheScreen();
     expect(screen.getByText('확인중')).toBeOnTheScreen();
     expect(screen.getByLabelText('인수인계 수정 및 삭제 메뉴')).toBeOnTheScreen();
   });

@@ -5,6 +5,7 @@ import type { HandoffTypeDto } from '@/features/handoffs/api/handoff.schema';
 import { HandoffFooterActions } from '@/features/handoffs/components/HandoffFooterActions';
 import { HandoffHeader } from '@/features/handoffs/components/HandoffHeader';
 import { HandoffTypeOption } from '@/features/handoffs/components/HandoffTypeOption';
+import { HandoffPresetRecipientNext } from '@/features/handoffs/components/HandoffPresetRecipientNext';
 import {
   hasHandoffDraftChanges,
   useHandoffDraftStore,
@@ -14,6 +15,7 @@ import { Text } from '@/shared/ui';
 import { SCREEN_PADDING_X, useTheme } from '@/theme';
 
 type HandoffTypeSelectScreenProps = {
+  initialRecipientId?: string;
   onExit: () => void;
   onNext: () => void;
 };
@@ -29,7 +31,11 @@ const OPTIONS: readonly {
 ];
 const DEFAULT_HANDOFF_TYPE: HandoffTypeDto = 'WORK_TASK';
 
-export function HandoffTypeSelectScreen({ onExit, onNext }: HandoffTypeSelectScreenProps) {
+export function HandoffTypeSelectScreen({
+  onExit,
+  onNext,
+  initialRecipientId,
+}: HandoffTypeSelectScreenProps) {
   const insets = useSafeAreaInsets();
   const theme = useTheme();
   const type = useHandoffDraftStore((state) => state.type);
@@ -75,7 +81,11 @@ export function HandoffTypeSelectScreen({ onExit, onNext }: HandoffTypeSelectScr
           ))}
         </View>
       </ScrollView>
-      <HandoffFooterActions primaryLabel="다음" onPrimaryPress={handleNext} />
+      {initialRecipientId ? (
+        <HandoffPresetRecipientNext recipientId={initialRecipientId} onNext={handleNext} />
+      ) : (
+        <HandoffFooterActions primaryLabel="다음" onPrimaryPress={handleNext} />
+      )}
     </View>
   );
 }

@@ -4,43 +4,16 @@ import type {
   RecipientRecommendationDto,
 } from '@/features/handoffs/api/handoff.schema';
 
-export const CURRENT_USER_ID = 'user-me';
+import { MOCK_STORE_MEMBERS } from '@/shared/api/mockMembers';
+
+export const CURRENT_USER_ID = '1';
 export const CURRENT_STORE_ID = 'store-baton';
 
-export const MOCK_MEMBERS: MemberDto[] = [
-  {
-    userId: CURRENT_USER_ID,
-    email: 'jiwoo@baton.app',
-    displayName: '김지우',
-    profileImage: { source: 'STATIC', key: 'DEFAULT_MANAGER' },
-    role: 'MANAGER',
-    status: 'ACTIVE',
-  },
-  {
-    userId: 'user-minju',
-    email: 'minju@baton.app',
-    displayName: '박민주',
-    profileImage: { source: 'STATIC', key: 'DEFAULT_EMPLOYEE' },
-    role: 'EMPLOYEE',
-    status: 'ACTIVE',
-  },
-  {
-    userId: 'user-seojun',
-    email: 'seojun@baton.app',
-    displayName: '이서준',
-    profileImage: { source: 'STATIC', key: 'DEFAULT_EMPLOYEE' },
-    role: 'EMPLOYEE',
-    status: 'ACTIVE',
-  },
-  {
-    userId: 'user-hayoon',
-    email: 'hayoon@baton.app',
-    displayName: '최하윤',
-    profileImage: { source: 'STATIC', key: 'DEFAULT_EMPLOYEE' },
-    role: 'EMPLOYEE',
-    status: 'ACTIVE',
-  },
-];
+// 인수인계 UI의 기존 문자열 ID 경계에서만 변환한다.
+export const MOCK_MEMBERS: MemberDto[] = MOCK_STORE_MEMBERS.map((member) => ({
+  ...member,
+  userId: String(member.userId),
+}));
 
 const [me, minju, seojun, hayoon] = MOCK_MEMBERS;
 
