@@ -1,12 +1,11 @@
 import { FlashList, type ListRenderItem } from '@shopify/flash-list';
 import { Modal, StyleSheet, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { HandoffFooterActions } from '@/features/handoffs/components/HandoffFooterActions';
-import { HandoffHeader } from '@/features/handoffs/components/HandoffHeader';
 import { HandoffRecipientRow } from '@/features/handoffs/components/HandoffRecipientRow';
 import type { RecipientModel } from '@/features/handoffs/model/handoff';
 import { EmptyState } from '@/shared/ui';
+import { ScreenHeader } from '@/shared/ui/ScreenHeader';
 import { useTheme } from '@/theme';
 
 type HandoffRecipientPickerModalProps = {
@@ -26,7 +25,6 @@ export function HandoffRecipientPickerModal({
   onConfirm,
   onSelect,
 }: HandoffRecipientPickerModalProps) {
-  const insets = useSafeAreaInsets();
   const theme = useTheme();
   const renderItem: ListRenderItem<RecipientModel> = ({ item }) => (
     <HandoffRecipientRow
@@ -43,9 +41,9 @@ export function HandoffRecipientPickerModal({
     <Modal animationType="slide" visible={visible} onRequestClose={onClose}>
       <View
         accessibilityViewIsModal
-        style={[styles.root, { backgroundColor: theme.colors.background, paddingTop: insets.top }]}
+        style={[styles.root, { backgroundColor: theme.colors.background }]}
       >
-        <HandoffHeader title="받는 사람 선택" onLeadingPress={onClose} />
+        <ScreenHeader title="받는 사람 선택" onBack={onClose} />
         <FlashList
           data={recipients}
           contentInsetAdjustmentBehavior="automatic"

@@ -5,7 +5,7 @@ import { getTodayInSeoul } from '@/features/home/lib/homeDate';
 import type { ScheduleDataSource } from '@/features/schedules/api/schedule.dataSource';
 import { mockScheduleDataSource } from '@/features/schedules/api/mockScheduleDataSource';
 import { ScheduleEditorLoader } from '@/features/schedules/components/ScheduleEditorLoader';
-import { ScheduleHeader } from '@/features/schedules/components/ScheduleHeader';
+import { ScreenHeader } from '@/shared/ui/ScreenHeader';
 import { normalizeSelectedDate } from '@/features/schedules/lib/scheduleDate';
 import { useTheme } from '@/theme';
 
@@ -31,9 +31,9 @@ export function ScheduleEditorScreen({
         : 0;
   return (
     <View style={[styles.root, { backgroundColor: colors.surfaceSunken }]}>
-      <ScheduleHeader
+      <ScreenHeader
         title={scheduleId ? '근무수정' : '근무등록'}
-        source={source}
+        titleAlign="left"
         onBack={() => (router.canGoBack() ? router.back() : router.replace('/schedules'))}
       />
       <ScheduleEditorLoader

@@ -1,7 +1,6 @@
 import { useMutation, useQueryClient, useSuspenseQuery } from '@tanstack/react-query';
 import { useRef, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { toHandoffDetailModel } from '@/features/handoffs/api/handoff.mappers';
 import { handoffQueries } from '@/features/handoffs/api/handoff.queries';
@@ -13,9 +12,11 @@ import {
   type HandoffActionSheetMethods,
 } from '@/features/handoffs/components/HandoffActionSheet';
 import { HandoffDetailAttachments } from '@/features/handoffs/components/HandoffDetailAttachments';
-import { HandoffDetailHeader } from '@/features/handoffs/components/HandoffDetailHeader';
 import { HandoffDetailStatusBar } from '@/features/handoffs/components/HandoffDetailStatusBar';
 import { HandoffTypeBadge } from '@/features/handoffs/components/HandoffTypeBadge';
+import { KebabMenu } from '@/shared/ui/icons';
+import { Pressable } from '@/shared/ui/Pressable';
+import { ScreenHeader } from '@/shared/ui/ScreenHeader';
 import { Text } from '@/shared/ui';
 import { SCREEN_PADDING_X, useTheme } from '@/theme';
 
@@ -34,7 +35,6 @@ export function HandoffDetailScreen({
   onEdit,
   onHome,
 }: HandoffDetailScreenProps) {
-  const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
   const theme = useTheme();
   const actionSheetRef = useRef<HandoffActionSheetMethods>(null);
@@ -72,13 +72,22 @@ export function HandoffDetailScreen({
   };
 
   return (
-    <View
-      style={[styles.root, { backgroundColor: theme.colors.background, paddingTop: insets.top }]}
-    >
-      <HandoffDetailHeader
+    <View style={[styles.root, { backgroundColor: theme.colors.background }]}>
+      <ScreenHeader
         onBack={onBack}
         onHome={onHome}
-        onManage={detail.canManage ? handleManage : undefined}
+        right={
+          detail.canManage && (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="인수인계 수정 및 삭제 메뉴"
+              onPress={handleManage}
+              style={styles.manageButton}
+            >
+              <KebabMenu size={13.8} color="navigationForeground" />
+            </Pressable>
+          )
+        }
       />
 
       <ScrollView
@@ -138,6 +147,7 @@ export function HandoffDetailScreen({
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
+  manageButton: { width: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' },
   scroll: { flex: 1 },
   content: {
     paddingHorizontal: SCREEN_PADDING_X,

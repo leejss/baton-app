@@ -1,9 +1,7 @@
 import { ScrollView, StyleSheet, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type { HandoffTypeDto } from '@/features/handoffs/api/handoff.schema';
 import { HandoffFooterActions } from '@/features/handoffs/components/HandoffFooterActions';
-import { HandoffHeader } from '@/features/handoffs/components/HandoffHeader';
 import { HandoffTypeOption } from '@/features/handoffs/components/HandoffTypeOption';
 import { HandoffPresetRecipientNext } from '@/features/handoffs/components/HandoffPresetRecipientNext';
 import {
@@ -11,6 +9,7 @@ import {
   useHandoffDraftStore,
 } from '@/features/handoffs/model/handoffDraftStore';
 import { useUnsavedHandoffGuard } from '@/features/handoffs/model/useUnsavedHandoffGuard';
+import { ScreenHeader } from '@/shared/ui/ScreenHeader';
 import { Text } from '@/shared/ui';
 import { SCREEN_PADDING_X, useTheme } from '@/theme';
 
@@ -36,7 +35,6 @@ export function HandoffTypeSelectScreen({
   onNext,
   initialRecipientId,
 }: HandoffTypeSelectScreenProps) {
-  const insets = useSafeAreaInsets();
   const theme = useTheme();
   const type = useHandoffDraftStore((state) => state.type);
   const hasChanges = useHandoffDraftStore(hasHandoffDraftChanges);
@@ -57,10 +55,8 @@ export function HandoffTypeSelectScreen({
   };
 
   return (
-    <View
-      style={[styles.root, { backgroundColor: theme.colors.background, paddingTop: insets.top }]}
-    >
-      <HandoffHeader leading="close" onLeadingPress={handleExit} />
+    <View style={[styles.root, { backgroundColor: theme.colors.background }]}>
+      <ScreenHeader onClose={handleExit} />
       <ScrollView
         contentInsetAdjustmentBehavior="automatic"
         contentContainerStyle={styles.content}
