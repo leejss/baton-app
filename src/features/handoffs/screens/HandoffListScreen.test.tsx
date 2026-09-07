@@ -6,6 +6,8 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { mockHandoffRepository } from '@/features/handoffs/api/mockHandoffRepository';
 import { HandoffListScreen } from '@/features/handoffs/screens/HandoffListScreen';
 
+jest.mock('expo-router', () => ({ useRouter: () => ({ push: jest.fn() }) }));
+
 const INITIAL_METRICS = {
   frame: { x: 0, y: 0, width: 393, height: 852 },
   insets: { top: 59, right: 0, bottom: 34, left: 0 },
@@ -32,7 +34,6 @@ describe('HandoffListScreen', () => {
             scope="all"
             onCreate={jest.fn()}
             onEdit={jest.fn()}
-            onNotificationPress={jest.fn()}
             onOpen={jest.fn()}
             onScopeChange={jest.fn()}
           />
@@ -40,7 +41,7 @@ describe('HandoffListScreen', () => {
       </SafeAreaProvider>,
     );
 
-    expect(screen.getByLabelText('카페 바톤 강남점, 관리자')).toBeOnTheScreen();
+    expect(await screen.findByLabelText('카페 바톤 강남점, 관리자')).toBeOnTheScreen();
     expect(screen.getByLabelText('전체 인수인계')).toBeOnTheScreen();
     expect(screen.getByLabelText('인수인계 글쓰기')).toBeOnTheScreen();
     expect(screen.queryByText('마감 정산 확인 부탁드려요')).not.toBeOnTheScreen();
