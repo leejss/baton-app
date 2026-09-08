@@ -1,0 +1,66 @@
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Controller, useForm } from 'react-hook-form';
+
+import { Button, TextField } from '@/shared/ui';
+
+import { SignupLayout } from '@/features/auth/components/SignupLayout';
+import { signupNameFormSchema, type SignupNameForm } from '@/features/auth/lib/validation';
+import { getStepProgress, useSignupStore } from '@/features/auth/store/signupStore';
+
+/** Figma "01-1·01-2 회원가입 - 이름" — `943:111462`, `943:111474`. */
+export type SignupNameScreenProps = {
+  onBack: () => void;
+  onNext: () => void;
+};
+
+export function SignupNameScreen({ onBack, onNext }: SignupNameScreenProps) {
+  const mode = useSignupStore((state) => state.mode);
+  const displayName = useSignupStore((state) => state.displayName);
+  const setDisplayName = useSignupStore((state) => state.setDisplayName);
+
+  const { control, handleSubmit, formState } = useForm<SignupNameForm>({
+    resolver: zodResolver(signupNameFormSchema),
+    /**
+     * 검증은 입력할 때마다 돌린다 — 그래야 `isValid`가 항상 최신이라 제출 버튼이
+     * 정확한 시점에 열린다. 빨간 문구는 아래에서 `isTouched`로 따로 막는다.
+     */
+    mode: 'onChange',
+    // 소셜 가입이면 제공자가 준 이름이 미리 들어 있다(AUTH-12). 뒤로 왔다 돌아와도 유지된다.
+    defaultValues: { displayName },
+  });
+
+  const submit = handleSubmit((values) => {
+    setDisplayName(values.displayName.trim());
+    onNext();
+  });
+
+  return (
+    <SignupLayout
+      onBack={onBack}
+      progress={getStepProgress(mode, 'name')}
+      title="이름을 입력해주세요"
+      action={
+        <Button variant="accent" label="다음" disabled={!formState.isValid} onPress={submit} />
+      }
+    >
+      <Controller
+        control={control}
+        name="displayName"
+        render={({ field, fieldState }) => (
+          <TextField
+            value={field.value}
+            onChangeText={field.onChange}
+            onBlur={field.onBlur}
+            placeholder="이름"
+            autoComplete="name"
+            textContentType="name"
+            returnKeyType="done"
+            onSubmitEditing={submit}
+            status={fieldState.isTouched && fieldState.error !== undefined ? 'error' : 'none'}
+            subtitle={fieldState.isTouched ? fieldState.error?.message : undefined}
+          />
+        )}
+      />
+    </SignupLayout>
+  );
+}

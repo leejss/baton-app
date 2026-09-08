@@ -21,8 +21,8 @@ export const memberSchema = z.object({
 const handoffRecipientSchema = z.object({
   user: memberSchema,
   status: z.enum(['ACTIVE', 'PARTICIPATION_ENDED']),
-  confirmedAt: z.string().datetime().optional(),
-  participationEndedAt: z.string().datetime().optional(),
+  confirmedAt: z.string().datetime().nullish(),
+  participationEndedAt: z.string().datetime().nullish(),
 });
 
 export const attachmentSchema = z.object({
@@ -35,8 +35,8 @@ export const attachmentSchema = z.object({
     .positive()
     .max(5 * 1024 * 1024),
   status: z.enum(['PENDING', 'VERIFIED', 'LINKED', 'DELETED']),
-  downloadUrl: z.string().url().optional(),
-  downloadUrlExpiresAt: z.string().datetime().optional(),
+  downloadUrl: z.string().url().nullish(),
+  downloadUrlExpiresAt: z.string().datetime().nullish(),
 });
 
 export const handoffListItemSchema = z.object({
@@ -51,7 +51,7 @@ export const handoffListItemSchema = z.object({
 
 export const handoffPageSchema = z.object({
   items: z.array(handoffListItemSchema),
-  nextCursor: z.string().optional(),
+  nextCursor: z.string().nullish(),
   hasNext: z.boolean(),
 });
 
@@ -71,8 +71,8 @@ export const handoffCreateRequestSchema = z.object({
 export const handoffUpdateRequestSchema = handoffCreateRequestSchema.omit({ type: true });
 
 export const recipientRecommendationSchema = z.object({
-  recommended: memberSchema.optional(),
-  recommendedStartAt: z.string().datetime().optional(),
+  recommended: memberSchema.nullish(),
+  recommendedStartAt: z.string().datetime().nullish(),
   candidates: z.array(memberSchema),
 });
 

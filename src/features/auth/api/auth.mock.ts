@@ -1,9 +1,11 @@
 import { API_URL } from '@/shared/api/client';
+import { AppError } from '@/shared/api/errors';
 
 import type { Session, SignInOutcome, SocialSignInOutcome } from '@/features/auth/api/auth.schema';
 import { MAX_SIGN_IN_ATTEMPTS } from '@/features/auth/api/auth.schema';
 import type {
   VerificationChallenge,
+  VerificationPurpose,
   VerifyCodeOutcome,
 } from '@/features/auth/api/passwordReset.schema';
 
@@ -38,6 +40,9 @@ export const MOCK_VERIFICATION_CODE = '123456';
 /**
  * 이 계정으로만 로그인이 성공한다. 비밀번호는 형식만 맞으면 통과다.
  * 나머지 이메일은 전부 실패시켜 시안의 오류 상태 3종을 눌러볼 수 있게 한다.
+ *
+ * 회원가입에서는 반대다 — 이 이메일만 "이미 가입된 계정"으로 취급해
+ * 시안 "동일한 이메일이 이미 있는 경우" 모달을 눌러볼 수 있게 한다.
  */
 export const MOCK_SIGN_IN_EMAIL = 'test@baton.dev';
 
@@ -146,8 +151,19 @@ export async function mockAuthenticateSocial(): Promise<SocialSignInOutcome> {
 // 이메일 인증 · 비밀번호 재설정
 // ─────────────────────────────────────────────────────────────
 
-export async function mockRequestVerificationCode(email: string): Promise<VerificationChallenge> {
+export async function mockRequestVerificationCode(
+  email: string,
+  purpose: VerificationPurpose,
+): Promise<VerificationChallenge> {
   await delay();
+
+  // 계약: 가입용 요청의 이메일이 이미 활성 계정에 등록돼 있으면 409다.
+  if (purpose === 'SIGN_UP' && email === MOCK_SIGN_IN_EMAIL) {
+    throw new AppError('server', '이미 사용 중인 이메일이에요.', {
+      status: 409,
+      errorCode: 'AUTH_ACCOUNT_ALREADY_EXISTS',
+    });
+  }
 
   state.challenges.set(email, Date.now() + CODE_TTL_MS);
 
@@ -177,4 +193,14 @@ export async function mockVerifyCode(email: string, code: string): Promise<Verif
 
 export async function mockResetPassword(): Promise<void> {
   await delay();
+}
+
+// ─────────────────────────────────────────────────────────────
+// 회원가입
+// ─────────────────────────────────────────────────────────────
+
+/** 계약상 응답은 로그인과 같은 `AuthSessionResponse`다. 신규 계정이라 `membership`은 없다. */
+export async function mockSignUp(email: string, displayName: string): Promise<Session> {
+  await delay();
+  return createSession(email, displayName);
 }

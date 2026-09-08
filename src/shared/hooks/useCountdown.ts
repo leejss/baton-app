@@ -71,7 +71,8 @@ export function useCountdown(deadline: number | null): Countdown {
     };
   }, [deadline]);
 
-  const remainingMs = snapshot.deadline === deadline ? snapshot.remainingMs : remainingFor(deadline);
+  const remainingMs =
+    snapshot.deadline === deadline ? snapshot.remainingMs : remainingFor(deadline);
 
   return {
     remainingMs,

@@ -1,5 +1,6 @@
 import { z, type ZodType } from 'zod';
 
+import { logRequestStart } from '@/shared/api/devNetworkLog';
 import { AppError, normalizeError } from '@/shared/api/errors';
 
 /**
@@ -143,21 +144,29 @@ async function fetchOnce(
     headers['Content-Type'] = 'application/json';
   }
 
+  let isAuthorized = false;
   if (options.auth !== false) {
     const accessToken = authBridge?.getAccessToken() ?? null;
     if (accessToken !== null) {
       headers.Authorization = `Bearer ${accessToken}`;
+      isAuthorized = true;
     }
   }
 
+  // 개발 빌드에서만 동작한다. 프로덕션에서는 호출해도 아무 일도 하지 않는다.
+  const log = logRequestStart(method, path, body, isAuthorized);
+
   try {
-    return await fetch(`${API_URL}${path}`, {
+    const response = await fetch(`${API_URL}${path}`, {
       method,
       headers,
       body: body === undefined ? undefined : JSON.stringify(body),
       signal: withTimeout(options.signal),
     });
+    log.succeeded(response);
+    return response;
   } catch (error) {
+    log.failed(error);
     throw normalizeError(error);
   }
 }
@@ -286,6 +295,19 @@ export async function postVoid(
   await request('POST', path, body, options);
 }
 
+/**
+ * 본문 없는 DELETE. 계약상 대부분의 삭제는 본문이 없다.
+ * `DELETE /users/me`처럼 확인 플래그를 싣는 예외는 `delWithBody`를 쓴다.
+ */
 export async function del(path: string, options: RequestOptions = {}): Promise<void> {
   await request('DELETE', path, undefined, options);
+}
+
+/** 본문이 있는 DELETE. 회원 탈퇴의 `impactAcknowledged`처럼 확인 의사를 실어야 할 때만. */
+export async function delWithBody(
+  path: string,
+  body: unknown,
+  options: RequestOptions = {},
+): Promise<void> {
+  await request('DELETE', path, body, options);
 }

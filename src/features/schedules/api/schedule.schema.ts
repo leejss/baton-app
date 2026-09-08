@@ -35,7 +35,7 @@ export const monthlyScheduleSchema = z.object({
       schedules: z.array(scheduleSchema).max(3),
       hasMore: z.boolean(),
     })
-    .optional(),
+    .nullish(),
 });
 export const scheduleBatchSchema = z.object({
   requestedCount: z.number().int().positive(),
@@ -46,8 +46,8 @@ export const scheduleBatchSchema = z.object({
     z.object({
       workDate: date,
       status: z.enum(['CREATED', 'DUPLICATE', 'FAILED']),
-      schedule: scheduleSchema.optional(),
-      errorCode: z.string().optional(),
+      schedule: scheduleSchema.nullish(),
+      errorCode: z.string().nullish(),
     }),
   ),
 });

@@ -1,13 +1,12 @@
 import { Image } from 'expo-image';
-import { Alert, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { normalizeError } from '@/shared/api/errors';
 import { logger } from '@/shared/lib/logger';
 import { Box, Text, textStyles } from '@/shared/ui';
 import { SCREEN_PADDING_X } from '@/theme';
 
-import { isCanceled, useKakaoSignIn } from '@/features/auth/api/auth.mutations';
+import { useSocialSignIn } from '@/features/auth/hooks/useSocialSignIn';
 import { AuthHeader } from '@/features/auth/components/AuthHeader';
 import { OrDivider } from '@/features/auth/components/OrDivider';
 import { StartButton } from '@/features/auth/components/StartButton';
@@ -46,6 +45,11 @@ export type StartScreenProps = {
   onStartWithKakao?: () => void;
   onStartWithApple?: () => void;
   onStartWithEmail?: () => void;
+  /**
+   * 소셜 인증은 됐지만 연결된 Baton 계정이 없을 때(계약 §12-1 `SIGNUP_REQUIRED`).
+   * 가입 정보는 이미 `signupStore`에 채워진 뒤이므로 라우트는 가입 첫 화면으로만 보내면 된다.
+   */
+  onSocialSignupRequired?: () => void;
 };
 
 /** 아직 연결할 화면·API가 없는 동작. 조용히 삼키지 않고 로그로 남긴다. */
@@ -55,44 +59,15 @@ function notWired(action: string) {
 
 export function StartScreen({
   onStartWithKakao,
-  onStartWithApple = notWired('apple'),
+  onStartWithApple,
   onStartWithEmail = notWired('email'),
+  onSocialSignupRequired = notWired('socialSignup'),
 }: StartScreenProps) {
   const insets = useSafeAreaInsets();
-  const kakaoSignIn = useKakaoSignIn();
+  const social = useSocialSignIn({ onSignupRequired: onSocialSignupRequired });
 
-  const handleKakaoPress = () => {
-    if (onStartWithKakao !== undefined) {
-      onStartWithKakao();
-      return;
-    }
-
-    kakaoSignIn.mutate(undefined, {
-      onSuccess: (outcome) => {
-        if (outcome.status === 'signedIn') {
-          // 세션이 생기면 `(auth)/_layout`의 가드가 알아서 앱 안쪽으로 보낸다.
-          return;
-        }
-
-        /**
-         * 계약상 신규 소셜 식별자는 로그인이 아니라 가입 대기다(§12-1).
-         * 가입 화면이 아직 없어서 조용히 성공한 척하지 않고 여기서 멈춘다.
-         */
-        logger.warn('소셜 가입 플로우가 아직 연결되지 않았습니다', { provider: 'kakao' });
-        Alert.alert(
-          '가입이 필요해요',
-          '카카오 계정으로 처음 오셨어요. 가입 화면은 아직 준비 중이에요.',
-        );
-      },
-      onError: (error) => {
-        // 사용자가 직접 닫은 경우엔 아무것도 띄우지 않는다.
-        if (isCanceled(error)) {
-          return;
-        }
-        Alert.alert('로그인하지 못했어요', normalizeError(error).message);
-      },
-    });
-  };
+  const handleKakaoPress = onStartWithKakao ?? social.signInWithKakao;
+  const handleApplePress = onStartWithApple ?? social.signInWithApple;
 
   return (
     <Box
@@ -132,21 +107,24 @@ export function StartScreen({
               provider="kakao"
               label="카카오로 시작하기"
               onPress={handleKakaoPress}
-              isLoading={kakaoSignIn.isPending}
+              isLoading={social.isKakaoPending}
             />
-            <StartButton
-              provider="apple"
-              label="Apple로 시작하기"
-              onPress={onStartWithApple}
-              disabled={kakaoSignIn.isPending}
-            />
+            {social.canUseApple ? (
+              <StartButton
+                provider="apple"
+                label="Apple로 시작하기"
+                onPress={handleApplePress}
+                isLoading={social.isApplePending}
+                disabled={social.isKakaoPending}
+              />
+            ) : null}
           </View>
           <OrDivider label="또는" />
           <StartButton
             provider="email"
             label="이메일로 시작하기"
             onPress={onStartWithEmail}
-            disabled={kakaoSignIn.isPending}
+            disabled={social.isPending}
           />
         </View>
       </View>

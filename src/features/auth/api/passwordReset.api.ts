@@ -36,7 +36,7 @@ export async function requestVerificationCode(
   const purpose = options?.purpose ?? 'PASSWORD_RESET';
 
   if (USE_MOCK_AUTH) {
-    return mockRequestVerificationCode(email);
+    return mockRequestVerificationCode(email, purpose);
   }
 
   return post('/auth/email-verifications', { email, purpose }, verificationChallengeSchema, {

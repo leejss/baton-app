@@ -7,7 +7,7 @@ import type {
   HandoffStatusDto,
   HandoffTypeDto,
   RecipientRecommendationDto,
-} from '@/features/handoffs/api/handoff.schema';
+} from "@/features/handoffs/api/handoff.schema";
 import type {
   HandoffCardModel,
   HandoffDetailModel,
@@ -15,30 +15,30 @@ import type {
   HandoffScope,
   RecipientModel,
   LocalAttachment,
-} from '@/features/handoffs/model/handoff';
+} from "@/features/handoffs/model/handoff";
 
 const TYPE_LABELS: Record<HandoffTypeDto, string> = {
-  WORK_TASK: '업무 처리',
-  STORE_STATUS: '매장 상태',
-  OTHER: '기타',
+  WORK_TASK: "업무 처리",
+  STORE_STATUS: "매장 상태",
+  OTHER: "기타",
 };
 
 const STATUS_LABELS: Record<HandoffStatusDto, string> = {
-  UNCONFIRMED: '확인 전',
-  CONFIRMED: '확인 완료',
-  TERMINATED: '처리 종료',
+  UNCONFIRMED: "확인 전",
+  CONFIRMED: "확인 완료",
+  TERMINATED: "처리 종료",
 };
 
 const DETAIL_STATUS_ACTION_LABELS: Record<HandoffStatusDto, string> = {
-  UNCONFIRMED: '확인중',
-  CONFIRMED: '확인 완료',
-  TERMINATED: '처리 종료',
+  UNCONFIRMED: "확인중",
+  CONFIRMED: "확인 완료",
+  TERMINATED: "처리 종료",
 };
 
 const SCOPE_TO_DTO: Record<HandoffScope, HandoffScopeDto> = {
-  all: 'ALL',
-  received: 'RECEIVED',
-  sent: 'SENT',
+  all: "ALL",
+  received: "RECEIVED",
+  sent: "SENT",
 };
 
 export function toHandoffScopeDto(scope: HandoffScope): HandoffScopeDto {
@@ -53,7 +53,7 @@ export function toHandoffCardModel(
   item: HandoffListItemDto,
   viewerId: string,
   now = new Date(),
-  scope: HandoffScope = 'all',
+  scope: HandoffScope = "all",
 ): HandoffCardModel {
   const isSender = item.sender.userId === viewerId;
   const isRecipient = item.recipient.user.userId === viewerId;
@@ -68,7 +68,8 @@ export function toHandoffCardModel(
     statusLabel: STATUS_LABELS[item.status],
     senderName: item.sender.displayName,
     recipientName: item.recipient.user.displayName,
-    canManage: scope !== 'received' && isSender && item.status === 'UNCONFIRMED',
+    canManage:
+      scope !== "received" && isSender && item.status === "UNCONFIRMED",
     canOpenDetail: isSender || isRecipient,
   };
 }
@@ -87,9 +88,12 @@ export function toHandoffDetailModel(
     recipientLabel: `${handoff.recipient.user.displayName}님께`,
     statusActionLabel: DETAIL_STATUS_ACTION_LABELS[handoff.status],
     attachments: handoff.attachments.flatMap(({ id, downloadUrl }) =>
-      downloadUrl === undefined ? [] : [{ id, uri: downloadUrl }],
+      downloadUrl === undefined || downloadUrl === null
+        ? []
+        : [{ id, uri: downloadUrl }],
     ),
-    canManage: handoff.sender.userId === viewerId && handoff.status === 'UNCONFIRMED',
+    canManage:
+      handoff.sender.userId === viewerId && handoff.status === "UNCONFIRMED",
   };
 }
 
@@ -103,7 +107,9 @@ export function toRecipientModels(
     // 현재 계약은 추천 대상 외 후보의 근무 시각을 주지 않는다. 계약 보완 시 이 보조값을 제거한다.
     nextShiftLabel:
       nextShiftByUserId[member.userId] ??
-      (dto.recommended?.userId === member.userId && dto.recommendedStartAt !== undefined
+      (dto.recommended?.userId === member.userId &&
+      dto.recommendedStartAt !== undefined &&
+      dto.recommendedStartAt !== null
         ? formatShiftTime(dto.recommendedStartAt)
         : undefined),
   }));
@@ -111,7 +117,7 @@ export function toRecipientModels(
 
 export function toCreateRequest(draft: HandoffDraft): HandoffCreateRequestDto {
   if (draft.type === null || draft.recipient === null) {
-    throw new Error('유형과 받는 사람을 선택해 주세요.');
+    throw new Error("유형과 받는 사람을 선택해 주세요.");
   }
 
   return {
@@ -125,9 +131,11 @@ export function toCreateRequest(draft: HandoffDraft): HandoffCreateRequestDto {
   };
 }
 
-export function toLocalAttachments(attachments: AttachmentDto[]): LocalAttachment[] {
+export function toLocalAttachments(
+  attachments: AttachmentDto[],
+): LocalAttachment[] {
   return attachments.flatMap((attachment) =>
-    attachment.downloadUrl === undefined
+    attachment.downloadUrl === undefined || attachment.downloadUrl === null
       ? []
       : [
           {
@@ -151,21 +159,21 @@ function formatHandoffDate(sentAt: string, now: Date): string {
     date.getMonth() === now.getMonth() &&
     date.getDate() === now.getDate();
 
-  if (isToday) return '오늘';
+  if (isToday) return "오늘";
 
-  return new Intl.DateTimeFormat('ko-KR', {
-    year: date.getFullYear() === now.getFullYear() ? undefined : 'numeric',
-    month: 'long',
-    day: 'numeric',
+  return new Intl.DateTimeFormat("ko-KR", {
+    year: date.getFullYear() === now.getFullYear() ? undefined : "numeric",
+    month: "long",
+    day: "numeric",
   }).format(date);
 }
 
 function formatShiftTime(value: string): string {
-  return new Intl.DateTimeFormat('ko-KR', {
-    month: 'numeric',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
+  return new Intl.DateTimeFormat("ko-KR", {
+    month: "numeric",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
     hour12: false,
   }).format(new Date(value));
 }

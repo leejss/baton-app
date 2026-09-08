@@ -336,6 +336,13 @@ export const orderQueries = {
 
 - 컴포넌트/화면에서 `fetch`나 `axios`를 직접 호출하지 않는다. 반드시 `features/*/api` 경유.
 - 모든 외부 응답은 zod 스키마 통과. 스키마는 `*.schema.ts`에.
+- **응답 스키마의 "값 없음"은 `.optional()`이 아니라 `.nullish()`다.** 이 서버는 값이 없는 필드를
+  생략하지 않고 `null`로 내려준다(Jackson 기본 직렬화). `.optional()`은 `null`을 거부해서
+  **응답 파싱이 통째로 실패**하고, 사용자에게는 "서버 응답 형식이 예상과 달라요"로 보인다.
+  실제로 `membership`(홈 진입 불가)과 `suggestedEmail`(소셜 로그인 불가) 두 번 터졌다.
+  - 요청 스키마는 반대다. 우리가 만들어 보내는 값이므로 `.optional()`을 쓴다.
+  - `.nullish()`로 바꾼 필드는 `string | null | undefined`가 된다.
+    `x === undefined` 가드가 조용히 뚫리므로 mapper/컴포넌트의 가드도 같이 고친다.
 - 서버 DTO와 앱 도메인 모델을 분리한다. 변환 함수는 `api/mappers.ts`.
 - 에러는 `AppError { code, message, cause }` 형태로 정규화해서 던진다. UI는 `code`로 분기한다.
 - 환경변수는 `EXPO_PUBLIC_` 접두사만 클라이언트 노출. **비밀키는 절대 클라이언트 번들에 넣지 않는다.**

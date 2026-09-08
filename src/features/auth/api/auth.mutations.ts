@@ -3,8 +3,13 @@ import { useMutation } from '@tanstack/react-query';
 import { isAppError, normalizeError } from '@/shared/api/errors';
 import { logger } from '@/shared/lib/logger';
 
-import { authenticateWithKakao, signInWithEmail } from '@/features/auth/api/auth.api';
+import {
+  authenticateWithApple,
+  authenticateWithKakao,
+  signInWithEmail,
+} from '@/features/auth/api/auth.api';
 import type { SignInOutcome } from '@/features/auth/api/auth.schema';
+import { signInWithApple } from '@/features/auth/lib/appleAuth';
 import { signInWithKakao } from '@/features/auth/lib/kakaoAuth';
 import { useAuthStore } from '@/features/auth/store/authStore';
 
@@ -40,6 +45,36 @@ export function useKakaoSignIn() {
       }
       // 토큰·개인정보는 절대 싣지 않는다. 실패 종류만 남긴다.
       logger.warn('카카오 로그인 실패', { code: appError.code });
+    },
+  });
+}
+
+/**
+ * Apple 로그인 → 서버 인증 → 스토어 반영. 카카오와 같은 흐름이고 갈래도 같다
+ * (연결된 계정이면 세션, 신규 소셜 식별자면 `SIGNUP_REQUIRED`).
+ *
+ * iOS 전용이라 호출 전에 `isAppleSignInAvailable()`로 버튼 노출을 걸러야 한다.
+ */
+export function useAppleSignIn() {
+  const signIn = useAuthStore((state) => state.signIn);
+
+  return useMutation({
+    mutationFn: async () => {
+      const credential = await signInWithApple();
+      return authenticateWithApple(credential);
+    },
+    onSuccess: async (outcome) => {
+      if (outcome.status === 'signedIn') {
+        await signIn(outcome.session);
+      }
+    },
+    onError: (error) => {
+      const appError = normalizeError(error);
+      if (isCanceled(appError)) {
+        return;
+      }
+      // 토큰·개인정보는 절대 싣지 않는다. 실패 종류만 남긴다.
+      logger.warn('Apple 로그인 실패', { code: appError.code });
     },
   });
 }
