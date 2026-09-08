@@ -24,7 +24,7 @@ export const userProfileSchema = z.object({
   email: z.email(),
   displayName: z.string().min(2).max(20),
   profileImage: profileImageSchema,
-  status: z.literal('ACTIVE').optional(),
+  status: z.literal('ACTIVE').nullish(),
 });
 
 export const tokenPairSchema = z.object({
@@ -40,11 +40,11 @@ export const storeSchema = z.object({
   storeName: z.string().min(2).max(50),
   branchName: z.string().min(1),
   address: z.string().min(1),
-  detailAddress: z.string().optional(),
+  detailAddress: z.string().nullish(),
   storeContact: z.string(),
   status: z.enum(['ACTIVE', 'INACTIVE']),
   createdAt: z.iso.datetime(),
-  deactivatedAt: z.iso.datetime().optional(),
+  deactivatedAt: z.iso.datetime().nullish(),
 });
 
 export const membershipContextSchema = z.object({
@@ -78,9 +78,14 @@ export const socialAuthenticationSchema = z.discriminatedUnion('status', [
     /** provider와 provider subject에 묶인 10분 유효·단회 사용 token. */
     socialSignupToken: z.string().min(1),
     expiresAt: z.iso.datetime(),
-    /** 제공자가 준 수정 가능한 기본값. Baton 이메일 인증을 대체하지 않는다. */
-    suggestedEmail: z.email().optional(),
-    suggestedDisplayName: z.string().optional(),
+    /**
+     * 제공자가 준 수정 가능한 기본값. Baton 이메일 인증을 대체하지 않는다.
+     *
+     * 서버는 값이 없을 때 **`null`을 내려준다**(2026-09-08 실측). `.optional()`은
+     * `null`을 거부해 파싱이 통째로 깨지므로 `.nullish()`로 둘 다 받는다.
+     */
+    suggestedEmail: z.email().nullish(),
+    suggestedDisplayName: z.string().nullish(),
   }),
 ]);
 

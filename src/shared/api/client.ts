@@ -125,6 +125,7 @@ async function readEnvelope(response: Response): Promise<z.infer<typeof envelope
 
 function toServerError(response: Response, envelope: Awaited<ReturnType<typeof readEnvelope>>) {
   return new AppError('server', envelope?.meta.message ?? '요청을 처리하지 못했어요.', {
+    details: envelope?.data,
     errorCode: envelope?.meta.errorCode ?? null,
     status: response.status,
     retryAfterSeconds: readRetryAfter(response),

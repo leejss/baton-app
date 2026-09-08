@@ -59,8 +59,9 @@ export async function authenticateWithKakao(
     status: 'signupRequired',
     socialSignupToken: result.socialSignupToken,
     expiresAt: result.expiresAt,
-    suggestedEmail: result.suggestedEmail,
-    suggestedDisplayName: result.suggestedDisplayName,
+    // 화면은 "없음"을 undefined로만 다룬다. null은 여기서 흡수한다.
+    suggestedEmail: result.suggestedEmail ?? undefined,
+    suggestedDisplayName: result.suggestedDisplayName ?? undefined,
   };
 }
 
@@ -100,8 +101,9 @@ export async function authenticateWithApple(
     socialSignupToken: result.socialSignupToken,
     expiresAt: result.expiresAt,
     // 애플이 최초 1회만 주는 값이라, 서버가 준 제안값보다 이쪽을 우선한다.
-    suggestedEmail: credential.email ?? result.suggestedEmail,
-    suggestedDisplayName: credential.fullName ?? result.suggestedDisplayName,
+    // 애플이 최초 1회만 주는 값이라 서버 제안값보다 우선한다. null은 흡수한다.
+    suggestedEmail: credential.email ?? result.suggestedEmail ?? undefined,
+    suggestedDisplayName: credential.fullName ?? result.suggestedDisplayName ?? undefined,
   };
 }
 

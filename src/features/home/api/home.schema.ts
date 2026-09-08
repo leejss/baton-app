@@ -21,7 +21,7 @@ export const userProfileSchema = z.object({
   email: z.string().email(),
   displayName: z.string().min(2).max(20),
   profileImage: profileImageSchema,
-  status: z.literal('ACTIVE').optional(),
+  status: z.literal('ACTIVE').nullish(),
 });
 
 export const storeSchema = z.object({
@@ -29,11 +29,11 @@ export const storeSchema = z.object({
   storeName: z.string().min(2).max(50),
   branchName: z.string().min(1),
   address: z.string().min(1),
-  detailAddress: z.string().optional(),
+  detailAddress: z.string().nullish(),
   storeContact: z.string(),
   status: z.enum(['ACTIVE', 'INACTIVE']),
   createdAt: z.string().datetime(),
-  deactivatedAt: z.string().datetime().optional(),
+  deactivatedAt: z.string().datetime().nullish(),
 });
 
 export const membershipContextSchema = z.object({
@@ -63,8 +63,8 @@ const scheduleSchema = z.object({
 const handoverRecipientSchema = z.object({
   user: memberSchema,
   status: z.enum(['ACTIVE', 'PARTICIPATION_ENDED']),
-  confirmedAt: z.string().datetime().optional(),
-  participationEndedAt: z.string().datetime().optional(),
+  confirmedAt: z.string().datetime().nullish(),
+  participationEndedAt: z.string().datetime().nullish(),
 });
 
 export const handoverListItemSchema = z.object({
@@ -91,13 +91,13 @@ const notificationSchema = z.object({
     'UPDATE_ANNOUNCEMENT',
   ]),
   title: z.string().max(100),
-  body: z.string().max(500).optional(),
-  handoverId: idSchema.optional(),
-  scheduleId: idSchema.optional(),
+  body: z.string().max(500).nullish(),
+  handoverId: idSchema.nullish(),
+  scheduleId: idSchema.nullish(),
   status: z.enum(['UNREAD', 'READ']),
   createdAt: z.string().datetime(),
-  readAt: z.string().datetime().optional(),
-  expiresAt: z.string().datetime().optional(),
+  readAt: z.string().datetime().nullish(),
+  expiresAt: z.string().datetime().nullish(),
 });
 
 export const userProfileResponseSchema = z.object({
