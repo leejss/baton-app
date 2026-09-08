@@ -105,9 +105,10 @@ export const userProfileResponseSchema = z.object({
   data: userProfileSchema,
 });
 
+/** 소속이 없으면 서버가 `null`을 준다. `.optional()`만으로는 거부되므로 `.nullish()`. */
 export const myStoreResponseSchema = z.object({
   meta: responseMetaSchema,
-  data: z.object({ membership: membershipContextSchema.optional() }),
+  data: z.object({ membership: membershipContextSchema.nullish() }),
 });
 
 export const homeSummaryResponseSchema = z.object({

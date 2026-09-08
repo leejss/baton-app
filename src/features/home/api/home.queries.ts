@@ -37,8 +37,10 @@ export const homeQueries = {
 
         const membership = store.data.membership;
 
+        // 서버는 소속 없음을 `null`로, 계약 문서는 생략으로 표현한다. 둘 다 같은 뜻으로 받는다.
         if (
           membership === undefined ||
+          membership === null ||
           membership.status !== 'ACTIVE' ||
           membership.store.status !== 'ACTIVE'
         ) {

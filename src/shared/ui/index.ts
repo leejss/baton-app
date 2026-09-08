@@ -1,6 +1,20 @@
 export { BottomActionBar, type BottomActionBarProps } from '@/shared/ui/BottomActionBar';
 export { Box, type BoxProps } from '@/shared/ui/Box';
-export { Button, buttonMetrics, type ButtonProps } from '@/shared/ui/Button';
+export {
+  Button,
+  buttonMetrics,
+  type ButtonColor,
+  type ButtonProps,
+  type ButtonSize,
+  type ButtonTone,
+} from '@/shared/ui/Button';
+export {
+  ButtonRounded,
+  type ButtonRoundedProps,
+  type ButtonRoundedSize,
+  type ButtonRoundedTone,
+} from '@/shared/ui/ButtonRounded';
+export { Chip, type ChipProps, type ChipSize, type ChipTone } from '@/shared/ui/Chip';
 export { EmptyState } from '@/shared/ui/EmptyState';
 export { ErrorBoundary } from '@/shared/ui/ErrorBoundary';
 export { ErrorState } from '@/shared/ui/ErrorState';

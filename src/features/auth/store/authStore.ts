@@ -4,6 +4,7 @@ import { registerAuthBridge, type RefreshedTokens } from '@/shared/api/client';
 import { logger } from '@/shared/lib/logger';
 import { secureStorage } from '@/shared/lib/secureStorage';
 
+import { signOutFromServer } from '@/features/auth/api/auth.api';
 import { sessionSchema, type Session } from '@/features/auth/api/auth.schema';
 import { signOutFromKakao } from '@/features/auth/lib/kakaoAuth';
 
@@ -77,6 +78,8 @@ export const useAuthStore = create<AuthStore>()((set, get) => ({
   },
 
   signOut: async (reason) => {
+    // 서버 세션 → 카카오 세션 → 로컬 순으로 정리한다. 앞의 둘은 실패해도 던지지 않는다.
+    await signOutFromServer();
     await signOutFromKakao();
     await secureStorage.remove(SESSION_KEY);
     set({ status: 'signedOut', session: null, signOutReason: reason ?? null });

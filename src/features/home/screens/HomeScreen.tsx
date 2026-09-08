@@ -4,7 +4,7 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 
 import type { HomeDataSource } from '@/features/home/api/home.dataSource';
 import { mapHomeHeaderModel } from '@/features/home/api/home.mapper';
-import { mockHomeDataSource } from '@/features/home/api/home.mockDataSource';
+import { defaultHomeDataSource } from '@/features/home/api/home.dataSourceResolver';
 import { homeQueries } from '@/features/home/api/home.queries';
 import { HandoffCard } from '@/features/home/components/HandoffCard';
 import { HomeHeader } from '@/features/home/components/HomeHeader';
@@ -22,7 +22,7 @@ type HomeScreenProps = {
 const HOME_ERROR_MESSAGE = '홈 정보를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.';
 
 export function HomeScreen({
-  dataSource = mockHomeDataSource,
+  dataSource = defaultHomeDataSource,
   initialDate = getTodayInSeoul(),
 }: HomeScreenProps) {
   const router = useRouter();

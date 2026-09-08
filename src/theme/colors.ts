@@ -86,6 +86,39 @@ const light = {
   warningSubtle: palette.yellow50,
   warningText: palette.yellow700,
 
+  /**
+   * ── 액션(버튼·칩) 전용 ────────────────────────────────────────────
+   * 출처: Figma 디자인 시스템 `Action Button_square`(1169:28103),
+   * `Action Button_rounded`(1169:29426), `chips_역할`(1169:30119).
+   * 시안의 `surface/*`, `foreground/*`, `tag/*` 토큰과 1:1로 대응한다.
+   *
+   * ⚠️ 다크 값은 시안에 없다. 아래 `darkColors`의 대응 값은 라이트에서 역산한
+   * 임시값이며, 다크 시안이 나오면 통째로 교체한다.
+   */
+
+  /** `surface/neutral/strong` — 검정 계열 솔리드 버튼 배경. */
+  surfaceInverse: palette.gray800,
+  /** `surface/neutral/pressed` — 그 버튼을 눌렀을 때. */
+  surfaceInversePressed: palette.gray950,
+  /** 위 두 배경 위에 올라가는 전경. */
+  onSurfaceInverse: palette.white,
+
+  /** `surface/blue/pressed` — accent 솔리드 버튼을 눌렀을 때. */
+  accentPressed: palette.blue700,
+  /** `surface/blue/default` — 라운드 버튼의 연한 파랑 배경. */
+  accentSoft: palette.blue25,
+  /** `foreground/blue/soft` — `accentSoft` 위의 전경. */
+  onAccentSoft: palette.blue600,
+
+  /** `surface/warning/default` — 빨강 솔리드 버튼 배경. `danger`(red600)와 단계가 다르다. */
+  dangerSolid: palette.red500,
+  /** `surface/warning/pressed`. */
+  dangerSolidPressed: palette.red600,
+
+  /** `tag/surface/soft/orange` · `tag/foreground/orange` — 역할 칩. */
+  tagOrangeSurface: palette.orange50,
+  tagOrangeText: palette.orange600,
+
   staticWhite: palette.white,
   staticBlack: palette.black,
 
@@ -149,6 +182,21 @@ export const darkColors: ThemeColors = {
   warningOn: palette.gray900,
   warningSubtle: palette.yellow950,
   warningText: palette.yellow400,
+
+  /** 다크 시안 없음 — 밝은 면 위에 어두운 글자로 뒤집어 대비를 유지한다. */
+  surfaceInverse: palette.gray100,
+  surfaceInversePressed: palette.white,
+  onSurfaceInverse: palette.gray900,
+
+  accentPressed: palette.blue500,
+  accentSoft: palette.blue950,
+  onAccentSoft: palette.blue300,
+
+  dangerSolid: palette.red500,
+  dangerSolidPressed: palette.red400,
+
+  tagOrangeSurface: palette.orange950,
+  tagOrangeText: palette.orange300,
 
   staticWhite: palette.white,
   staticBlack: palette.black,

@@ -4,8 +4,7 @@ import { Controller, useForm, useWatch } from 'react-hook-form';
 import { Alert, StyleSheet, View } from 'react-native';
 
 import { normalizeError } from '@/shared/api/errors';
-import { Button, Modal, MODAL_TEXT_ICON_SIZE, Text, TextField, Toast } from '@/shared/ui';
-import { AlertCircleFill } from '@/shared/ui/icons';
+import { Button, Text, TextField, Toast } from '@/shared/ui';
 
 import { isEmailTaken, useRequestSignupCode } from '@/features/auth/api/signup.mutations';
 import { SignupLayout } from '@/features/auth/components/SignupLayout';
@@ -14,7 +13,10 @@ import { getStepProgress, useSignupStore } from '@/features/auth/store/signupSto
 
 /**
  * Figma "01-3~01-5 회원가입 - 이메일" — `943:111486`, `943:111499`, `943:111512`.
- * 예외: "동일한 이메일이 이미 있는 경우"(`943:111578`), "올바른 이메일 형식이 아닌 경우"(`943:111593`).
+ * 예외: "올바른 이메일 형식이 아닌 경우"(`943:111593`).
+ *
+ * 중복 이메일은 시안 `943:111578`에서 모달이었지만 기획이 바뀌어 형식 오류와 같은
+ * 인라인 문구로 내린다. 사용자가 주소를 고치는 흐름을 모달이 끊지 않게 하기 위해서다.
  *
  * 시안의 "중복확인" 버튼 하나가 중복 검사와 인증코드 발송을 겸한다 — 계약상 중복은
  * `SIGN_UP` 인증코드 발송의 `409`로만 알 수 있어서다. 발송에 성공해야 "다음"이 열린다.
@@ -35,6 +37,7 @@ const SPEC = {
 
 /** ⚠️ 시안 01-5의 문구 그대로다. 코드 입력 전인데 "인증 완료"라 디자인에 확인 요청 중. */
 const SENT_MESSAGE = '이메일 인증 완료';
+const TAKEN_MESSAGE = '이미 사용 중인 이메일이에요.';
 const TOAST_MESSAGE = '이메일로 인증코드가 발송됐어요.';
 
 export function SignupEmailScreen({ onBack, onNext }: SignupEmailScreenProps) {
@@ -46,7 +49,11 @@ export function SignupEmailScreen({ onBack, onNext }: SignupEmailScreenProps) {
 
   const requestCode = useRequestSignupCode();
 
-  const [isTakenModalVisible, setIsTakenModalVisible] = useState(false);
+  /**
+   * 중복으로 거절당한 주소. 불리언이 아니라 주소를 들고 있어야
+   * 사용자가 한 글자만 고쳐도 문구가 저절로 사라지고, 되돌리면 다시 뜬다.
+   */
+  const [takenEmail, setTakenEmail] = useState<string | null>(null);
   const [isToastVisible, setIsToastVisible] = useState(false);
 
   useEffect(() => {
@@ -69,6 +76,8 @@ export function SignupEmailScreen({ onBack, onNext }: SignupEmailScreenProps) {
   const email = useWatch({ control, name: 'email' }).trim();
   /** 지금 입력된 주소로 코드를 이미 보냈는가. 주소를 고치면 즉시 false가 된다. */
   const isSent = expiresAt !== null && email === storedEmail;
+  /** 지금 입력된 주소가 방금 중복으로 거절당한 그 주소인가. */
+  const isTaken = takenEmail !== null && email === takenEmail;
 
   const requestCodeFor = handleSubmit((values) => {
     const trimmed = values.email.trim();
@@ -82,7 +91,7 @@ export function SignupEmailScreen({ onBack, onNext }: SignupEmailScreenProps) {
         },
         onError: (error) => {
           if (isEmailTaken(error)) {
-            setIsTakenModalVisible(true);
+            setTakenEmail(trimmed);
             return;
           }
           Alert.alert('인증코드를 보내지 못했어요', normalizeError(error).message);
@@ -103,7 +112,12 @@ export function SignupEmailScreen({ onBack, onNext }: SignupEmailScreenProps) {
         control={control}
         name="email"
         render={({ field, fieldState }) => {
-          const hasError = fieldState.isTouched && fieldState.error !== undefined;
+          const formError =
+            fieldState.isTouched && fieldState.error !== undefined
+              ? fieldState.error.message
+              : undefined;
+          // 형식이 틀렸으면 중복 여부는 물어보지도 못했다. 형식 오류를 먼저 보여준다.
+          const errorMessage = formError ?? (isTaken ? TAKEN_MESSAGE : undefined);
 
           return (
             <View style={styles.container}>
@@ -126,7 +140,7 @@ export function SignupEmailScreen({ onBack, onNext }: SignupEmailScreenProps) {
                     textContentType="emailAddress"
                     returnKeyType="done"
                     onSubmitEditing={requestCodeFor}
-                    status={hasError ? 'error' : isSent ? 'success' : 'none'}
+                    status={errorMessage !== undefined ? 'error' : isSent ? 'success' : 'none'}
                   />
                 </View>
                 <Button
@@ -138,9 +152,9 @@ export function SignupEmailScreen({ onBack, onNext }: SignupEmailScreenProps) {
               </View>
 
               {/* 보조 문구는 입력이 아니라 행 전체 아래에 붙는다(시안 `Frame 2117906259`). */}
-              {hasError ? (
+              {errorMessage !== undefined ? (
                 <Text variant="caption" color="danger">
-                  {fieldState.error?.message}
+                  {errorMessage}
                 </Text>
               ) : isSent ? (
                 <Text variant="caption" color="success">
@@ -150,17 +164,6 @@ export function SignupEmailScreen({ onBack, onNext }: SignupEmailScreenProps) {
             </View>
           );
         }}
-      />
-
-      <Modal
-        variant="text"
-        isVisible={isTakenModalVisible}
-        icon={<AlertCircleFill size={MODAL_TEXT_ICON_SIZE} color="danger" />}
-        title="이미 사용 중인 이메일이에요."
-        description={'과거 회원가입 내역이 있는지\n확인해주세요.'}
-        confirmLabel="확인"
-        onConfirm={() => setIsTakenModalVisible(false)}
-        onClose={() => setIsTakenModalVisible(false)}
       />
     </SignupLayout>
   );

@@ -53,11 +53,18 @@ export const membershipContextSchema = z.object({
   status: z.enum(['ACTIVE', 'LEFT']),
 });
 
-/** 활성 매장 소속이 없으면 `membership`이 **생략된다**. null이 아니라 부재다. */
+/**
+ * 활성 매장 소속이 없을 때의 `membership`.
+ *
+ * 계약(`openapi.yaml`)은 "생략된다"고 읽히지만 **개발 서버는 `null`을 내려준다**
+ * (2026-09-08 실측: `GET /stores/me` → `{"membership":null}`).
+ * `.optional()`은 `null`을 거부하므로 소속 없는 사용자가 로그인하면 파싱이 깨진다.
+ * 둘 다 받도록 `.nullish()`로 둔다 — 어느 쪽이 오든 앱은 "소속 없음"으로 해석한다.
+ */
 export const sessionSchema = z.object({
   user: userProfileSchema,
   tokens: tokenPairSchema,
-  membership: membershipContextSchema.optional(),
+  membership: membershipContextSchema.nullish(),
 });
 
 /**

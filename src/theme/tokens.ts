@@ -18,7 +18,12 @@ export const spacing = {
 } as const;
 
 export const radius = {
-  sm: 6,
+  /**
+   * 디자인 시스템의 `sm`(8). 버튼·칩이 쓴다.
+   * 이전 값은 6이었는데 시안에 근거가 없었고, 확정된 버튼 시스템이 8이라 맞췄다.
+   */
+  sm: 8,
+  /** 디자인 시스템의 `space/md`(12). 입력 필드가 쓴다. */
   md: 12,
   /** Figma shadow 예시 카드가 쓰는 값. */
   lg: 20,
@@ -52,6 +57,12 @@ export const palette = {
   gray900: '#111827',
   gray950: '#030712',
 
+  /**
+   * ⚠️ 디자인 시스템 `surface/blue/default`. 라운드 버튼의 연한 파랑 배경이다.
+   * `blue50`(#EFF6FF)과 2단위밖에 차이 나지 않아 사실상 중복으로 보인다 —
+   * 시안 값을 그대로 옮겨 두었고 디자인 확인이 필요하다. 확인되면 둘 중 하나로 합친다.
+   */
+  blue25: '#F1F6FF',
   blue50: '#EFF6FF',
   blue100: '#DBEAFE',
   blue200: '#BFDBFE',
