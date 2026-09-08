@@ -17,6 +17,7 @@ import { AuthHeader } from '@/features/auth/components/AuthHeader';
 import { OrDivider } from '@/features/auth/components/OrDivider';
 import { PasswordToggle } from '@/features/auth/components/PasswordToggle';
 import { SocialCircleButton } from '@/features/auth/components/SocialCircleButton';
+import { useSocialSignIn } from '@/features/auth/hooks/useSocialSignIn';
 import { signInFormSchema, type SignInForm } from '@/features/auth/lib/validation';
 import { useAuthStore } from '@/features/auth/store/authStore';
 
@@ -55,6 +56,8 @@ export type EmailLoginScreenProps = {
   onSignUp?: () => void;
   onStartWithKakao?: () => void;
   onStartWithApple?: () => void;
+  /** 소셜 인증은 됐지만 연결된 Baton 계정이 없을 때(계약 §12-1 `SIGNUP_REQUIRED`). */
+  onSocialSignupRequired?: () => void;
 };
 
 /** 아직 연결할 화면·API가 없는 동작. 조용히 삼키지 않고 로그로 남긴다. */
@@ -66,11 +69,13 @@ export function EmailLoginScreen({
   onBack,
   onForgotPassword,
   onSignUp = notWired('signUp'),
-  onStartWithKakao = notWired('kakao'),
-  onStartWithApple = notWired('apple'),
+  onStartWithKakao,
+  onStartWithApple,
+  onSocialSignupRequired = notWired('socialSignup'),
 }: EmailLoginScreenProps) {
   const insets = useSafeAreaInsets();
   const signIn = useEmailSignIn();
+  const social = useSocialSignIn({ onSignupRequired: onSocialSignupRequired });
 
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   /** 시안 01-1·01-2의 "비밀번호를 다시 확인해주세요. (n/5)". */
@@ -260,13 +265,16 @@ export function EmailLoginScreen({
             <SocialCircleButton
               provider="kakao"
               label="카카오로 시작하기"
-              onPress={onStartWithKakao}
+              onPress={onStartWithKakao ?? social.signInWithKakao}
             />
-            <SocialCircleButton
-              provider="apple"
-              label="Apple로 시작하기"
-              onPress={onStartWithApple}
-            />
+            {/* Apple 로그인은 iOS 전용이라 안드로이드에서는 아예 그리지 않는다. */}
+            {social.canUseApple ? (
+              <SocialCircleButton
+                provider="apple"
+                label="Apple로 시작하기"
+                onPress={onStartWithApple ?? social.signInWithApple}
+              />
+            ) : null}
           </View>
 
           <View style={styles.footer}>

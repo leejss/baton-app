@@ -6,7 +6,15 @@ import { Alert, StyleSheet, View } from 'react-native';
 import { normalizeError } from '@/shared/api/errors';
 import { Button, Text, TextField, Toast } from '@/shared/ui';
 
-import { isEmailTaken, useRequestSignupCode } from '@/features/auth/api/signup.mutations';
+import {
+  VERIFICATION_CODE_TTL_MS,
+  VERIFICATION_RESEND_COOLDOWN_MS,
+} from '@/features/auth/api/passwordReset.schema';
+import {
+  isEmailTaken,
+  isResendTooSoon,
+  useRequestSignupCode,
+} from '@/features/auth/api/signup.mutations';
 import { SignupLayout } from '@/features/auth/components/SignupLayout';
 import { signupEmailFormSchema, type SignupEmailForm } from '@/features/auth/lib/validation';
 import { getStepProgress, useSignupStore } from '@/features/auth/store/signupStore';
@@ -35,17 +43,25 @@ const SPEC = {
   toastDurationMs: 3_000,
 } as const;
 
-/** ⚠️ 시안 01-5의 문구 그대로다. 코드 입력 전인데 "인증 완료"라 디자인에 확인 요청 중. */
-const SENT_MESSAGE = '이메일 인증 완료';
+/**
+ * 중복확인을 통과하고 인증코드가 나간 상태의 문구.
+ *
+ * ⚠️ 시안(`943:111512`)의 문구는 "이메일 인증 완료"인데 **이 시점에는 아직 인증 전**이다.
+ * 실제 인증은 다음 화면에서 6자리를 입력해야 끝난다. 그대로 두면 사용자가 인증을
+ * 마쳤다고 오해한다. 프레임 이름이 "이메일 중복 확인 완료"인 걸 보면 문구 쪽이 잘못됐다.
+ * 여기서는 실제 상태를 쓰고, 디자인 확정되면 맞춘다.
+ */
+const SENT_MESSAGE = '사용할 수 있는 이메일이에요.';
 const TAKEN_MESSAGE = '이미 사용 중인 이메일이에요.';
 const TOAST_MESSAGE = '이메일로 인증코드가 발송됐어요.';
+/** 쿨다운으로 재발송이 거절됐을 때. 직전 코드가 아직 유효하다는 안내다. */
+const ALREADY_SENT_MESSAGE = '이미 보낸 인증코드가 있어요. 메일함을 확인해주세요.';
 
 export function SignupEmailScreen({ onBack, onNext }: SignupEmailScreenProps) {
   const mode = useSignupStore((state) => state.mode);
   const storedEmail = useSignupStore((state) => state.email);
   const expiresAt = useSignupStore((state) => state.expiresAt);
   const startChallenge = useSignupStore((state) => state.startChallenge);
-  const resetChallenge = useSignupStore((state) => state.resetChallenge);
 
   const requestCode = useRequestSignupCode();
 
@@ -55,14 +71,18 @@ export function SignupEmailScreen({ onBack, onNext }: SignupEmailScreenProps) {
    */
   const [takenEmail, setTakenEmail] = useState<string | null>(null);
   const [isToastVisible, setIsToastVisible] = useState(false);
+  const [isAlreadySentVisible, setIsAlreadySentVisible] = useState(false);
 
   useEffect(() => {
-    if (!isToastVisible) {
+    if (!isToastVisible && !isAlreadySentVisible) {
       return;
     }
-    const timeout = setTimeout(() => setIsToastVisible(false), SPEC.toastDurationMs);
+    const timeout = setTimeout(() => {
+      setIsToastVisible(false);
+      setIsAlreadySentVisible(false);
+    }, SPEC.toastDurationMs);
     return () => clearTimeout(timeout);
-  }, [isToastVisible]);
+  }, [isToastVisible, isAlreadySentVisible]);
 
   const { control, handleSubmit, formState } = useForm<SignupEmailForm>({
     resolver: zodResolver(signupEmailFormSchema),
@@ -94,6 +114,29 @@ export function SignupEmailScreen({ onBack, onNext }: SignupEmailScreenProps) {
             setTakenEmail(trimmed);
             return;
           }
+
+          /**
+           * 쿨다운이면 직전 코드가 아직 살아 있다. 실패로 막지 않고 그 코드를 쓰게 한다.
+           *
+           * 서버가 429에는 `expiresAt`·`resendAvailableAt`을 주지 않아 `Retry-After`에서
+           * 역산한다 — 남은 쿨다운이 끝나는 시점이 발송 1분 뒤이므로, 만료는 거기서
+           * 다시 2분 뒤다(TTL 3분 − 쿨다운 1분). 서버가 429에도 두 시각을 실어주면
+           * 이 역산을 지운다.
+           */
+          if (isResendTooSoon(error)) {
+            const retryAfterMs = (normalizeError(error).retryAfterSeconds ?? 60) * 1000;
+            const resendAvailableAt = Date.now() + retryAfterMs;
+            startChallenge({
+              email: trimmed,
+              resendAvailableAt: new Date(resendAvailableAt).toISOString(),
+              expiresAt: new Date(
+                resendAvailableAt + (VERIFICATION_CODE_TTL_MS - VERIFICATION_RESEND_COOLDOWN_MS),
+              ).toISOString(),
+            });
+            setIsAlreadySentVisible(true);
+            return;
+          }
+
           Alert.alert('인증코드를 보내지 못했어요', normalizeError(error).message);
         },
       },
@@ -106,7 +149,13 @@ export function SignupEmailScreen({ onBack, onNext }: SignupEmailScreenProps) {
       progress={getStepProgress(mode, 'email')}
       title="이메일을 입력해주세요"
       action={<Button variant="accent" label="다음" disabled={!isSent} onPress={onNext} />}
-      toast={isToastVisible ? <Toast message={TOAST_MESSAGE} /> : undefined}
+      toast={
+        isToastVisible ? (
+          <Toast message={TOAST_MESSAGE} />
+        ) : isAlreadySentVisible ? (
+          <Toast message={ALREADY_SENT_MESSAGE} />
+        ) : undefined
+      }
     >
       <Controller
         control={control}
@@ -125,13 +174,15 @@ export function SignupEmailScreen({ onBack, onNext }: SignupEmailScreenProps) {
                 <View style={styles.field}>
                   <TextField
                     value={field.value}
-                    onChangeText={(text) => {
-                      // 주소가 바뀌면 이전 인증은 무효다(AUTH-07 필수 조건 우회 방지).
-                      if (expiresAt !== null && text.trim() !== storedEmail) {
-                        resetChallenge();
-                      }
-                      field.onChange(text);
-                    }}
+                    /**
+                     * 발송 기록을 지우지 않는다. 우회 방지는 아래 `isSent`가
+                     * **입력값과 발송한 주소를 비교**해서 이미 막고 있다.
+                     *
+                     * 예전에는 여기서 `resetChallenge()`를 불렀는데, 주소를 지웠다가
+                     * 같은 값을 다시 넣으면 기록이 사라진 채라 앱이 재발송을 시도했고
+                     * 서버 쿨다운(1분)에 걸려 "보내지 못했어요"가 떴다.
+                     */
+                    onChangeText={field.onChange}
                     onBlur={field.onBlur}
                     placeholder="example@gmail.com"
                     keyboardType="email-address"

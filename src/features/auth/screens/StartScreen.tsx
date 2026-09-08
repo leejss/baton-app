@@ -1,19 +1,15 @@
 import { Image } from 'expo-image';
-import { useEffect, useState } from 'react';
-import { Alert, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { normalizeError } from '@/shared/api/errors';
 import { logger } from '@/shared/lib/logger';
 import { Box, Text, textStyles } from '@/shared/ui';
 import { SCREEN_PADDING_X } from '@/theme';
 
-import { isCanceled, useAppleSignIn, useKakaoSignIn } from '@/features/auth/api/auth.mutations';
-import { isAppleSignInAvailable } from '@/features/auth/lib/appleAuth';
+import { useSocialSignIn } from '@/features/auth/hooks/useSocialSignIn';
 import { AuthHeader } from '@/features/auth/components/AuthHeader';
 import { OrDivider } from '@/features/auth/components/OrDivider';
 import { StartButton } from '@/features/auth/components/StartButton';
-import { useSignupStore } from '@/features/auth/store/signupStore';
 
 /**
  * 세로 리듬은 Figma "02 시작(로그인 선택) 화면"(`943:111106`, 393×852) 실측값이다.
@@ -68,79 +64,10 @@ export function StartScreen({
   onSocialSignupRequired = notWired('socialSignup'),
 }: StartScreenProps) {
   const insets = useSafeAreaInsets();
-  const kakaoSignIn = useKakaoSignIn();
-  const appleSignIn = useAppleSignIn();
-  const startSocialSignup = useSignupStore((state) => state.startSocialSignup);
+  const social = useSocialSignIn({ onSignupRequired: onSocialSignupRequired });
 
-  /**
-   * Apple 로그인은 iOS 13 이상에서만 쓸 수 있다. 안드로이드에서는 버튼 자체를 숨긴다 —
-   * 눌러도 안 되는 버튼을 보여주는 것보다 없는 게 낫다.
-   */
-  const [canUseApple, setCanUseApple] = useState(false);
-  useEffect(() => {
-    void isAppleSignInAvailable().then(setCanUseApple);
-  }, []);
-
-  const isBusy = kakaoSignIn.isPending || appleSignIn.isPending;
-
-  /** 소셜 인증 결과 처리는 카카오·애플이 동일하다. 갈래만 보고 다음 화면을 정한다. */
-  const handleSocialOutcome = (
-    provider: 'kakao' | 'apple',
-    outcome:
-      | { status: 'signedIn' }
-      | {
-          status: 'signupRequired';
-          socialSignupToken: string;
-          suggestedEmail?: string;
-          suggestedDisplayName?: string;
-        },
-  ) => {
-    if (outcome.status === 'signedIn') {
-      // 세션이 생기면 `(auth)/_layout`의 가드가 알아서 앱 안쪽으로 보낸다.
-      return;
-    }
-
-    // 계약상 신규 소셜 식별자는 로그인이 아니라 가입 대기다(§12-1). 추가정보 입력으로 잇는다(AUTH-12).
-    startSocialSignup({
-      provider,
-      socialSignupToken: outcome.socialSignupToken,
-      suggestedDisplayName: outcome.suggestedDisplayName,
-      suggestedEmail: outcome.suggestedEmail,
-    });
-    onSocialSignupRequired();
-  };
-
-  const handleSocialError = (error: unknown) => {
-    // 사용자가 직접 닫은 경우엔 아무것도 띄우지 않는다.
-    if (isCanceled(error)) {
-      return;
-    }
-    Alert.alert('로그인하지 못했어요', normalizeError(error).message);
-  };
-
-  const handleApplePress = () => {
-    if (onStartWithApple !== undefined) {
-      onStartWithApple();
-      return;
-    }
-
-    appleSignIn.mutate(undefined, {
-      onSuccess: (outcome) => handleSocialOutcome('apple', outcome),
-      onError: handleSocialError,
-    });
-  };
-
-  const handleKakaoPress = () => {
-    if (onStartWithKakao !== undefined) {
-      onStartWithKakao();
-      return;
-    }
-
-    kakaoSignIn.mutate(undefined, {
-      onSuccess: (outcome) => handleSocialOutcome('kakao', outcome),
-      onError: handleSocialError,
-    });
-  };
+  const handleKakaoPress = onStartWithKakao ?? social.signInWithKakao;
+  const handleApplePress = onStartWithApple ?? social.signInWithApple;
 
   return (
     <Box
@@ -180,15 +107,15 @@ export function StartScreen({
               provider="kakao"
               label="카카오로 시작하기"
               onPress={handleKakaoPress}
-              isLoading={kakaoSignIn.isPending}
+              isLoading={social.isKakaoPending}
             />
-            {canUseApple ? (
+            {social.canUseApple ? (
               <StartButton
                 provider="apple"
                 label="Apple로 시작하기"
                 onPress={handleApplePress}
-                isLoading={appleSignIn.isPending}
-                disabled={kakaoSignIn.isPending}
+                isLoading={social.isApplePending}
+                disabled={social.isKakaoPending}
               />
             ) : null}
           </View>
@@ -197,7 +124,7 @@ export function StartScreen({
             provider="email"
             label="이메일로 시작하기"
             onPress={onStartWithEmail}
-            disabled={isBusy}
+            disabled={social.isPending}
           />
         </View>
       </View>

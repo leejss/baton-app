@@ -19,6 +19,17 @@ export function isEmailTaken(error: unknown): boolean {
 }
 
 /**
+ * 쿨다운 때문에 재발송이 거절된 경우(`429`).
+ *
+ * **실패가 아니다.** 재발송이 일어나지 않았다는 뜻이고, 직전에 보낸 코드는 그대로 살아 있다
+ * (`requirements.md`: 재발송해야 이전 코드가 무효화된다). 화면은 "이미 보냈다"고 안내하고
+ * 다음 단계를 열어줘야 한다.
+ */
+export function isResendTooSoon(error: unknown): boolean {
+  return hasServerErrorCode(error, 'EMAIL_VERIFICATION_RESEND_TOO_SOON');
+}
+
+/**
  * 가입용 인증코드 발송·재발송. 시안의 "중복확인" 버튼이 이걸 부른다 —
  * 계약상 이메일 중복은 이 요청의 `409 AUTH_ACCOUNT_ALREADY_EXISTS`로만 알 수 있다.
  */

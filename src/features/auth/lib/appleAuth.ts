@@ -53,7 +53,9 @@ function isUserCancellation(error: unknown): boolean {
 }
 
 /** 애플이 이름을 조각으로 준다. 표시용 한 줄로 합친다. 둘 다 없으면 null. */
-function toDisplayName(name: AppleAuthentication.AppleAuthenticationFullName | null): string | null {
+function toDisplayName(
+  name: AppleAuthentication.AppleAuthenticationFullName | null,
+): string | null {
   if (name === null) {
     return null;
   }

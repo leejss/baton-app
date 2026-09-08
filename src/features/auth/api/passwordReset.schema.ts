@@ -12,6 +12,16 @@ import { z } from 'zod';
 export const verificationPurposeSchema = z.enum(['SIGN_UP', 'PASSWORD_RESET']);
 export type VerificationPurpose = z.infer<typeof verificationPurposeSchema>;
 
+/**
+ * 인증코드 정책. 출처: wiki `requirements.md` — "유효 시간은 3분이다.
+ * 같은 이메일·목적의 재발송은 1분 후 가능하고 재발송하면 이전 코드를 즉시 무효화한다."
+ *
+ * 서버가 기준이고 앱은 **429에서 시각을 역산할 때만** 쓴다. 정상 응답에는 서버가
+ * `expiresAt`·`resendAvailableAt`을 직접 주므로 그 값을 그대로 쓴다.
+ */
+export const VERIFICATION_CODE_TTL_MS = 3 * 60_000;
+export const VERIFICATION_RESEND_COOLDOWN_MS = 60_000;
+
 export const verificationChallengeSchema = z.object({
   /** 인증코드 만료 시각. */
   expiresAt: z.iso.datetime(),
