@@ -1,11 +1,5 @@
-import { RoutePlaceholderScreen } from '@/features/routes/screens/RoutePlaceholderScreen';
+import { NotificationsScreen } from '@/features/notifications/screens/NotificationsScreen';
 
 export default function NotificationsRoute() {
-  return (
-    <RoutePlaceholderScreen
-      title="알림"
-      description="알림 목록 화면이 연결될 자리입니다."
-      featureIds="NOTI-01~04"
-    />
-  );
+  return <NotificationsScreen />;
 }
