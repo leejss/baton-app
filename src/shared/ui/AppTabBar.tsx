@@ -21,7 +21,7 @@ export const APP_TAB_NAMES = ['home', 'schedules', 'handoffs', 'my'] as const;
 export type AppTabName = (typeof APP_TAB_NAMES)[number];
 
 type AppTabBarProps = {
-  activeTab: AppTabName;
+  activeTab: AppTabName | null;
   onComposePress: () => void;
   onTabLongPress: (tab: AppTabName) => void;
   onTabPress: (tab: AppTabName) => void;

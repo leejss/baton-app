@@ -1,4 +1,5 @@
 export { BottomActionBar, type BottomActionBarProps } from '@/shared/ui/BottomActionBar';
+export { BottomSheet, type BottomSheetProps } from '@/shared/ui/BottomSheet';
 export { Box, type BoxProps } from '@/shared/ui/Box';
 export {
   Button,

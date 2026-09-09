@@ -9,6 +9,10 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { createMockScheduleDataSource } from '@/features/schedules/api/mockScheduleDataSource';
 import { SchedulesScreen } from '@/features/schedules/screens/SchedulesScreen';
 
+jest.mock('@expo/ui/community/bottom-sheet', () =>
+  jest.requireActual('@/shared/ui/__mocks__/expoBottomSheet'),
+);
+
 jest.mock('react-native-keyboard-controller', () =>
   jest.requireActual('react-native-keyboard-controller/jest'),
 );
@@ -108,6 +112,7 @@ describe('근무표 화면의 로컬 조회 경계', () => {
     expect(screen.getByText('2026년 9월')).toBeOnTheScreen();
     await fireEvent.press(screen.getByLabelText('조회 월 선택'));
     await fireEvent.press(screen.getByLabelText('2026년 10월'));
+    await fireEvent(screen.getByLabelText('조회 월 선택 닫기'), 'onDismiss');
     expect(screen.getByText('2026년 10월')).toBeOnTheScreen();
     expect(await screen.findByText('근무표를 불러오지 못했습니다.')).toBeOnTheScreen();
   });
@@ -125,6 +130,9 @@ describe('근무표 화면의 로컬 조회 경계', () => {
     await mount(<SchedulesScreen source={source} initialDate="2026-09-15" />);
     await fireEvent.press(await screen.findByLabelText('근무편집'));
     await fireEvent.press(screen.getByLabelText('근무등록'));
+    expect(mockPush).not.toHaveBeenCalled();
+    // Jest에는 네이티브 전환이 없으므로 시트의 닫기 완료 이벤트를 전달한다.
+    await fireEvent(screen.getByLabelText('어떤 일을 처리하나요? 닫기'), 'onDismiss');
     expect(mockPush).toHaveBeenCalledWith({
       pathname: '/schedules/new',
       params: { selectedDate: '2026-09-15' },

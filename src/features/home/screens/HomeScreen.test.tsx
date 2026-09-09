@@ -6,8 +6,9 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import type { HomeDataSource } from '@/features/home/api/home.dataSource';
 import { createMockHomeDataSource } from '@/features/home/api/home.mockDataSource';
+import type { NotificationDataSource } from '@/features/notifications/api/notification.dataSource';
+import { notificationQueries } from '@/features/notifications/api/notification.queries';
 import { MainHeader } from '@/features/tabs/components/MainHeader';
-import { mainQueries } from '@/features/tabs/api/main.queries';
 import { HomeScreen } from '@/features/home/screens/HomeScreen';
 
 const mockPush = jest.fn();
@@ -34,6 +35,29 @@ function createTestQueryClient() {
   return queryClient;
 }
 
+function createNotificationSource(unreadCount = 0, shouldFail = false): NotificationDataSource {
+  return {
+    key: 'home-header-notifications',
+    async list() {
+      if (shouldFail) throw new Error('알림 조회 실패');
+      return {
+        items: Array.from({ length: unreadCount }, (_, index) => ({
+          id: index + 1,
+          type: 'UPDATE_ANNOUNCEMENT',
+          title: '서비스 공지',
+          status: 'UNREAD',
+          createdAt: new Date().toISOString(),
+        })),
+        unreadCount,
+        badgeText: unreadCount > 99 ? '99+' : String(unreadCount),
+      };
+    },
+    async markRead() {
+      throw new Error('헤더는 읽음 처리를 호출하지 않습니다.');
+    },
+  };
+}
+
 async function renderWithProviders(element: ReactElement, queryClient = createTestQueryClient()) {
   return render(
     <SafeAreaProvider initialMetrics={INITIAL_METRICS}>
@@ -58,12 +82,17 @@ describe('HomeScreen', () => {
     const dataSource = createMockHomeDataSource({ unreadCount: 120 });
     const getMyStore = jest.spyOn(dataSource, 'getMyStore');
     const getMyProfile = jest.spyOn(dataSource, 'getMyProfile');
-    const getNotifications = jest.spyOn(dataSource, 'getNotifications');
+    const notificationSource = createNotificationSource(120);
+    const getNotifications = jest.spyOn(notificationSource, 'list');
     const client = createTestQueryClient();
 
     for (const title of [undefined, '근무표', '인수인계', '마이페이지']) {
       const view = await renderWithProviders(
-        <MainHeader title={title} dataSource={dataSource} />,
+        <MainHeader
+          title={title}
+          dataSource={dataSource}
+          notificationSource={notificationSource}
+        />,
         client,
       );
       expect(await screen.findByLabelText('카페 바톤 강남점, 관리자')).toBeOnTheScreen();
@@ -71,7 +100,7 @@ describe('HomeScreen', () => {
       expect(screen.queryByLabelText('뒤로 가기')).not.toBeOnTheScreen();
       if (title !== undefined) expect(screen.getByText(title)).toBeOnTheScreen();
       await fireEvent.press(screen.getByLabelText('알림, 읽지 않은 알림 99+개'));
-      expect(mockPush).toHaveBeenLastCalledWith('/notifications');
+      expect(mockNavigate).toHaveBeenLastCalledWith('/notifications');
       await view.unmount();
     }
     expect(getMyStore).toHaveBeenCalledTimes(1);
@@ -82,7 +111,13 @@ describe('HomeScreen', () => {
   it('메인 헤더의 매장 조회 실패를 재시도하고 읽지 않은 알림이 없으면 배지를 숨긴다', async () => {
     const dataSource = createMockHomeDataSource({ unreadCount: 0 });
     jest.spyOn(dataSource, 'getMyStore').mockRejectedValueOnce(new Error('일시적인 조회 실패'));
-    await renderWithProviders(<MainHeader title="근무표" dataSource={dataSource} />);
+    await renderWithProviders(
+      <MainHeader
+        title="근무표"
+        dataSource={dataSource}
+        notificationSource={createNotificationSource()}
+      />,
+    );
     await fireEvent.press(await screen.findByLabelText('매장 정보 다시 조회'));
     expect(await screen.findByLabelText('카페 바톤 강남점, 관리자')).toBeOnTheScreen();
     expect(screen.getByText('근무표')).toBeOnTheScreen();
@@ -236,20 +271,20 @@ describe('HomeScreen', () => {
 
   it('알림 갱신 실패 시 마지막 badge를 유지하고 최초 실패면 숨긴다', async () => {
     const cachedClient = createTestQueryClient();
+    const notificationSource = createNotificationSource(0, true);
     cachedClient.setQueryData(
-      mainQueries.notifications(createMockHomeDataSource(), 101).queryKey,
+      notificationQueries.list(notificationSource, { storeId: 101, userId: 1 }).queryKey,
       {
         items: [],
         unreadCount: 8,
-        badgeText: '8',
       },
       { updatedAt: 1 },
     );
 
     const cachedRender = await renderWithProviders(
-      <HomeScreen
-        dataSource={createMockHomeDataSource({ notificationFailure: true })}
-        initialDate="2026-09-06"
+      <MainHeader
+        dataSource={createMockHomeDataSource()}
+        notificationSource={notificationSource}
       />,
       cachedClient,
     );
@@ -258,13 +293,13 @@ describe('HomeScreen', () => {
     await cachedRender.unmount();
 
     await renderWithProviders(
-      <HomeScreen
-        dataSource={createMockHomeDataSource({ notificationFailure: true })}
-        initialDate="2026-09-06"
+      <MainHeader
+        dataSource={createMockHomeDataSource()}
+        notificationSource={notificationSource}
       />,
     );
 
-    expect(await screen.findByText('김지원님')).toBeOnTheScreen();
+    expect(await screen.findByLabelText('카페 바톤 강남점, 관리자')).toBeOnTheScreen();
     await waitFor(() => expect(screen.getByLabelText('알림')).toBeOnTheScreen());
     expect(screen.queryByLabelText(/읽지 않은 알림/)).not.toBeOnTheScreen();
   });

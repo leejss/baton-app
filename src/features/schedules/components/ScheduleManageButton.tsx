@@ -1,11 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import type { ScheduleDataSource } from '@/features/schedules/api/schedule.dataSource';
 import { scheduleQueries } from '@/features/schedules/api/schedule.queries';
-import { ScheduleOverlay } from '@/features/schedules/components/ScheduleOverlay';
+import { BottomSheet } from '@/shared/ui/BottomSheet';
 import { Pressable, Text } from '@/shared/ui';
 import { Plus, EditFill } from '@/shared/ui/icons';
 import { radius, spacing, useTheme } from '@/theme';
@@ -19,12 +19,20 @@ export function ScheduleManageButton({
 }) {
   const query = useQuery(scheduleQueries.context(source));
   const [visible, setVisible] = useState(false);
+  const pendingNavigation = useRef<(() => void) | null>(null);
   const router = useRouter();
   const { colors } = useTheme();
   if (!query.data?.canManage) return null;
   const navigate = (pathname: '/schedules/new' | '/schedules/manage') => {
+    pendingNavigation.current = () =>
+      router.push({ pathname, params: date ? { selectedDate: date } : {} });
     setVisible(false);
-    router.push({ pathname, params: date ? { selectedDate: date } : {} });
+  };
+  const handleDismiss = () => {
+    const next = pendingNavigation.current;
+    pendingNavigation.current = null;
+    setVisible(false);
+    next?.();
   };
   return (
     <>
@@ -38,12 +46,7 @@ export function ScheduleManageButton({
           근무편집
         </Text>
       </Pressable>
-      <ScheduleOverlay
-        sheet
-        visible={visible}
-        title="어떤 일을 처리하나요?"
-        onClose={() => setVisible(false)}
-      >
+      <BottomSheet visible={visible} title="어떤 일을 처리하나요?" onDismiss={handleDismiss}>
         <View style={styles.options}>
           <Pressable
             accessibilityRole="button"
@@ -76,7 +79,7 @@ export function ScheduleManageButton({
             <View style={[styles.radio, { borderColor: colors.border }]} />
           </Pressable>
         </View>
-      </ScheduleOverlay>
+      </BottomSheet>
     </>
   );
 }

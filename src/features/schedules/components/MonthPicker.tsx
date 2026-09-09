@@ -1,6 +1,6 @@
 import { ScrollView, StyleSheet } from 'react-native';
 
-import { ScheduleOverlay } from '@/features/schedules/components/ScheduleOverlay';
+import { BottomSheet } from '@/shared/ui/BottomSheet';
 import { monthLabel, monthLimits, shiftMonth } from '@/features/schedules/lib/scheduleDate';
 import { Pressable, Text } from '@/shared/ui';
 import { radius, spacing, useTheme } from '@/theme';
@@ -19,7 +19,7 @@ export function MonthPicker({ visible, month, today, onSelect, onClose }: MonthP
   const months: string[] = [];
   for (let value = min; value <= max; value = shiftMonth(value, 1)) months.push(value);
   return (
-    <ScheduleOverlay sheet visible={visible} title="조회 월 선택" onClose={onClose}>
+    <BottomSheet visible={visible} title="조회 월 선택" onDismiss={onClose}>
       <ScrollView
         contentInsetAdjustmentBehavior="automatic"
         style={styles.list}
@@ -41,7 +41,7 @@ export function MonthPicker({ visible, month, today, onSelect, onClose }: MonthP
           </Pressable>
         ))}
       </ScrollView>
-    </ScheduleOverlay>
+    </BottomSheet>
   );
 }
 const styles = StyleSheet.create({

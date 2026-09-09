@@ -1,6 +1,5 @@
 import type { ReactNode } from 'react';
 import { Modal, StyleSheet, View, useWindowDimensions } from 'react-native';
-import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Pressable, Text } from '@/shared/ui';
@@ -12,7 +11,6 @@ type ScheduleOverlayProps = {
   title: string;
   children: ReactNode;
   onClose: () => void;
-  sheet?: boolean;
   busy?: boolean;
 };
 
@@ -21,7 +19,6 @@ export function ScheduleOverlay({
   title,
   children,
   onClose,
-  sheet = false,
   busy = false,
 }: ScheduleOverlayProps) {
   const { colors } = useTheme();
@@ -35,25 +32,18 @@ export function ScheduleOverlay({
       onRequestClose={busy ? undefined : onClose}
       statusBarTranslucent
     >
-      <KeyboardAvoidingView
-        enabled={sheet}
-        behavior="padding"
-        automaticOffset
-        style={[styles.overlay, sheet && styles.sheetOverlay, { backgroundColor: colors.overlay }]}
-      >
+      <View style={[styles.overlay, { backgroundColor: colors.overlay }]}>
         <View
           accessibilityViewIsModal
           style={[
             styles.card,
-            sheet && styles.sheet,
             {
               backgroundColor: colors.background,
               maxHeight: height - insets.top - spacing.md,
-              paddingBottom: sheet ? insets.bottom + spacing.lg : spacing.lg,
+              paddingBottom: spacing.lg,
             },
           ]}
         >
-          {sheet && <View style={[styles.handle, { backgroundColor: colors.border }]} />}
           <View style={styles.heading}>
             <Text variant="subheading" weight="semibold" style={styles.title}>
               {title}
@@ -71,7 +61,7 @@ export function ScheduleOverlay({
           </View>
           {children}
         </View>
-      </KeyboardAvoidingView>
+      </View>
     </Modal>
   );
 }
@@ -83,8 +73,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: SCREEN_PADDING_X,
   },
-  sheetOverlay: { justifyContent: 'flex-end', padding: 0 },
-  // TODO(design-system): Figma 1097:41380의 300px 모달 폭, 1097:39022의 시트 radius 12·20px 안쪽 여백을 sync한다.
+  // TODO(design-system): Figma 1097:41380의 300px 모달 폭·20px 안쪽 여백을 sync한다.
   card: {
     flexShrink: 1,
     width: '100%',
@@ -92,17 +81,6 @@ const styles = StyleSheet.create({
     borderRadius: radius.md,
     padding: 20,
     gap: spacing.md,
-  },
-  sheet: {
-    maxWidth: 560,
-    borderBottomLeftRadius: 0,
-    borderBottomRightRadius: 0,
-  },
-  handle: {
-    width: 60,
-    height: 4,
-    borderRadius: radius.full,
-    alignSelf: 'center',
   },
   heading: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   title: { flex: 1 },

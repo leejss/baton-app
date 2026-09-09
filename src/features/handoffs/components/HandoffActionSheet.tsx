@@ -1,8 +1,8 @@
-import { BottomSheetModal, BottomSheetView } from '@expo/ui/community/bottom-sheet';
-import { type Ref, useCallback, useImperativeHandle, useRef } from 'react';
-import { StyleSheet, useWindowDimensions, View } from 'react-native';
+import { type Ref, useImperativeHandle, useRef, useState } from 'react';
+import { StyleSheet, View } from 'react-native';
 
 import { Pressable, Text } from '@/shared/ui';
+import { BottomSheet } from '@/shared/ui/BottomSheet';
 import { EditFill, Trash, X } from '@/shared/ui/icons';
 import { radius, spacing, useTheme } from '@/theme';
 
@@ -19,8 +19,7 @@ type HandoffActionSheetProps = {
 
 export function HandoffActionSheet({ ref, onDismiss, onDelete, onEdit }: HandoffActionSheetProps) {
   const theme = useTheme();
-  const { width: viewportWidth } = useWindowDimensions();
-  const sheetRef = useRef<BottomSheetModal>(null);
+  const [visible, setVisible] = useState(false);
   const pendingActionRef = useRef<(() => void) | null>(null);
 
   useImperativeHandle(
@@ -29,47 +28,39 @@ export function HandoffActionSheet({ ref, onDismiss, onDelete, onEdit }: Handoff
       // 네이티브 시트의 나머지 명령은 기능 호출부에 노출하지 않는다.
       present: () => {
         pendingActionRef.current = null;
-        sheetRef.current?.present();
+        setVisible(true);
       },
     }),
     [],
   );
 
-  const handleDismiss = useCallback(() => {
+  const handleDismiss = () => {
     const pendingAction = pendingActionRef.current;
     pendingActionRef.current = null;
+    setVisible(false);
 
     // 다음 화면이나 확인 모달은 네이티브 시트의 퇴장 전환이 끝난 뒤 연다.
     onDismiss?.();
     pendingAction?.();
-  }, [onDismiss]);
+  };
 
   const handleClose = () => {
-    sheetRef.current?.dismiss();
+    setVisible(false);
   };
 
   const handleEdit = () => {
     pendingActionRef.current = onEdit;
-    sheetRef.current?.dismiss();
+    setVisible(false);
   };
 
   const handleDelete = () => {
     pendingActionRef.current = onDelete;
-    sheetRef.current?.dismiss();
+    setVisible(false);
   };
 
   return (
-    <BottomSheetModal
-      ref={sheetRef}
-      backgroundStyle={{ backgroundColor: theme.colors.background }}
-      enablePanDownToClose
-      handleComponent={null}
-      onDismiss={handleDismiss}
-    >
-      <BottomSheetView
-        // Expo UI의 fit-to-content가 가로축도 고유 크기로 측정하므로 뷰포트 너비를 명시한다.
-        style={[styles.sheet, { backgroundColor: theme.colors.background, width: viewportWidth }]}
-      >
+    <BottomSheet visible={visible} onDismiss={handleDismiss}>
+      <View style={styles.actions}>
         <View style={[styles.menu, { backgroundColor: theme.colors.surfaceSunken }]}>
           <Pressable
             accessibilityRole="button"
@@ -107,20 +98,14 @@ export function HandoffActionSheet({ ref, onDismiss, onDelete, onEdit }: Handoff
           <X />
           <Text weight="medium">닫기</Text>
         </Pressable>
-      </BottomSheetView>
-    </BottomSheetModal>
+      </View>
+    </BottomSheet>
   );
 }
 
 const styles = StyleSheet.create({
-  // TODO(design-system): 바텀시트의 20px 상단 여백·56px 행 높이를 컴포넌트 토큰으로 동기화한다.
-  sheet: {
-    paddingHorizontal: spacing.md,
-    paddingTop: 20,
-    gap: spacing.sm,
-    borderTopLeftRadius: radius.md,
-    borderTopRightRadius: radius.md,
-  },
+  // TODO(design-system): 바텀시트의 56px 행 높이를 컴포넌트 토큰으로 동기화한다.
+  actions: { gap: spacing.sm },
   menu: {
     borderRadius: radius.md,
     overflow: 'hidden',

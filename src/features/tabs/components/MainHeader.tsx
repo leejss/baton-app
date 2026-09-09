@@ -6,27 +6,40 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type { HomeDataSource } from '@/features/home/api/home.dataSource';
 import { mockHomeDataSource } from '@/features/home/api/home.mockDataSource';
+import type { NotificationDataSource } from '@/features/notifications/api/notification.dataSource';
+import { mockNotificationDataSource } from '@/features/notifications/api/mockNotificationDataSource';
+import { notificationQueries } from '@/features/notifications/api/notification.queries';
 import { mainQueries } from '@/features/tabs/api/main.queries';
 import { Pressable } from '@/shared/ui/Pressable';
 import { Text } from '@/shared/ui/Text';
-import { NavNotification } from '@/shared/ui/icons';
+import { ArrowLeftS, NavNotification } from '@/shared/ui/icons';
 import { radius, SCREEN_PADDING_X, spacing, useTheme } from '@/theme';
 
 type MainHeaderProps = {
   title?: string;
   dataSource?: HomeDataSource;
+  notificationSource?: NotificationDataSource;
+  onBack?: () => void;
 };
 
 /** 제목이 없는 홈만 워드마크를 표시하며, 모든 메인 화면이 같은 조회를 사용한다. */
-export function MainHeader({ title, dataSource = mockHomeDataSource }: MainHeaderProps) {
+export function MainHeader({
+  title,
+  dataSource = mockHomeDataSource,
+  notificationSource = mockNotificationDataSource,
+  onBack,
+}: MainHeaderProps) {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const theme = useTheme();
   const context = useQuery(mainQueries.context(dataSource));
   const storeId = context.data?.membership.store.id;
   const notifications = useQuery({
-    ...mainQueries.notifications(dataSource, storeId ?? 0),
-    enabled: storeId !== undefined,
+    ...notificationQueries.list(notificationSource, {
+      storeId: storeId ?? 0,
+      userId: context.data?.profile.id ?? 0,
+    }),
+    enabled: storeId !== undefined && context.data !== undefined,
   });
   const membership = context.data?.membership;
   const storeLabel = membership && `${membership.store.storeName} ${membership.store.branchName}`;
@@ -40,6 +53,7 @@ export function MainHeader({ title, dataSource = mockHomeDataSource }: MainHeade
         styles.root,
         { paddingTop: insets.top },
         title !== undefined && { backgroundColor: theme.colors.background },
+        onBack !== undefined && { backgroundColor: theme.colors.surface },
       ]}
     >
       <View style={styles.inner}>
@@ -53,9 +67,22 @@ export function MainHeader({ title, dataSource = mockHomeDataSource }: MainHeade
             style={styles.wordmark}
           />
         ) : (
-          <Text variant="subheading" weight="bold" style={styles.title}>
-            {title}
-          </Text>
+          <View style={styles.titleGroup}>
+            {onBack && (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="뒤로 가기"
+                onPress={onBack}
+                hitSlop={10}
+                style={styles.backButton}
+              >
+                <ArrowLeftS />
+              </Pressable>
+            )}
+            <Text variant="subheading" weight="bold" style={styles.title}>
+              {title}
+            </Text>
+          </View>
         )}
         <View style={styles.trailing}>
           {membership ? (
@@ -98,7 +125,7 @@ export function MainHeader({ title, dataSource = mockHomeDataSource }: MainHeade
           <Pressable
             accessibilityLabel={count > 0 ? `알림, 읽지 않은 알림 ${badgeText}개` : '알림'}
             accessibilityRole="button"
-            onPress={() => router.push('/notifications')}
+            onPress={() => router.navigate('/notifications')}
             style={({ pressed }) => [styles.notificationButton, pressed && styles.pressed]}
           >
             <NavNotification color="navigationForeground" />
@@ -141,6 +168,8 @@ const styles = StyleSheet.create({
     flexShrink: 0,
   },
   title: { flexShrink: 0 },
+  titleGroup: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  backButton: { width: 24, minHeight: 28, alignItems: 'center', justifyContent: 'center' },
   trailing: {
     minWidth: 0,
     flexShrink: 1,
