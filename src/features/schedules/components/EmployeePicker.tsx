@@ -1,13 +1,13 @@
 import { FlashList, type ListRenderItemInfo } from '@shopify/flash-list';
 import { useQuery } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { StyleSheet, View, useWindowDimensions } from 'react-native';
 
 import type { ScheduleDataSource } from '@/features/schedules/api/schedule.dataSource';
 import { scheduleQueries } from '@/features/schedules/api/schedule.queries';
 import { EmployeeRow } from '@/features/schedules/components/EmployeeRow';
 import { ScheduleMessage } from '@/features/schedules/components/ScheduleMessage';
-import { ScheduleOverlay } from '@/features/schedules/components/ScheduleOverlay';
+import { BottomSheet } from '@/shared/ui/BottomSheet';
 import type { ScheduleMember } from '@/features/schedules/model/schedule';
 import { Button, Pressable, Text, TextField } from '@/shared/ui';
 import { Search, NavUserLine } from '@/shared/ui/icons';
@@ -35,6 +35,7 @@ export function EmployeePicker({
 }: EmployeePickerProps) {
   const [open, setOpen] = useState(initiallyOpen);
   const [search, setSearch] = useState('');
+  const pendingDone = useRef<(() => void) | null>(null);
   const { height } = useWindowDimensions();
   const query = useQuery(scheduleQueries.members(source, storeId));
   const selected = query.data?.find((member) => member.id === selectedId);
@@ -44,6 +45,12 @@ export function EmployeePicker({
   const renderItem = ({ item }: ListRenderItemInfo<ScheduleMember>) => (
     <EmployeeRow member={item} selected={item.id === selectedId} onSelect={onSelect} />
   );
+  const handleDismiss = () => {
+    const next = pendingDone.current;
+    pendingDone.current = null;
+    setOpen(false);
+    next?.();
+  };
   return (
     <>
       <Pressable
@@ -59,7 +66,7 @@ export function EmployeePicker({
         {selected && <NavUserLine size={24} color="textTertiary" />}
         <Text weight="semibold">{selected?.name ?? '근무자 선택'}</Text>
       </Pressable>
-      <ScheduleOverlay sheet visible={open} title="근무자 선택" onClose={() => setOpen(false)}>
+      <BottomSheet visible={open} title="근무자 선택" onDismiss={handleDismiss}>
         <Text variant="bodySmall" color="textTertiary">
           근무를 등록할 직원을 선택해 주세요.
         </Text>
@@ -95,11 +102,11 @@ export function EmployeePicker({
           accessibilityLabel="근무자 선택 완료"
           disabled={!selected?.isActive || query.isError}
           onPress={() => {
+            pendingDone.current = onDone ?? null;
             setOpen(false);
-            onDone?.();
           }}
         />
-      </ScheduleOverlay>
+      </BottomSheet>
     </>
   );
 }

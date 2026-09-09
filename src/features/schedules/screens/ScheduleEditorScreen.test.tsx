@@ -11,6 +11,10 @@ import { monthlyScheduleSchema } from '@/features/schedules/api/schedule.schema'
 import { ScheduleEditorScreen } from '@/features/schedules/screens/ScheduleEditorScreen';
 import { MOCK_STORE_MEMBERS } from '@/shared/api/mockMembers';
 
+jest.mock('@expo/ui/community/bottom-sheet', () =>
+  jest.requireActual('@/shared/ui/__mocks__/expoBottomSheet'),
+);
+
 jest.mock('react-native-worklets', () => jest.requireActual('react-native-worklets/src/mock'));
 jest.mock('react-native-reanimated', () => jest.requireActual('react-native-reanimated/mock'));
 jest.mock('react-native-keyboard-controller', () =>
@@ -81,6 +85,9 @@ describe('관리자 근무 등록·수정', () => {
     await mount(<ScheduleEditorScreen source={source} initialDate="2026-09-15" />);
     await fireEvent.press(await screen.findByLabelText('이서연, seoyeon@baton.app'));
     await fireEvent.press(screen.getByLabelText('근무자 선택 완료'));
+    // 다음 단계는 네이티브 시트가 완전히 닫힌 뒤 표시한다.
+    expect(screen.queryByText(/1일 선택/)).not.toBeOnTheScreen();
+    await fireEvent(screen.getByLabelText('근무자 선택 완료'), 'onDismiss');
     expect(screen.getByText(/1일 선택/)).toBeOnTheScreen();
     await fireEvent.press(screen.getByLabelText('다음'));
     await fireEvent.changeText(screen.getByLabelText('출근 시간'), '1800');
@@ -109,6 +116,7 @@ describe('관리자 근무 등록·수정', () => {
     await mount(<ScheduleEditorScreen source={source} initialDate="2026-09-15" />);
     await fireEvent.press(await screen.findByLabelText('이서연, seoyeon@baton.app'));
     await fireEvent.press(screen.getByLabelText('근무자 선택 완료'));
+    await fireEvent(screen.getByLabelText('근무자 선택 완료'), 'onDismiss');
     await fireEvent.press(screen.getByLabelText('9월 16일 수, 근무 0건'));
     await fireEvent.press(screen.getByLabelText('다음'));
     await fireEvent.changeText(screen.getByLabelText('출근 시간'), '0900');

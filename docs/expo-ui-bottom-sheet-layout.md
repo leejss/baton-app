@@ -9,9 +9,12 @@ created_at: 2026-09-07
 
 ## 적용 위치
 
-- `src/features/handoffs/components/HandoffActionSheet.tsx`
+- `src/shared/ui/BottomSheet.tsx` — 공용화하면서 아래 너비 보정을 이곳으로 옮겼다.
+- `src/features/handoffs/components/HandoffActionSheet.tsx` — 공용 시트의 사용처.
 - Expo SDK 57
 - `@expo/ui` 57.0.16
+
+현재 사용법과 닫기 완료 콜백 규칙은 [공용 BottomSheet](./bottom-sheet.md)를 참고한다.
 
 ## 증상
 
