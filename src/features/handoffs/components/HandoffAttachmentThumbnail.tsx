@@ -1,10 +1,10 @@
-import { Image } from "expo-image";
-import { StyleSheet, View } from "react-native";
+import { Image } from 'expo-image';
+import { StyleSheet, View } from 'react-native';
 
-import type { LocalAttachment } from "@/features/handoffs/types";
-import { Pressable, Text } from "@/shared/ui";
-import { X } from "@/shared/ui/icons";
-import { radius, useTheme } from "@/theme";
+import type { LocalAttachment } from '@/features/handoffs/types';
+import { Pressable, Text } from '@/shared/ui';
+import { X } from '@/shared/ui/icons';
+import { radius, useTheme } from '@/theme';
 
 type HandoffAttachmentThumbnailProps = {
   attachment: LocalAttachment;
@@ -38,18 +38,12 @@ export function HandoffAttachmentThumbnail({
         onPress={handleRemove}
         disabled={disabled}
         accessibilityState={{ disabled }}
-        style={[
-          styles.remove,
-          { backgroundColor: theme.colors.navigationForeground },
-        ]}
+        style={[styles.remove, { backgroundColor: theme.colors.navigationForeground }]}
       >
         <X size={14} color="accentOn" />
       </Pressable>
-      {attachment.uploadStatus === "uploading" && (
-        <Text variant="caption">업로드 중</Text>
-      )}
-      {(attachment.uploadStatus === "failed" ||
-        attachment.uploadStatus === "ready") && (
+      {attachment.uploadStatus === 'uploading' && <Text variant="caption">업로드 중</Text>}
+      {(attachment.uploadStatus === 'failed' || attachment.uploadStatus === 'ready') && (
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="사진 업로드 재시도"
@@ -67,7 +61,7 @@ export function HandoffAttachmentThumbnail({
 }
 
 const styles = StyleSheet.create({
-  retry: { minHeight: 44, justifyContent: "center" },
+  retry: { minHeight: 44, justifyContent: 'center' },
   root: { width: 76, minHeight: 76, paddingTop: 6, paddingRight: 6 },
   image: {
     width: 70,
@@ -76,13 +70,13 @@ const styles = StyleSheet.create({
     // TODO(design-system): Figma 첨부 썸네일의 70px 크기를 토큰화한다.
   },
   remove: {
-    position: "absolute",
+    position: 'absolute',
     top: 0,
     right: 0,
     width: 24,
     height: 24,
     borderRadius: 999,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

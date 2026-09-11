@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from 'zod';
 export const uploadSchema = z.object({
   attachmentId: z.number().int().positive(),
   uploadUrl: z.url(),

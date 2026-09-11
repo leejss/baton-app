@@ -1,8 +1,8 @@
-import { useRef, useState } from "react";
-import { Alert } from "react-native";
+import { useRef, useState } from 'react';
+import { Alert } from 'react-native';
 
-import { pickHandoffImages } from "@/features/handoffs/lib/handoffImages";
-import type { LocalAttachment } from "@/features/handoffs/types";
+import { pickHandoffImages } from '@/features/handoffs/lib/handoffImages';
+import type { LocalAttachment } from '@/features/handoffs/types';
 
 type UseHandoffImagePickerOptions = {
   attachmentCount: number;
@@ -24,10 +24,8 @@ export function useHandoffImagePicker({
       onSelected(selected);
     } catch (error) {
       Alert.alert(
-        "사진을 추가하지 못했어요",
-        error instanceof Error
-          ? error.message
-          : "다른 사진으로 다시 시도해 주세요.",
+        '사진을 추가하지 못했어요',
+        error instanceof Error ? error.message : '다른 사진으로 다시 시도해 주세요.',
       );
     } finally {
       setIsPickingImages(false);
@@ -41,14 +39,10 @@ export function useHandoffImagePicker({
     }
 
     introductionShown.current = true;
-    Alert.alert(
-      "사진을 추가할까요?",
-      "사진은 최대 10장, 장당 5MB까지 첨부할 수 있어요.",
-      [
-        { text: "취소", style: "cancel" },
-        { text: "사진 선택", onPress: () => void selectImages() },
-      ],
-    );
+    Alert.alert('사진을 추가할까요?', '사진은 최대 10장, 장당 5MB까지 첨부할 수 있어요.', [
+      { text: '취소', style: 'cancel' },
+      { text: '사진 선택', onPress: () => void selectImages() },
+    ]);
   };
 
   return { addImages, isPickingImages };

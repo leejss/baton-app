@@ -1,27 +1,21 @@
-import { SessionQueryProvider } from "@/shared/providers/SessionQueryProvider";
-import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from "expo-router";
-import * as SplashScreen from "expo-splash-screen";
-import { useEffect } from "react";
-import { AppState, StyleSheet, useColorScheme } from "react-native";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { KeyboardProvider } from "react-native-keyboard-controller";
+import { SessionQueryProvider } from '@/shared/providers/SessionQueryProvider';
+import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
+import * as SplashScreen from 'expo-splash-screen';
+import { useEffect } from 'react';
+import { AppState, StyleSheet, useColorScheme } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { KeyboardProvider } from 'react-native-keyboard-controller';
 
-import { ForcedLogoutModal } from "@/features/auth/components/ForcedLogoutModal";
-import { useAuthStore } from "@/features/auth/store/authStore";
-import { logger } from "@/shared/lib/logger";
-import { ErrorState } from "@/shared/ui/ErrorState";
-import { SplashOverlay } from "@/shared/ui/SplashOverlay";
+import { ForcedLogoutModal } from '@/features/auth/components/ForcedLogoutModal';
+import { useAuthStore } from '@/features/auth/store/authStore';
+import { logger } from '@/shared/lib/logger';
+import { ErrorState } from '@/shared/ui/ErrorState';
+import { SplashOverlay } from '@/shared/ui/SplashOverlay';
 
 SplashScreen.preventAutoHideAsync();
 
 /** Expo Router가 라우트 트리에서 발생한 렌더 에러를 잡을 때 쓰는 컴포넌트. */
-export function ErrorBoundary({
-  error,
-  retry,
-}: {
-  error: Error;
-  retry: () => Promise<void>;
-}) {
+export function ErrorBoundary({ error, retry }: { error: Error; retry: () => Promise<void> }) {
   return <ErrorState error={error} onRetry={retry} />;
 }
 
@@ -37,14 +31,11 @@ export default function RootLayout() {
 
   useEffect(() => {
     // 백그라운드 전환 시 버퍼된 원격 로그를 내보낸다. 안 하면 종료 시 유실된다.
-    const appStateSubscription = AppState.addEventListener(
-      "change",
-      (status) => {
-        if (status !== "active") {
-          void logger.flush();
-        }
-      },
-    );
+    const appStateSubscription = AppState.addEventListener('change', (status) => {
+      if (status !== 'active') {
+        void logger.flush();
+      }
+    });
 
     return () => {
       appStateSubscription.remove();
@@ -55,9 +46,7 @@ export default function RootLayout() {
     <GestureHandlerRootView style={styles.root}>
       <KeyboardProvider>
         <SessionQueryProvider>
-          <ThemeProvider
-            value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
-          >
+          <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
             <Stack screenOptions={{ headerShown: false }}>
               <Stack.Screen name="index" />
               <Stack.Screen name="(auth)" />
@@ -65,7 +54,7 @@ export default function RootLayout() {
               <Stack.Screen name="(store-onboarding)" />
               <Stack.Screen name="+not-found" />
             </Stack>
-            <SplashOverlay isReady={authStatus !== "restoring"} />
+            <SplashOverlay isReady={authStatus !== 'restoring'} />
             {/* 어느 화면에 있든 위에 떠야 해서 라우트 트리 바깥에 둔다. */}
             <ForcedLogoutModal />
           </ThemeProvider>

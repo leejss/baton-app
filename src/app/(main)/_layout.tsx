@@ -1,9 +1,9 @@
-import { Redirect, Stack } from "expo-router";
+import { Redirect, Stack } from 'expo-router';
 
-import { ActiveStoreGate } from "@/features/stores/components/ActiveStoreGate";
-import { QueryBoundary } from "@/shared/ui/QueryBoundary";
+import { ActiveStoreGate } from '@/features/stores/components/ActiveStoreGate';
+import { QueryBoundary } from '@/shared/ui/QueryBoundary';
 
-import { useAuthStore } from "@/features/auth/store/authStore";
+import { useAuthStore } from '@/features/auth/store/authStore';
 
 /**
  * 로그인한 사용자가 사용하는 메인 영역. 세션이 없으면 시작 화면으로 돌려보낸다.
@@ -14,11 +14,11 @@ import { useAuthStore } from "@/features/auth/store/authStore";
 export default function MainLayout() {
   const status = useAuthStore((state) => state.status);
 
-  if (status === "restoring") {
+  if (status === 'restoring') {
     return null;
   }
 
-  if (status === "signedOut") {
+  if (status === 'signedOut') {
     return <Redirect href="/start" />;
   }
 

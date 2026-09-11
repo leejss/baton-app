@@ -1,15 +1,12 @@
-import { QueryClientProvider } from "@tanstack/react-query";
-import { useEffect, useState, type ReactNode } from "react";
-import { useAuthStore } from "@/features/auth/store/authStore";
-import { useHandoffDraftStore } from "@/features/handoffs/store/handoffDraftStore";
-import {
-  createQueryClient,
-  subscribeQueryEnvironment,
-} from "@/shared/api/queryClient";
+import { QueryClientProvider } from '@tanstack/react-query';
+import { useEffect, useState, type ReactNode } from 'react';
+import { useAuthStore } from '@/features/auth/store/authStore';
+import { useHandoffDraftStore } from '@/features/handoffs/store/handoffDraftStore';
+import { createQueryClient, subscribeQueryEnvironment } from '@/shared/api/queryClient';
 
 export function SessionQueryProvider({ children }: { children: ReactNode }) {
   const identity = useAuthStore((state) =>
-    state.status === "signedIn" ? String(state.session.user.id) : state.status,
+    state.status === 'signedIn' ? String(state.session.user.id) : state.status,
   );
   useEffect(subscribeQueryEnvironment, []);
   return <QuerySession key={identity}>{children}</QuerySession>;

@@ -1,7 +1,7 @@
-import { ScrollView, StyleSheet } from "react-native";
-import type { HandoffDetailAttachmentModel } from "@/features/handoffs/types";
-import { PhotoPreview } from "@/shared/ui/PhotoPreview";
-import { spacing } from "@/theme";
+import { ScrollView, StyleSheet } from 'react-native';
+import type { HandoffDetailAttachmentModel } from '@/features/handoffs/types';
+import { PhotoPreview } from '@/shared/ui/PhotoPreview';
+import { spacing } from '@/theme';
 export function HandoffDetailAttachments({
   attachments,
   onRefresh,

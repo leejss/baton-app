@@ -1,17 +1,17 @@
-import { removeSchedule } from "@/features/schedules/api/schedule.api";
-import { useMainContext } from "@/features/stores/hooks/useMainContext";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "expo-router";
-import { useState } from "react";
+import { removeSchedule } from '@/features/schedules/api/schedule.api';
+import { useMainContext } from '@/features/stores/hooks/useMainContext';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useRouter } from 'expo-router';
+import { useState } from 'react';
 
-import { invalidateScheduleViews } from "@/features/schedules/api/schedule.mutations";
-import { scheduleQueries } from "@/features/schedules/api/schedule.queries";
-import { ScheduleMessage } from "@/features/schedules/components/ScheduleMessage";
-import { ScheduleOverlay } from "@/features/schedules/components/ScheduleOverlay";
-import { dateLabel } from "@/features/schedules/lib/scheduleDate";
-import { canEditSchedule } from "@/features/schedules/lib/schedulePolicy";
-import { isAppError } from "@/shared/api/errors";
-import { Button, Text } from "@/shared/ui";
+import { invalidateScheduleViews } from '@/features/schedules/api/schedule.mutations';
+import { scheduleQueries } from '@/features/schedules/api/schedule.queries';
+import { ScheduleMessage } from '@/features/schedules/components/ScheduleMessage';
+import { ScheduleOverlay } from '@/features/schedules/components/ScheduleOverlay';
+import { dateLabel } from '@/features/schedules/lib/scheduleDate';
+import { canEditSchedule } from '@/features/schedules/lib/schedulePolicy';
+import { isAppError } from '@/shared/api/errors';
+import { Button, Text } from '@/shared/ui';
 
 type ScheduleActionsProps = {
   id: number;
@@ -30,7 +30,7 @@ export function ScheduleActions({ id, now, onClose }: ScheduleActionsProps) {
   const router = useRouter();
   const client = useQueryClient();
   const mutation = useMutation({
-    mutationKey: ["schedules", "delete"],
+    mutationKey: ['schedules', 'delete'],
     mutationFn: () => removeSchedule(context.storeId ?? 0, id),
     onError: async (error) => {
       if (isAppError(error) && [403, 404, 409].includes(error.status ?? 0)) {
@@ -48,8 +48,7 @@ export function ScheduleActions({ id, now, onClose }: ScheduleActionsProps) {
     },
   });
   const item = query.data;
-  const canEdit =
-    item && canEditSchedule(item, context.canManage ?? false, now);
+  const canEdit = item && canEditSchedule(item, context.canManage ?? false, now);
   const missing =
     (isAppError(query.error) && query.error.status === 404) ||
     (isAppError(mutation.error) && mutation.error.status === 404);
@@ -64,10 +63,10 @@ export function ScheduleActions({ id, now, onClose }: ScheduleActionsProps) {
       visible
       title={
         deleted
-          ? "근무 삭제 완료!"
+          ? '근무 삭제 완료!'
           : confirming
-            ? "근무를 삭제할까요?"
-            : (item?.member.name ?? "근무 일정")
+            ? '근무를 삭제할까요?'
+            : (item?.member.name ?? '근무 일정')
       }
       onClose={handleClose}
       busy={mutation.isPending}
@@ -93,14 +92,10 @@ export function ScheduleActions({ id, now, onClose }: ScheduleActionsProps) {
         <>
           <Text variant="bodySmall" color="textSecondary">
             근무일　{dateLabel(item.date)}
-            {"\n"}근무시간　{item.startTime} - {item.endTime}
+            {'\n'}근무시간　{item.startTime} - {item.endTime}
           </Text>
           {mutation.isError && (
-            <Text
-              accessibilityLiveRegion="polite"
-              color="dangerText"
-              variant="bodySmall"
-            >
+            <Text accessibilityLiveRegion="polite" color="dangerText" variant="bodySmall">
               {mutation.error.message}
             </Text>
           )}
@@ -135,7 +130,7 @@ export function ScheduleActions({ id, now, onClose }: ScheduleActionsProps) {
                 onPress={() => {
                   onClose();
                   router.push({
-                    pathname: "/schedules/[scheduleId]/edit",
+                    pathname: '/schedules/[scheduleId]/edit',
                     params: { scheduleId: String(id) },
                   });
                 }}

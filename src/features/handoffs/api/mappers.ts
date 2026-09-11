@@ -7,7 +7,7 @@ import type {
   HandoffStatusDto,
   HandoffTypeDto,
   RecipientRecommendationDto,
-} from "@/features/handoffs/api/handoff.schema";
+} from '@/features/handoffs/api/handoff.schema';
 import type {
   HandoffCardModel,
   HandoffDetailModel,
@@ -15,30 +15,30 @@ import type {
   HandoffScope,
   RecipientModel,
   LocalAttachment,
-} from "@/features/handoffs/types";
+} from '@/features/handoffs/types';
 
 const TYPE_LABELS: Record<HandoffTypeDto, string> = {
-  WORK_TASK: "업무 처리",
-  STORE_STATUS: "매장 상태",
-  OTHER: "기타",
+  WORK_TASK: '업무 처리',
+  STORE_STATUS: '매장 상태',
+  OTHER: '기타',
 };
 
 const STATUS_LABELS: Record<HandoffStatusDto, string> = {
-  UNCONFIRMED: "확인 전",
-  CONFIRMED: "확인 완료",
-  TERMINATED: "처리 종료",
+  UNCONFIRMED: '확인 전',
+  CONFIRMED: '확인 완료',
+  TERMINATED: '처리 종료',
 };
 
 const DETAIL_STATUS_ACTION_LABELS: Record<HandoffStatusDto, string> = {
-  UNCONFIRMED: "확인중",
-  CONFIRMED: "확인 완료",
-  TERMINATED: "처리 종료",
+  UNCONFIRMED: '확인중',
+  CONFIRMED: '확인 완료',
+  TERMINATED: '처리 종료',
 };
 
 const SCOPE_TO_DTO: Record<HandoffScope, HandoffScopeDto> = {
-  all: "ALL",
-  received: "RECEIVED",
-  sent: "SENT",
+  all: 'ALL',
+  received: 'RECEIVED',
+  sent: 'SENT',
 };
 
 export function toHandoffScopeDto(scope: HandoffScope): HandoffScopeDto {
@@ -53,7 +53,7 @@ export function toHandoffCardModel(
   item: HandoffListItemDto,
   viewerId: number,
   now = new Date(),
-  scope: HandoffScope = "all",
+  scope: HandoffScope = 'all',
 ): HandoffCardModel {
   const isSender = item.sender.userId === viewerId;
   const isRecipient = item.recipient.user.userId === viewerId;
@@ -68,8 +68,7 @@ export function toHandoffCardModel(
     statusLabel: STATUS_LABELS[item.status],
     senderName: item.sender.displayName,
     recipientName: item.recipient.user.displayName,
-    canManage:
-      scope !== "received" && isSender && item.status === "UNCONFIRMED",
+    canManage: scope !== 'received' && isSender && item.status === 'UNCONFIRMED',
     canOpenDetail: isSender || isRecipient,
   };
 }
@@ -89,16 +88,15 @@ export function toHandoffDetailModel(
     statusActionLabel: DETAIL_STATUS_ACTION_LABELS[handoff.status],
     attachments: handoff.attachments.map(({ id, downloadUrl }) => ({
       id: String(id),
-      uri: downloadUrl ?? "",
+      uri: downloadUrl ?? '',
     })),
-    canManage:
-      handoff.sender.userId === viewerId && handoff.status === "UNCONFIRMED",
+    canManage: handoff.sender.userId === viewerId && handoff.status === 'UNCONFIRMED',
   };
 }
 
 export function toRecipientModels(
   dto: RecipientRecommendationDto,
-  members: import("@/features/stores/api/store.schema").MemberDto[],
+  members: import('@/features/stores/api/store.schema').MemberDto[],
   viewerId: number,
 ): RecipientModel[] {
   const recommendedIds = new Set(
@@ -106,9 +104,7 @@ export function toRecipientModels(
   );
   if (dto.recommended) recommendedIds.add(dto.recommended.userId);
   return members
-    .filter(
-      (member) => member.status === "ACTIVE" && member.userId !== viewerId,
-    )
+    .filter((member) => member.status === 'ACTIVE' && member.userId !== viewerId)
     .map((member) => ({
       member,
       isRecommended: recommendedIds.has(member.userId),
@@ -120,22 +116,21 @@ export function toRecipientModels(
     .sort(
       (a, b) =>
         Number(b.isRecommended) - Number(a.isRecommended) ||
-        a.member.displayName.localeCompare(b.member.displayName, "ko"),
+        a.member.displayName.localeCompare(b.member.displayName, 'ko'),
     );
 }
 
 export function toCreateRequest(draft: HandoffDraft): HandoffCreateRequestDto {
   if (draft.type === null || draft.recipient === null) {
-    throw new Error("유형과 받는 사람을 선택해 주세요.");
+    throw new Error('유형과 받는 사람을 선택해 주세요.');
   }
 
   if (
     draft.attachments.some(
-      (file) =>
-        file.uploadStatus !== "complete" || file.attachmentId === undefined,
+      (file) => file.uploadStatus !== 'complete' || file.attachmentId === undefined,
     )
   )
-    throw new Error("사진 업로드를 완료해주세요.");
+    throw new Error('사진 업로드를 완료해주세요.');
   return {
     type: draft.type,
     title: draft.title.trim(),
@@ -147,19 +142,17 @@ export function toCreateRequest(draft: HandoffDraft): HandoffCreateRequestDto {
   };
 }
 
-export function toLocalAttachments(
-  attachments: AttachmentDto[],
-): LocalAttachment[] {
+export function toLocalAttachments(attachments: AttachmentDto[]): LocalAttachment[] {
   return attachments.map((attachment) => ({
     localId: String(attachment.id),
-    uri: attachment.downloadUrl ?? "",
+    uri: attachment.downloadUrl ?? '',
     fileName: String(attachment.id),
     mimeType: attachment.contentType,
     sizeBytes: attachment.sizeBytes,
     width: 0,
     height: 0,
     attachmentId: attachment.id,
-    uploadStatus: "complete",
+    uploadStatus: 'complete',
     isLinked: true,
   }));
 }
@@ -167,26 +160,26 @@ export function toLocalAttachments(
 function formatHandoffDate(sentAt: string, now: Date): string {
   const date = new Date(sentAt);
   const isToday =
-    date.toLocaleDateString("en-CA", { timeZone: "Asia/Seoul" }) ===
-    now.toLocaleDateString("en-CA", { timeZone: "Asia/Seoul" });
+    date.toLocaleDateString('en-CA', { timeZone: 'Asia/Seoul' }) ===
+    now.toLocaleDateString('en-CA', { timeZone: 'Asia/Seoul' });
 
-  if (isToday) return "오늘";
+  if (isToday) return '오늘';
 
-  return new Intl.DateTimeFormat("ko-KR", {
-    timeZone: "Asia/Seoul",
-    year: date.getFullYear() === now.getFullYear() ? undefined : "numeric",
-    month: "long",
-    day: "numeric",
+  return new Intl.DateTimeFormat('ko-KR', {
+    timeZone: 'Asia/Seoul',
+    year: date.getFullYear() === now.getFullYear() ? undefined : 'numeric',
+    month: 'long',
+    day: 'numeric',
   }).format(date);
 }
 
 function formatShiftTime(value: string): string {
-  return new Intl.DateTimeFormat("ko-KR", {
-    timeZone: "Asia/Seoul",
-    month: "numeric",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
+  return new Intl.DateTimeFormat('ko-KR', {
+    timeZone: 'Asia/Seoul',
+    month: 'numeric',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
     hour12: false,
   }).format(new Date(value));
 }

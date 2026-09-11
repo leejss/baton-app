@@ -1,16 +1,12 @@
-import { create } from "zustand";
+import { create } from 'zustand';
 
-import type { HandoffTypeDto } from "@/features/handoffs/api/handoff.schema";
-import type {
-  HandoffDraft,
-  LocalAttachment,
-  RecipientModel,
-} from "@/features/handoffs/types";
+import type { HandoffTypeDto } from '@/features/handoffs/api/handoff.schema';
+import type { HandoffDraft, LocalAttachment, RecipientModel } from '@/features/handoffs/types';
 
 export const EMPTY_HANDOFF_DRAFT: HandoffDraft = {
   type: null,
-  title: "",
-  body: "",
+  title: '',
+  body: '',
   recipient: null,
   attachments: [],
 };
@@ -42,9 +38,7 @@ export const useHandoffDraftStore = create<HandoffDraftState>((set) => ({
     })),
   removeAttachment: (localId) =>
     set((state) => ({
-      attachments: state.attachments.filter(
-        (attachment) => attachment.localId !== localId,
-      ),
+      attachments: state.attachments.filter((attachment) => attachment.localId !== localId),
     })),
   reset: () => set(EMPTY_HANDOFF_DRAFT),
 }));

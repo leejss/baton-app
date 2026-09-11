@@ -1,9 +1,9 @@
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, View } from 'react-native';
 
-import type { ScheduleItem } from "@/features/schedules/types";
-import { Pressable, Text } from "@/shared/ui";
-import { SendFill, NavUserLine } from "@/shared/ui/icons";
-import { radius, spacing, useTheme } from "@/theme";
+import type { ScheduleItem } from '@/features/schedules/types';
+import { Pressable, Text } from '@/shared/ui';
+import { SendFill, NavUserLine } from '@/shared/ui/icons';
+import { radius, spacing, useTheme } from '@/theme';
 
 type ScheduleWorkerRowProps = {
   item: ScheduleItem;
@@ -25,10 +25,7 @@ export function ScheduleWorkerRow({
   const { colors } = useTheme();
   return (
     <View style={styles.row}>
-      <View
-        accessible={false}
-        style={[styles.avatar, { backgroundColor: colors.surfaceSunken }]}
-      >
+      <View accessible={false} style={[styles.avatar, { backgroundColor: colors.surfaceSunken }]}>
         <NavUserLine size={16} color="textTertiary" />
       </View>
       <View style={styles.details}>
@@ -37,7 +34,7 @@ export function ScheduleWorkerRow({
         </Text>
         <Text variant="caption" color="textTertiary">
           {item.startTime} - {item.endTime}
-          {!item.member.isActive ? " · 참여 종료" : ""}
+          {!item.member.isActive ? ' · 참여 종료' : ''}
         </Text>
       </View>
       {isManaging ? (
@@ -54,9 +51,7 @@ export function ScheduleWorkerRow({
               styles.checkbox,
               {
                 borderColor: colors.border,
-                backgroundColor: canEdit
-                  ? colors.background
-                  : colors.surfaceDisabled,
+                backgroundColor: canEdit ? colors.background : colors.surfaceDisabled,
               },
             ]}
           />
@@ -74,9 +69,7 @@ export function ScheduleWorkerRow({
             onPress={() => onHandoff(item.member.id)}
             style={styles.action}
           >
-            <View
-              style={[styles.handoff, { backgroundColor: colors.accentSubtle }]}
-            >
+            <View style={[styles.handoff, { backgroundColor: colors.accentSubtle }]}>
               <SendFill size={16} color="accent" />
               <Text variant="bodySmall" weight="semibold" color="accentText">
                 인수인계
@@ -91,16 +84,16 @@ export function ScheduleWorkerRow({
 const styles = StyleSheet.create({
   row: {
     minHeight: 48,
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: spacing.sm,
   },
   details: {
     flex: 1,
     minWidth: 0,
-    flexDirection: "row",
-    flexWrap: "wrap",
-    alignItems: "center",
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
     gap: spacing.xs,
   },
   // TODO(design-system): Figma 1097:36712의 아바타 24px·pill 6px 간격을 sync한다. 역할 이미지가 없는 경우 기존 사용자 glyph를 사용한다.
@@ -108,18 +101,18 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderRadius: radius.full,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   action: {
     minHeight: 44,
     minWidth: 44,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   handoff: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 4,
     paddingHorizontal: 10,
     paddingVertical: 6,
@@ -130,7 +123,7 @@ const styles = StyleSheet.create({
     height: 20,
     borderWidth: 1,
     borderRadius: radius.sm,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

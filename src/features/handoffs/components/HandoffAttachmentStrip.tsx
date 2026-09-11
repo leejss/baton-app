@@ -1,10 +1,10 @@
-import { ScrollView, StyleSheet, View } from "react-native";
+import { ScrollView, StyleSheet, View } from 'react-native';
 
-import { HandoffAttachmentThumbnail } from "@/features/handoffs/components/HandoffAttachmentThumbnail";
-import type { LocalAttachment } from "@/features/handoffs/types";
-import { Pressable, Text } from "@/shared/ui";
-import { Camera } from "@/shared/ui/icons";
-import { spacing, useTheme } from "@/theme";
+import { HandoffAttachmentThumbnail } from '@/features/handoffs/components/HandoffAttachmentThumbnail';
+import type { LocalAttachment } from '@/features/handoffs/types';
+import { Pressable, Text } from '@/shared/ui';
+import { Camera } from '@/shared/ui/icons';
+import { spacing, useTheme } from '@/theme';
 
 type HandoffAttachmentStripProps = {
   attachments: LocalAttachment[];
@@ -75,14 +75,14 @@ const styles = StyleSheet.create({
     height: 70,
     borderWidth: 1,
     borderRadius: 13,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
     gap: spacing.xs,
     // TODO(design-system): Figma 사진 버튼의 70px 크기와 약 13px radius를 토큰화한다.
   },
-  counter: { fontVariant: ["tabular-nums"] },
-  counterRow: { flexDirection: "row" },
+  counter: { fontVariant: ['tabular-nums'] },
+  counterRow: { flexDirection: 'row' },
   // TODO(design-system): Figma foreground/disabled가 시맨틱 컬러에 추가되면 원시값을 교체한다.
-  counterLimit: { color: "#9CA3AF" },
+  counterLimit: { color: '#9CA3AF' },
   disabled: { opacity: 0.4 },
 });

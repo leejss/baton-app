@@ -1,10 +1,9 @@
-export type NotificationKind =
-  "announcement" | "handoffReceived" | "handoffConfirmed" | "schedule";
+export type NotificationKind = 'announcement' | 'handoffReceived' | 'handoffConfirmed' | 'schedule';
 
 export type NotificationTarget =
-  | { kind: "handoff"; id: string }
-  | { kind: "schedule"; id: number }
-  | { kind: "none" };
+  | { kind: 'handoff'; id: string }
+  | { kind: 'schedule'; id: number }
+  | { kind: 'none' };
 
 /** 화면은 서버의 enum, nullable 필드, 배지 문자열에 의존하지 않는다. */
 export type Notification = {

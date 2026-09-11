@@ -1,16 +1,16 @@
-import { useMainContext } from "@/features/stores/hooks/useMainContext";
-import { FlashList, type ListRenderItemInfo } from "@shopify/flash-list";
-import { useSuspenseQuery } from "@tanstack/react-query";
-import { useFocusEffect } from "expo-router";
-import { useCallback, useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { useMainContext } from '@/features/stores/hooks/useMainContext';
+import { FlashList, type ListRenderItemInfo } from '@shopify/flash-list';
+import { useSuspenseQuery } from '@tanstack/react-query';
+import { useFocusEffect } from 'expo-router';
+import { useCallback, useState } from 'react';
+import { StyleSheet, View } from 'react-native';
 
-import { notificationQueries } from "@/features/notifications/api/notification.queries";
-import { NotificationCard } from "@/features/notifications/components/NotificationCard";
-import { useOpenNotification } from "@/features/notifications/hooks/useOpenNotification";
-import type { Notification } from "@/features/notifications/types";
-import { EmptyState, Snackbar, Text } from "@/shared/ui";
-import { SCREEN_PADDING_X, spacing } from "@/theme";
+import { notificationQueries } from '@/features/notifications/api/notification.queries';
+import { NotificationCard } from '@/features/notifications/components/NotificationCard';
+import { useOpenNotification } from '@/features/notifications/hooks/useOpenNotification';
+import type { Notification } from '@/features/notifications/types';
+import { EmptyState, Snackbar, Text } from '@/shared/ui';
+import { SCREEN_PADDING_X, spacing } from '@/theme';
 
 const keyExtractor = (notification: Notification) => notification.id;
 
@@ -20,9 +20,7 @@ export function NotificationList() {
     storeId: context.membership.store.id,
     userId: context.profile.id,
   };
-  const { data, refetch, isRefetchError } = useSuspenseQuery(
-    notificationQueries.list(scope),
-  );
+  const { data, refetch, isRefetchError } = useSuspenseQuery(notificationQueries.list(scope));
   const [isRefreshing, setIsRefreshing] = useState(false);
   const { open, openingId, message, clearMessage } = useOpenNotification(scope);
 
@@ -42,11 +40,7 @@ export function NotificationList() {
     void open(notification);
   };
   const renderItem = ({ item }: ListRenderItemInfo<Notification>) => (
-    <NotificationCard
-      notification={item}
-      isOpening={openingId === item.id}
-      onPress={handlePress}
-    />
+    <NotificationCard notification={item} isOpening={openingId === item.id} onPress={handlePress} />
   );
 
   return (
@@ -75,8 +69,8 @@ export function NotificationList() {
       {(message || isRefetchError) && (
         <View style={styles.feedback}>
           <Snackbar
-            title={message ?? "알림을 새로 불러오지 못했어요."}
-            actionLabel={message ? "닫기" : "다시 시도"}
+            title={message ?? '알림을 새로 불러오지 못했어요.'}
+            actionLabel={message ? '닫기' : '다시 시도'}
             onAction={message ? clearMessage : handleRefresh}
           />
         </View>
@@ -95,7 +89,7 @@ const styles = StyleSheet.create({
   footer: {
     paddingTop: spacing.md,
     paddingBottom: spacing.sm,
-    textAlign: "center",
+    textAlign: 'center',
   },
   feedback: { paddingHorizontal: SCREEN_PADDING_X, paddingBottom: spacing.md },
 });

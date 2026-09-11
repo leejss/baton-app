@@ -1,31 +1,22 @@
-import { handoffQueries } from "@/features/handoffs/api/handoff.queries";
-import { notificationQueries } from "@/features/notifications/api/notification.queries";
-import { storeQueries } from "@/features/stores/api/store.queries";
-import { logger } from "@/shared/lib/logger";
-import { logApiFailure } from "@/shared/api/queryClient";
-import { createSchedules } from "@/features/schedules/api/schedule.api";
-import type { QueryClient } from "@tanstack/react-query";
-import { homeQueries } from "@/features/home/api/home.queries";
+import { handoffQueries } from '@/features/handoffs/api/handoff.queries';
+import { notificationQueries } from '@/features/notifications/api/notification.queries';
+import { storeQueries } from '@/features/stores/api/store.queries';
+import { logger } from '@/shared/lib/logger';
+import { logApiFailure } from '@/shared/api/queryClient';
+import { createSchedules } from '@/features/schedules/api/schedule.api';
+import type { QueryClient } from '@tanstack/react-query';
+import { homeQueries } from '@/features/home/api/home.queries';
 
-import { toSaveResult } from "@/features/schedules/api/mappers";
-import { duplicateCountsSchema } from "@/features/schedules/api/schedule.schema";
-import { scheduleQueries } from "@/features/schedules/api/schedule.queries";
-import {
-  contiguousRanges,
-  rangeDates,
-} from "@/features/schedules/lib/scheduleDate";
-import type {
-  ScheduleFormValues,
-  ScheduleSaveResult,
-} from "@/features/schedules/types";
-import { scheduleFormSchema } from "@/features/schedules/lib/schedulePolicy";
-import { isAppError } from "@/shared/api/errors";
+import { toSaveResult } from '@/features/schedules/api/mappers';
+import { duplicateCountsSchema } from '@/features/schedules/api/schedule.schema';
+import { scheduleQueries } from '@/features/schedules/api/schedule.queries';
+import { contiguousRanges, rangeDates } from '@/features/schedules/lib/scheduleDate';
+import type { ScheduleFormValues, ScheduleSaveResult } from '@/features/schedules/types';
+import { scheduleFormSchema } from '@/features/schedules/lib/schedulePolicy';
+import { isAppError } from '@/shared/api/errors';
 
 export function getDuplicateCounts(error: unknown) {
-  if (
-    !isAppError(error) ||
-    error.errorCode !== "SCHEDULE_DUPLICATES_REQUIRE_CONFIRMATION"
-  )
+  if (!isAppError(error) || error.errorCode !== 'SCHEDULE_DUPLICATES_REQUIRE_CONFIRMATION')
     return undefined;
   const result = duplicateCountsSchema.safeParse(error.details);
   return result.success ? result.data : undefined;
@@ -60,8 +51,8 @@ export async function saveScheduleDates(
       result.failed.push(...saved.failed);
       result.failures.push(...saved.failures);
       for (const failure of saved.failures)
-        logger.warn("날짜별 근무 저장 실패", {
-          operation: "schedules.create",
+        logger.warn('날짜별 근무 저장 실패', {
+          operation: 'schedules.create',
           errorCode: failure.errorCode,
           date: failure.date,
           retryable: failure.retryable,
@@ -74,26 +65,19 @@ export async function saveScheduleDates(
       result.failures.push(
         ...failedDates.map((date) => ({
           date,
-          errorCode: isAppError(error)
-            ? (error.errorCode ?? error.code)
-            : "UNKNOWN",
+          errorCode: isAppError(error) ? (error.errorCode ?? error.code) : 'UNKNOWN',
           retryable:
             isAppError(error) &&
-            (error.code === "network" ||
-              error.code === "timeout" ||
-              (error.status ?? 0) >= 500),
+            (error.code === 'network' || error.code === 'timeout' || (error.status ?? 0) >= 500),
         })),
       );
-      logApiFailure(error, "schedules.retry");
+      logApiFailure(error, 'schedules.retry');
     }
   }
   return result;
 }
 
-export async function invalidateScheduleViews(
-  client: QueryClient,
-  storeId: number,
-) {
+export async function invalidateScheduleViews(client: QueryClient, storeId: number) {
   await Promise.all([
     client.invalidateQueries({ queryKey: scheduleQueries.store(storeId) }),
     client.invalidateQueries({ queryKey: homeQueries.store(storeId) }),

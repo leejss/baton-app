@@ -4,37 +4,34 @@ import {
   MutationCache,
   focusManager,
   onlineManager,
-} from "@tanstack/react-query";
-import * as Network from "expo-network";
-import { AppState } from "react-native";
-import { isAppError, normalizeError } from "@/shared/api/errors";
-import { logger } from "@/shared/lib/logger";
+} from '@tanstack/react-query';
+import * as Network from 'expo-network';
+import { AppState } from 'react-native';
+import { isAppError, normalizeError } from '@/shared/api/errors';
+import { logger } from '@/shared/lib/logger';
 
 export function logApiFailure(error: unknown, operation: string): void {
   const normalized = normalizeError(error);
-  if (normalized.code === "canceled") return;
+  if (normalized.code === 'canceled') return;
   const attributes = {
     operation,
     code: normalized.code,
     status: normalized.status,
     errorCode: normalized.errorCode,
   };
-  if (normalized.errorCode === "SCHEDULE_DUPLICATES_REQUIRE_CONFIRMATION") {
-    logger.info("중복 일정 확인이 필요합니다", attributes);
+  if (normalized.errorCode === 'SCHEDULE_DUPLICATES_REQUIRE_CONFIRMATION') {
+    logger.info('중복 일정 확인이 필요합니다', attributes);
   } else {
-    logger.error("API 작업 실패", attributes);
+    logger.error('API 작업 실패', attributes);
   }
 }
-export function shouldRetryQuery(
-  failureCount: number,
-  error: unknown,
-): boolean {
+export function shouldRetryQuery(failureCount: number, error: unknown): boolean {
   return (
     failureCount < 2 &&
     isAppError(error) &&
-    (error.code === "network" ||
-      error.code === "timeout" ||
-      (error.code === "server" && (error.status ?? 0) >= 500))
+    (error.code === 'network' ||
+      error.code === 'timeout' ||
+      (error.code === 'server' && (error.status ?? 0) >= 500))
   );
 }
 export function createQueryClient(): QueryClient {
@@ -46,9 +43,9 @@ export function createQueryClient(): QueryClient {
           String(
             query.meta?.operation ??
               query.queryKey
-                .filter((part) => typeof part === "string")
+                .filter((part) => typeof part === 'string')
                 .slice(0, 3)
-                .join("."),
+                .join('.'),
           ),
         ),
     }),
@@ -56,11 +53,7 @@ export function createQueryClient(): QueryClient {
       onError: (error, _variables, _context, mutation) =>
         logApiFailure(
           error,
-          String(
-            mutation.meta?.operation ??
-              mutation.options.mutationKey?.join(".") ??
-              "mutation",
-          ),
+          String(mutation.meta?.operation ?? mutation.options.mutationKey?.join('.') ?? 'mutation'),
         ),
     }),
     defaultOptions: {
@@ -74,16 +67,14 @@ export function createQueryClient(): QueryClient {
   });
 }
 export function subscribeQueryEnvironment(): () => void {
-  focusManager.setFocused(AppState.currentState === "active");
-  const appState = AppState.addEventListener("change", (state) =>
-    focusManager.setFocused(state === "active"),
+  focusManager.setFocused(AppState.currentState === 'active');
+  const appState = AppState.addEventListener('change', (state) =>
+    focusManager.setFocused(state === 'active'),
   );
   let disposed = false;
   let receivedEvent = false;
   const update = (state: Network.NetworkState) =>
-    onlineManager.setOnline(
-      state.isConnected !== false && state.isInternetReachable !== false,
-    );
+    onlineManager.setOnline(state.isConnected !== false && state.isInternetReachable !== false);
   const network = Network.addNetworkStateListener((state) => {
     receivedEvent = true;
     update(state);

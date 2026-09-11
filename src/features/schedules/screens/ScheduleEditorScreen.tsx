@@ -1,21 +1,18 @@
-import { useRouter } from "expo-router";
-import { StyleSheet, View } from "react-native";
+import { useRouter } from 'expo-router';
+import { StyleSheet, View } from 'react-native';
 
-import { getTodayInSeoul } from "@/features/home/lib/homeDate";
-import { ScheduleEditorLoader } from "@/features/schedules/components/ScheduleEditorLoader";
-import { ScreenHeader } from "@/shared/ui/ScreenHeader";
-import { normalizeSelectedDate } from "@/features/schedules/lib/scheduleDate";
-import { useTheme } from "@/theme";
+import { getTodayInSeoul } from '@/features/home/lib/homeDate';
+import { ScheduleEditorLoader } from '@/features/schedules/components/ScheduleEditorLoader';
+import { ScreenHeader } from '@/shared/ui/ScreenHeader';
+import { normalizeSelectedDate } from '@/features/schedules/lib/scheduleDate';
+import { useTheme } from '@/theme';
 
 type ScheduleEditorScreenProps = {
   scheduleId?: string;
   initialDate?: string;
 };
 
-export function ScheduleEditorScreen({
-  scheduleId,
-  initialDate,
-}: ScheduleEditorScreenProps) {
+export function ScheduleEditorScreen({ scheduleId, initialDate }: ScheduleEditorScreenProps) {
   const router = useRouter();
   const { colors } = useTheme();
   const parsedId = Number(scheduleId);
@@ -28,11 +25,9 @@ export function ScheduleEditorScreen({
   return (
     <View style={[styles.root, { backgroundColor: colors.surfaceSunken }]}>
       <ScreenHeader
-        title={scheduleId ? "근무수정" : "근무등록"}
+        title={scheduleId ? '근무수정' : '근무등록'}
         titleAlign="left"
-        onBack={() =>
-          router.canGoBack() ? router.back() : router.replace("/schedules")
-        }
+        onBack={() => (router.canGoBack() ? router.back() : router.replace('/schedules'))}
       />
       <ScheduleEditorLoader
         id={id}

@@ -1,17 +1,17 @@
-import { useMainContext } from "@/features/stores/hooks/useMainContext";
-import { FlashList, type ListRenderItem } from "@shopify/flash-list";
-import { useSuspenseQuery } from "@tanstack/react-query";
-import { useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { useMainContext } from '@/features/stores/hooks/useMainContext';
+import { FlashList, type ListRenderItem } from '@shopify/flash-list';
+import { useSuspenseQuery } from '@tanstack/react-query';
+import { useState } from 'react';
+import { StyleSheet, View } from 'react-native';
 
-import { handoffQueries } from "@/features/handoffs/api/handoff.queries";
-import { HandoffFooterActions } from "@/features/handoffs/components/HandoffFooterActions";
-import { HandoffRecipientRow } from "@/features/handoffs/components/HandoffRecipientRow";
-import type { RecipientModel } from "@/features/handoffs/types";
-import { useHandoffDraftStore } from "@/features/handoffs/store/handoffDraftStore";
-import { EmptyState } from "@/shared/ui";
-import { ScreenHeader } from "@/shared/ui/ScreenHeader";
-import { useTheme } from "@/theme";
+import { handoffQueries } from '@/features/handoffs/api/handoff.queries';
+import { HandoffFooterActions } from '@/features/handoffs/components/HandoffFooterActions';
+import { HandoffRecipientRow } from '@/features/handoffs/components/HandoffRecipientRow';
+import type { RecipientModel } from '@/features/handoffs/types';
+import { useHandoffDraftStore } from '@/features/handoffs/store/handoffDraftStore';
+import { EmptyState } from '@/shared/ui';
+import { ScreenHeader } from '@/shared/ui/ScreenHeader';
+import { useTheme } from '@/theme';
 
 type HandoffRecipientSelectScreenProps = {
   onBack: () => void;
@@ -24,14 +24,10 @@ export function HandoffRecipientSelectScreen({
 }: HandoffRecipientSelectScreenProps) {
   const context = useMainContext();
   const theme = useTheme();
-  const { data } = useSuspenseQuery(
-    handoffQueries.recipients(context.storeId, context.userId),
-  );
+  const { data } = useSuspenseQuery(handoffQueries.recipients(context.storeId, context.userId));
   const recipient = useHandoffDraftStore((state) => state.recipient);
   const setRecipient = useHandoffDraftStore((state) => state.setRecipient);
-  const [selectedId, setSelectedId] = useState<number | null>(
-    recipient?.member.userId ?? null,
-  );
+  const [selectedId, setSelectedId] = useState<number | null>(recipient?.member.userId ?? null);
   const effectiveSelectedId =
     selectedId ??
     (data.filter((item) => item.isRecommended).length === 1
@@ -39,12 +35,9 @@ export function HandoffRecipientSelectScreen({
       : null) ??
     null;
 
-  const handleSelect = (item: RecipientModel) =>
-    setSelectedId(item.member.userId);
+  const handleSelect = (item: RecipientModel) => setSelectedId(item.member.userId);
   const handleConfirm = () => {
-    const selected = data.find(
-      ({ member }) => member.userId === effectiveSelectedId,
-    );
+    const selected = data.find(({ member }) => member.userId === effectiveSelectedId);
     if (selected === undefined) return;
     setRecipient(selected);
     onConfirm();
@@ -57,9 +50,7 @@ export function HandoffRecipientSelectScreen({
     />
   );
   const separator = () => (
-    <View
-      style={[styles.separator, { backgroundColor: theme.colors.border }]}
-    />
+    <View style={[styles.separator, { backgroundColor: theme.colors.border }]} />
   );
 
   return (
@@ -76,9 +67,7 @@ export function HandoffRecipientSelectScreen({
       />
       <HandoffFooterActions
         primaryLabel="확인"
-        primaryDisabled={
-          !data.some((item) => item.member.userId === effectiveSelectedId)
-        }
+        primaryDisabled={!data.some((item) => item.member.userId === effectiveSelectedId)}
         onPrimaryPress={handleConfirm}
       />
     </View>

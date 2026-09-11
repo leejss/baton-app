@@ -1,9 +1,9 @@
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, View } from 'react-native';
 
-import type { ScheduleMember } from "@/features/schedules/types";
-import { Pressable, Text } from "@/shared/ui";
-import { Check, NavUserLine } from "@/shared/ui/icons";
-import { radius, spacing, useTheme } from "@/theme";
+import type { ScheduleMember } from '@/features/schedules/types';
+import { Pressable, Text } from '@/shared/ui';
+import { Check, NavUserLine } from '@/shared/ui/icons';
+import { radius, spacing, useTheme } from '@/theme';
 
 type EmployeeRowProps = {
   member: ScheduleMember;
@@ -26,9 +26,9 @@ export function EmployeeRow({ member, selected, onSelect }: EmployeeRowProps) {
       </View>
       <View style={styles.info}>
         <Text weight="semibold">
-          {member.name}{" "}
+          {member.name}{' '}
           <Text variant="caption" color="textTertiary">
-            {member.role === "MANAGER" ? "관리자" : "근로자"}
+            {member.role === 'MANAGER' ? '관리자' : '근로자'}
           </Text>
         </Text>
         <Text variant="caption" color="textSecondary">
@@ -53,8 +53,8 @@ const styles = StyleSheet.create({
   // TODO(design-system): Figma 직원 선택 행의 34px 아바타·22px 선택 표시와 최소 행 높이를 sync한다.
   row: {
     minHeight: 64,
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: spacing.sm,
   },
   info: { flex: 1 },
@@ -62,15 +62,15 @@ const styles = StyleSheet.create({
     width: 34,
     height: 34,
     borderRadius: radius.full,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   check: {
     width: 22,
     height: 22,
     borderWidth: 1,
     borderRadius: radius.sm,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

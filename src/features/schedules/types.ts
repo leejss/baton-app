@@ -3,7 +3,7 @@ export type ScheduleMember = {
   id: number;
   name: string;
   email: string;
-  role: "MANAGER" | "EMPLOYEE";
+  role: 'MANAGER' | 'EMPLOYEE';
   isActive: boolean;
 };
 

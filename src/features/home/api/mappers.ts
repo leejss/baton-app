@@ -1,16 +1,8 @@
-import type { HomeSummary } from "@/features/home/api/home.schema";
-import {
-  formatHomeDateTitle,
-  getHomeWeekDays,
-} from "@/features/home/lib/homeDate";
-import type {
-  HomeHandoffSectionModel,
-  HomeScheduleModel,
-} from "@/features/home/types";
+import type { HomeSummary } from '@/features/home/api/home.schema';
+import { formatHomeDateTitle, getHomeWeekDays } from '@/features/home/lib/homeDate';
+import type { HomeHandoffSectionModel, HomeScheduleModel } from '@/features/home/types';
 
-export function mapHomeHandoffSectionModel(
-  summary: HomeSummary,
-): HomeHandoffSectionModel {
+export function mapHomeHandoffSectionModel(summary: HomeSummary): HomeHandoffSectionModel {
   return {
     totalCount: summary.receivedHandoverCount,
     // HOME-P05/P06: 서버가 보장한 최신순을 그대로 보존한다.
@@ -18,7 +10,7 @@ export function mapHomeHandoffSectionModel(
       id: handoff.id,
       title: handoff.title,
       status: handoff.status,
-      canConfirm: handoff.status === "UNCONFIRMED",
+      canConfirm: handoff.status === 'UNCONFIRMED',
     })),
   };
 }
@@ -41,8 +33,7 @@ export function mapHomeScheduleModel(
       startTime: schedule.startTime,
       endTime: schedule.endTime,
       canCreateHandoff:
-        schedule.employee.userId !== currentUserId &&
-        schedule.employee.status === "ACTIVE",
+        schedule.employee.userId !== currentUserId && schedule.employee.status === 'ACTIVE',
     })),
   };
 }

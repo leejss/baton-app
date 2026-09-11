@@ -1,33 +1,29 @@
-import { memberSchema } from "@/features/stores/api/store.schema";
-import { z } from "zod";
+import { memberSchema } from '@/features/stores/api/store.schema';
+import { z } from 'zod';
 
-export const handoffTypeSchema = z.enum(["WORK_TASK", "STORE_STATUS", "OTHER"]);
-export const handoffStatusSchema = z.enum([
-  "UNCONFIRMED",
-  "CONFIRMED",
-  "TERMINATED",
-]);
-export const handoffScopeSchema = z.enum(["ALL", "RECEIVED", "SENT"]);
+export const handoffTypeSchema = z.enum(['WORK_TASK', 'STORE_STATUS', 'OTHER']);
+export const handoffStatusSchema = z.enum(['UNCONFIRMED', 'CONFIRMED', 'TERMINATED']);
+export const handoffScopeSchema = z.enum(['ALL', 'RECEIVED', 'SENT']);
 
-export { memberSchema } from "@/features/stores/api/store.schema";
+export { memberSchema } from '@/features/stores/api/store.schema';
 
 const handoffRecipientSchema = z.object({
   user: memberSchema,
-  status: z.enum(["ACTIVE", "PARTICIPATION_ENDED"]),
+  status: z.enum(['ACTIVE', 'PARTICIPATION_ENDED']),
   confirmedAt: z.iso.datetime({ offset: true }).nullish(),
   participationEndedAt: z.iso.datetime({ offset: true }).nullish(),
 });
 
 export const attachmentSchema = z.object({
   id: z.number().int().positive(),
-  purpose: z.literal("HANDOVER"),
-  contentType: z.enum(["image/jpeg", "image/png", "image/webp"]),
+  purpose: z.literal('HANDOVER'),
+  contentType: z.enum(['image/jpeg', 'image/png', 'image/webp']),
   sizeBytes: z
     .number()
     .int()
     .positive()
     .max(5 * 1024 * 1024),
-  status: z.enum(["PENDING", "VERIFIED", "LINKED", "DELETED"]),
+  status: z.enum(['PENDING', 'VERIFIED', 'LINKED', 'DELETED']),
   downloadUrl: z.string().url().nullish(),
   downloadUrlExpiresAt: z.iso.datetime({ offset: true }).nullish(),
 });
@@ -79,12 +75,6 @@ export type AttachmentDto = z.infer<typeof attachmentSchema>;
 export type HandoffListItemDto = z.infer<typeof handoffListItemSchema>;
 export type HandoffPageDto = z.infer<typeof handoffPageSchema>;
 export type HandoffDto = z.infer<typeof handoffSchema>;
-export type HandoffCreateRequestDto = z.infer<
-  typeof handoffCreateRequestSchema
->;
-export type HandoffUpdateRequestDto = z.infer<
-  typeof handoffUpdateRequestSchema
->;
-export type RecipientRecommendationDto = z.infer<
-  typeof recipientRecommendationSchema
->;
+export type HandoffCreateRequestDto = z.infer<typeof handoffCreateRequestSchema>;
+export type HandoffUpdateRequestDto = z.infer<typeof handoffUpdateRequestSchema>;
+export type RecipientRecommendationDto = z.infer<typeof recipientRecommendationSchema>;

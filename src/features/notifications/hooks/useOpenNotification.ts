@@ -1,16 +1,13 @@
-import { markNotificationRead } from "@/features/notifications/api/notification.api";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useNavigation, useRouter } from "expo-router";
-import { useRef, useState } from "react";
+import { markNotificationRead } from '@/features/notifications/api/notification.api';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useNavigation, useRouter } from 'expo-router';
+import { useRef, useState } from 'react';
 
-import { toNotification } from "@/features/notifications/api/mappers";
-import { notificationQueries } from "@/features/notifications/api/notification.queries";
-import type {
-  Notification,
-  NotificationScope,
-} from "@/features/notifications/types";
-import { scheduleQueries } from "@/features/schedules/api/schedule.queries";
-import { isAppError, normalizeError } from "@/shared/api/errors";
+import { toNotification } from '@/features/notifications/api/mappers';
+import { notificationQueries } from '@/features/notifications/api/notification.queries';
+import type { Notification, NotificationScope } from '@/features/notifications/types';
+import { scheduleQueries } from '@/features/schedules/api/schedule.queries';
+import { isAppError, normalizeError } from '@/shared/api/errors';
 
 export function useOpenNotification(scope: NotificationScope) {
   const router = useRouter();
@@ -25,12 +22,12 @@ export function useOpenNotification(scope: NotificationScope) {
       exact: true,
     });
   const read = useMutation({
-    mutationKey: ["notifications", "read"],
+    mutationKey: ['notifications', 'read'],
     mutationFn: async (id: string) => {
       try {
         const dto = await markNotificationRead(id);
-        if (String(dto.id) !== id || dto.status !== "READ")
-          throw new Error("읽음 처리가 반영되지 않았어요.");
+        if (String(dto.id) !== id || dto.status !== 'READ')
+          throw new Error('읽음 처리가 반영되지 않았어요.');
         return toNotification(dto);
       } catch (error) {
         throw normalizeError(error);
@@ -54,16 +51,16 @@ export function useOpenNotification(scope: NotificationScope) {
         target = updated.target;
       } catch {
         // NOTI-03: 일반 읽음 실패는 이동을 막지 않으며 파란 점/개수를 유지한다.
-        if (notification.target.kind === "none")
-          setMessage("읽음 처리에 실패했어요. 알림을 다시 선택해주세요.");
+        if (notification.target.kind === 'none')
+          setMessage('읽음 처리에 실패했어요. 알림을 다시 선택해주세요.');
       }
       if (!navigation.isFocused()) return;
-      if (target.kind === "handoff") {
+      if (target.kind === 'handoff') {
         router.push({
-          pathname: "/handoffs/[handoffId]",
+          pathname: '/handoffs/[handoffId]',
           params: { handoffId: target.id },
         });
-      } else if (target.kind === "schedule") {
+      } else if (target.kind === 'schedule') {
         // 수정 화면이 아닌 해당 날짜의 근무표로 이동한다. 직원도 조회할 수 있다.
         const schedule = await queryClient.fetchQuery({
           ...scheduleQueries.detail(scope.storeId, target.id),
@@ -71,13 +68,12 @@ export function useOpenNotification(scope: NotificationScope) {
         });
         if (!navigation.isFocused()) return;
         router.push({
-          pathname: "/schedules",
+          pathname: '/schedules',
           params: { selectedDate: schedule.date },
         });
       }
     } catch (error) {
-      if (isAppError(error) && (error.status === 403 || error.status === 404))
-        await refreshInbox();
+      if (isAppError(error) && (error.status === 403 || error.status === 404)) await refreshInbox();
       setMessage(normalizeError(error).message);
     } finally {
       opening.current = false;

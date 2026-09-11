@@ -1,12 +1,12 @@
-import { useMainContext } from "@/features/stores/hooks/useMainContext";
-import { useRouter } from "expo-router";
-import { useRef, useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { useMainContext } from '@/features/stores/hooks/useMainContext';
+import { useRouter } from 'expo-router';
+import { useRef, useState } from 'react';
+import { StyleSheet, View } from 'react-native';
 
-import { BottomSheet } from "@/shared/ui/BottomSheet";
-import { Pressable, Text } from "@/shared/ui";
-import { Plus, EditFill } from "@/shared/ui/icons";
-import { radius, spacing, useTheme } from "@/theme";
+import { BottomSheet } from '@/shared/ui/BottomSheet';
+import { Pressable, Text } from '@/shared/ui';
+import { Plus, EditFill } from '@/shared/ui/icons';
+import { radius, spacing, useTheme } from '@/theme';
 
 export function ScheduleManageButton({ date }: { date?: string }) {
   const query = useMainContext();
@@ -15,7 +15,7 @@ export function ScheduleManageButton({ date }: { date?: string }) {
   const router = useRouter();
   const { colors } = useTheme();
   if (!query.canManage) return null;
-  const navigate = (pathname: "/schedules/new" | "/schedules/manage") => {
+  const navigate = (pathname: '/schedules/new' | '/schedules/manage') => {
     pendingNavigation.current = () =>
       router.push({ pathname, params: date ? { selectedDate: date } : {} });
     setVisible(false);
@@ -38,17 +38,13 @@ export function ScheduleManageButton({ date }: { date?: string }) {
           근무편집
         </Text>
       </Pressable>
-      <BottomSheet
-        visible={visible}
-        title="어떤 일을 처리하나요?"
-        onDismiss={handleDismiss}
-      >
+      <BottomSheet visible={visible} title="어떤 일을 처리하나요?" onDismiss={handleDismiss}>
         <View style={styles.options}>
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="근무등록"
             style={[styles.option, { borderColor: colors.border }]}
-            onPress={() => navigate("/schedules/new")}
+            onPress={() => navigate('/schedules/new')}
           >
             <Plus />
             <View style={styles.description}>
@@ -63,7 +59,7 @@ export function ScheduleManageButton({ date }: { date?: string }) {
             accessibilityRole="button"
             accessibilityLabel="근무수정/삭제"
             style={[styles.option, { borderColor: colors.border }]}
-            onPress={() => navigate("/schedules/manage")}
+            onPress={() => navigate('/schedules/manage')}
           >
             <EditFill />
             <View style={styles.description}>
@@ -80,11 +76,11 @@ export function ScheduleManageButton({ date }: { date?: string }) {
   );
 }
 const styles = StyleSheet.create({
-  button: { minHeight: 44, justifyContent: "center" },
+  button: { minHeight: 44, justifyContent: 'center' },
   options: { gap: spacing.sm },
   option: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     padding: spacing.lg,
     gap: spacing.md,
     borderWidth: 1,

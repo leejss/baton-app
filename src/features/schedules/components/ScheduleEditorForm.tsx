@@ -1,30 +1,30 @@
-import { useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { useState } from 'react';
+import { StyleSheet, View } from 'react-native';
 import {
   KeyboardAwareScrollView,
   KeyboardStickyView,
   useKeyboardState,
-} from "react-native-keyboard-controller";
+} from 'react-native-keyboard-controller';
 
-import { getTodayInSeoul } from "@/features/home/lib/homeDate";
-import { CalendarMonthHeader } from "@/features/schedules/components/CalendarMonthHeader";
-import { EmployeePicker } from "@/features/schedules/components/EmployeePicker";
-import { MonthlyCalendar } from "@/features/schedules/components/MonthlyCalendar";
-import { ScheduleOverlay } from "@/features/schedules/components/ScheduleOverlay";
-import { ScheduleSaveFeedback } from "@/features/schedules/components/ScheduleSaveFeedback";
-import { ScheduleTimeFields } from "@/features/schedules/components/ScheduleTimeFields";
-import { ScheduleMessage } from "@/features/schedules/components/ScheduleMessage";
-import { useScheduleClock } from "@/features/schedules/hooks/useScheduleClock";
-import { useScheduleEditor } from "@/features/schedules/hooks/useScheduleEditor";
+import { getTodayInSeoul } from '@/features/home/lib/homeDate';
+import { CalendarMonthHeader } from '@/features/schedules/components/CalendarMonthHeader';
+import { EmployeePicker } from '@/features/schedules/components/EmployeePicker';
+import { MonthlyCalendar } from '@/features/schedules/components/MonthlyCalendar';
+import { ScheduleOverlay } from '@/features/schedules/components/ScheduleOverlay';
+import { ScheduleSaveFeedback } from '@/features/schedules/components/ScheduleSaveFeedback';
+import { ScheduleTimeFields } from '@/features/schedules/components/ScheduleTimeFields';
+import { ScheduleMessage } from '@/features/schedules/components/ScheduleMessage';
+import { useScheduleClock } from '@/features/schedules/hooks/useScheduleClock';
+import { useScheduleEditor } from '@/features/schedules/hooks/useScheduleEditor';
 import {
   durationLabel,
   monthLimits,
   rangeDates,
   shiftMonth,
-} from "@/features/schedules/lib/scheduleDate";
-import type { ScheduleContext, ScheduleItem } from "@/features/schedules/types";
-import { Button, BottomActionBar, Text } from "@/shared/ui";
-import { SCREEN_PADDING_X, spacing, useTheme } from "@/theme";
+} from '@/features/schedules/lib/scheduleDate';
+import type { ScheduleContext, ScheduleItem } from '@/features/schedules/types';
+import { Button, BottomActionBar, Text } from '@/shared/ui';
+import { SCREEN_PADDING_X, spacing, useTheme } from '@/theme';
 
 type ScheduleEditorFormProps = {
   context: ScheduleContext;
@@ -39,13 +39,11 @@ export function ScheduleEditorForm(props: ScheduleEditorFormProps) {
   const { colors } = useTheme();
   const now = useScheduleClock();
   const today = getTodayInSeoul(now);
-  const [month, setMonth] = useState(
-    (item?.date ?? initialDate ?? today).slice(0, 7),
-  );
+  const [month, setMonth] = useState((item?.date ?? initialDate ?? today).slice(0, 7));
   const keyboardOpen = useKeyboardState((state) => state.isVisible);
   const [outOfRange, setOutOfRange] = useState(false);
-  const start = values.startDate ?? "";
-  const end = values.endDate ?? "";
+  const start = values.startDate ?? '';
+  const end = values.endDate ?? '';
   const dates = rangeDates(start, end);
   const locked = mutation.isPending || Boolean(saveResult?.created.length);
   const disabled =
@@ -74,7 +72,7 @@ export function ScheduleEditorForm(props: ScheduleEditorFormProps) {
     else editor.setRange(date, date);
   };
   const setEmployee = (id: number) => {
-    form.setValue("employeeId", id, { shouldDirty: true });
+    form.setValue('employeeId', id, { shouldDirty: true });
     editor.clearFailedAttempt();
   };
   return (
@@ -86,28 +84,20 @@ export function ScheduleEditorForm(props: ScheduleEditorFormProps) {
         contentContainerStyle={styles.scroll}
       >
         <View style={[styles.calendar, { backgroundColor: colors.background }]}>
-          <CalendarMonthHeader
-            month={month}
-            today={today}
-            onChange={handleMonthChange}
-          />
+          <CalendarMonthHeader month={month} today={today} onChange={handleMonthChange} />
           <MonthlyCalendar
             month={month}
             today={today}
             minDate={today}
             selectedDate={item ? start : undefined}
             range={!item && start ? { start, end } : undefined}
-            mode={
-              step === 1 && !locked ? (item ? "single" : "range") : "readonly"
-            }
+            mode={step === 1 && !locked ? (item ? 'single' : 'range') : 'readonly'}
             compact={step === 2 && keyboardOpen}
             onSelect={handleSelectDate}
             onRange={(range) => {
               if (!locked) editor.setRange(range.start, range.end);
             }}
-            onMoveMonth={(direction) =>
-              handleMonthChange(shiftMonth(month, direction))
-            }
+            onMoveMonth={(direction) => handleMonthChange(shiftMonth(month, direction))}
           />
         </View>
         {outOfRange && (
@@ -117,11 +107,9 @@ export function ScheduleEditorForm(props: ScheduleEditorFormProps) {
           {step === 1 && (
             <Text variant="bodySmall" color="textSecondary">
               {item
-                ? "변경할 근무 날짜 한 개를 선택해주세요."
-                : "날짜를 길게 누른 뒤 드래그하거나 시작일과 종료일을 눌러 선택해주세요."}
-              {dates.length
-                ? `\n${start} ~ ${end} · ${dates.length}일 선택`
-                : ""}
+                ? '변경할 근무 날짜 한 개를 선택해주세요.'
+                : '날짜를 길게 누른 뒤 드래그하거나 시작일과 종료일을 눌러 선택해주세요.'}
+              {dates.length ? `\n${start} ~ ${end} · ${dates.length}일 선택` : ''}
             </Text>
           )}
           {step >= 2 && (
@@ -134,28 +122,20 @@ export function ScheduleEditorForm(props: ScheduleEditorFormProps) {
           {(form.formState.errors.root ||
             form.formState.errors.employeeId ||
             form.formState.errors.startDate) && (
-            <Text
-              accessibilityLiveRegion="polite"
-              variant="bodySmall"
-              color="dangerText"
-            >
+            <Text accessibilityLiveRegion="polite" variant="bodySmall" color="dangerText">
               {form.formState.errors.root?.message ??
                 form.formState.errors.employeeId?.message ??
                 form.formState.errors.startDate?.message}
             </Text>
           )}
           {mutation.isError && !editor.duplicates && (
-            <Text
-              accessibilityLiveRegion="polite"
-              variant="bodySmall"
-              color="dangerText"
-            >
+            <Text accessibilityLiveRegion="polite" variant="bodySmall" color="dangerText">
               {mutation.error.message}
             </Text>
           )}
           {saveResult?.failed.length ? (
             <Text variant="bodySmall" color="dangerText">
-              재시도할 날짜: {saveResult.failed.join(", ")}
+              재시도할 날짜: {saveResult.failed.join(', ')}
             </Text>
           ) : null}
         </View>
@@ -173,14 +153,14 @@ export function ScheduleEditorForm(props: ScheduleEditorFormProps) {
             />
             {step === 3 && (
               <Text variant="bodySmall">
-                근무{" "}
+                근무{' '}
                 <Text color="accent" weight="semibold">
                   {dates.length}일
-                </Text>{" "}
-                선택 · 하루{" "}
+                </Text>{' '}
+                선택 · 하루{' '}
                 <Text color="accent" weight="semibold">
-                  {durationLabel(values.startTime ?? "", values.endTime ?? "")}
-                </Text>{" "}
+                  {durationLabel(values.startTime ?? '', values.endTime ?? '')}
+                </Text>{' '}
                 근무
               </Text>
             )}
@@ -198,14 +178,14 @@ export function ScheduleEditorForm(props: ScheduleEditorFormProps) {
               <Button
                 label={
                   step < 3
-                    ? "다음"
+                    ? '다음'
                     : saveResult?.failed.length
-                      ? "실패한 날짜만 재시도"
+                      ? '실패한 날짜만 재시도'
                       : item
-                        ? "수정 완료"
-                        : "등록"
+                        ? '수정 완료'
+                        : '등록'
                 }
-                variant={step === 3 ? "accent" : "primary"}
+                variant={step === 3 ? 'accent' : 'primary'}
                 isLoading={mutation.isPending}
                 disabled={Boolean(disabled)}
                 onPress={editor.handleNext}
@@ -234,8 +214,8 @@ export function ScheduleEditorForm(props: ScheduleEditorFormProps) {
       >
         <Text variant="bodySmall">
           {saveResult?.created.length
-            ? "이미 등록된 근무는 유지됩니다. 등록하지 못한 날짜의 입력은 사라져요."
-            : "작성 중인 내용은 저장되지 않아요."}
+            ? '이미 등록된 근무는 유지됩니다. 등록하지 못한 날짜의 입력은 사라져요.'
+            : '작성 중인 내용은 저장되지 않아요.'}
         </Text>
         <Button label="계속 작성" onPress={() => editor.setLeave(undefined)} />
         <Button
@@ -261,14 +241,14 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.lg,
   },
   fields: { padding: SCREEN_PADDING_X, gap: spacing.md },
-  actions: { flexDirection: "row", gap: 10 },
+  actions: { flexDirection: 'row', gap: 10 },
   previous: { flex: 1 },
   next: { flex: 3 },
   summary: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    alignItems: "center",
-    justifyContent: "center",
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    justifyContent: 'center',
     paddingBottom: spacing.sm,
   },
 });

@@ -1,23 +1,23 @@
-import { useRouter } from "expo-router";
-import { useState } from "react";
-import { ScrollView, StyleSheet, View } from "react-native";
+import { useRouter } from 'expo-router';
+import { useState } from 'react';
+import { ScrollView, StyleSheet, View } from 'react-native';
 
-import { getTodayInSeoul } from "@/features/home/lib/homeDate";
-import { CalendarMonthHeader } from "@/features/schedules/components/CalendarMonthHeader";
-import { DaySchedules } from "@/features/schedules/components/DaySchedules";
-import { MonthlyCalendar } from "@/features/schedules/components/MonthlyCalendar";
-import { ScheduleActions } from "@/features/schedules/components/ScheduleActions";
-import { MainHeader } from "@/features/tabs/components/MainHeader";
-import { ScreenHeader } from "@/shared/ui/ScreenHeader";
-import { ScheduleManageButton } from "@/features/schedules/components/ScheduleManageButton";
-import { ScheduleMessage } from "@/features/schedules/components/ScheduleMessage";
-import { useScheduleClock } from "@/features/schedules/hooks/useScheduleClock";
+import { getTodayInSeoul } from '@/features/home/lib/homeDate';
+import { CalendarMonthHeader } from '@/features/schedules/components/CalendarMonthHeader';
+import { DaySchedules } from '@/features/schedules/components/DaySchedules';
+import { MonthlyCalendar } from '@/features/schedules/components/MonthlyCalendar';
+import { ScheduleActions } from '@/features/schedules/components/ScheduleActions';
+import { MainHeader } from '@/features/tabs/components/MainHeader';
+import { ScreenHeader } from '@/shared/ui/ScreenHeader';
+import { ScheduleManageButton } from '@/features/schedules/components/ScheduleManageButton';
+import { ScheduleMessage } from '@/features/schedules/components/ScheduleMessage';
+import { useScheduleClock } from '@/features/schedules/hooks/useScheduleClock';
 import {
   monthLimits,
   normalizeSelectedDate,
   shiftMonth,
-} from "@/features/schedules/lib/scheduleDate";
-import { SCREEN_PADDING_X, spacing, useTheme } from "@/theme";
+} from '@/features/schedules/lib/scheduleDate';
+import { SCREEN_PADDING_X, spacing, useTheme } from '@/theme';
 
 type SchedulesScreenProps = {
   initialDate?: string;
@@ -25,15 +25,10 @@ type SchedulesScreenProps = {
 };
 
 /** 스크린은 클라이언트 선택 상태와 배치만 담당한다. 쿼리는 소비 컴포넌트 안에 있다. */
-export function SchedulesScreen({
-  initialDate,
-  isManaging = false,
-}: SchedulesScreenProps) {
+export function SchedulesScreen({ initialDate, isManaging = false }: SchedulesScreenProps) {
   const now = useScheduleClock();
   const today = getTodayInSeoul(now);
-  const [selectedDate, setSelectedDate] = useState(() =>
-    normalizeSelectedDate(initialDate, today),
-  );
+  const [selectedDate, setSelectedDate] = useState(() => normalizeSelectedDate(initialDate, today));
   const [month, setMonth] = useState(() =>
     (normalizeSelectedDate(initialDate, today) ?? today).slice(0, 7),
   );
@@ -51,40 +46,28 @@ export function SchedulesScreen({
     setMonth(value);
     setSelectedDate(undefined);
   };
-  const handleBack = () =>
-    router.canGoBack() ? router.back() : router.navigate("/home");
+  const handleBack = () => (router.canGoBack() ? router.back() : router.navigate('/home'));
   return (
     <View style={[styles.root, { backgroundColor: colors.surfaceSunken }]}>
       {isManaging ? (
-        <ScreenHeader
-          title="근무수정/삭제"
-          titleAlign="left"
-          onBack={handleBack}
-        />
+        <ScreenHeader title="근무수정/삭제" titleAlign="left" onBack={handleBack} />
       ) : (
         <MainHeader title="근무표" />
       )}
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        contentContainerStyle={styles.scroll}
-      >
+      <ScrollView contentInsetAdjustmentBehavior="automatic" contentContainerStyle={styles.scroll}>
         <View style={[styles.calendar, { backgroundColor: colors.background }]}>
           <CalendarMonthHeader
             month={month}
             today={today}
             onChange={handleMonthChange}
-            trailing={
-              !isManaging && <ScheduleManageButton date={selectedDate} />
-            }
+            trailing={!isManaging && <ScheduleManageButton date={selectedDate} />}
           />
           <MonthlyCalendar
             month={month}
             today={today}
             selectedDate={selectedDate}
             onSelect={setSelectedDate}
-            onMoveMonth={(direction) =>
-              handleMonthChange(shiftMonth(month, direction))
-            }
+            onMoveMonth={(direction) => handleMonthChange(shiftMonth(month, direction))}
           />
           {outOfRange && (
             <ScheduleMessage message="현재 월 기준 과거 12개월부터 미래 3개월까지 조회할 수 있습니다." />

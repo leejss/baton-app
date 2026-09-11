@@ -1,18 +1,16 @@
-import { File } from "expo-file-system";
-import { ImageManipulator, SaveFormat } from "expo-image-manipulator";
-import * as ImagePicker from "expo-image-picker";
+import { File } from 'expo-file-system';
+import { ImageManipulator, SaveFormat } from 'expo-image-manipulator';
+import * as ImagePicker from 'expo-image-picker';
 
-import type { LocalAttachment } from "@/features/handoffs/types";
+import type { LocalAttachment } from '@/features/handoffs/types';
 
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
-const SUPPORTED_MIME_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
-export async function pickHandoffImages(
-  selectionLimit: number,
-): Promise<LocalAttachment[]> {
+const SUPPORTED_MIME_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
+export async function pickHandoffImages(selectionLimit: number): Promise<LocalAttachment[]> {
   if (selectionLimit <= 0) return [];
 
   const result = await ImagePicker.launchImageLibraryAsync({
-    mediaTypes: ["images"],
+    mediaTypes: ['images'],
     allowsMultipleSelection: true,
     orderedSelection: true,
     selectionLimit,
@@ -22,9 +20,7 @@ export async function pickHandoffImages(
   if (result.canceled) return [];
 
   return Promise.all(
-    result.assets
-      .slice(0, selectionLimit)
-      .map((asset, index) => prepareAttachment(asset, index)),
+    result.assets.slice(0, selectionLimit).map((asset, index) => prepareAttachment(asset, index)),
   );
 }
 
@@ -32,11 +28,10 @@ async function prepareAttachment(
   asset: ImagePicker.ImagePickerAsset,
   index: number,
 ): Promise<LocalAttachment> {
-  const originalMimeType = asset.mimeType ?? "";
+  const originalMimeType = asset.mimeType ?? '';
   const originalSize = asset.fileSize ?? getFileSize(asset.uri);
   const needsConversion = !SUPPORTED_MIME_TYPES.has(originalMimeType);
-  const needsCompression =
-    originalSize === null || originalSize > MAX_IMAGE_BYTES;
+  const needsCompression = originalSize === null || originalSize > MAX_IMAGE_BYTES;
 
   let uri = asset.uri;
   let width = asset.width;
@@ -45,24 +40,16 @@ async function prepareAttachment(
   let mimeType = normalizeMimeType(originalMimeType);
 
   if (needsConversion || needsCompression) {
-    const firstPass = await renderJpeg(
-      uri,
-      width > 2_048 ? 2_048 : undefined,
-      0.78,
-    );
+    const firstPass = await renderJpeg(uri, width > 2_048 ? 2_048 : undefined, 0.78);
     uri = firstPass.uri;
     width = firstPass.width;
     height = firstPass.height;
     sizeBytes = getFileSize(uri) ?? sizeBytes;
-    mimeType = "image/jpeg";
+    mimeType = 'image/jpeg';
   }
 
   if (sizeBytes > MAX_IMAGE_BYTES) {
-    const secondPass = await renderJpeg(
-      uri,
-      width > 1_600 ? 1_600 : undefined,
-      0.6,
-    );
+    const secondPass = await renderJpeg(uri, width > 1_600 ? 1_600 : undefined, 0.6);
     uri = secondPass.uri;
     width = secondPass.width;
     height = secondPass.height;
@@ -70,34 +57,25 @@ async function prepareAttachment(
   }
 
   if (sizeBytes > MAX_IMAGE_BYTES) {
-    throw new Error(
-      "5MB 이하로 줄일 수 없는 사진이 있어요. 다른 사진을 선택해 주세요.",
-    );
+    throw new Error('5MB 이하로 줄일 수 없는 사진이 있어요. 다른 사진을 선택해 주세요.');
   }
 
-  const localId = `${Date.now()}-${index}-${asset.assetId ?? asset.fileName ?? "image"}`;
+  const localId = `${Date.now()}-${index}-${asset.assetId ?? asset.fileName ?? 'image'}`;
 
   const attachment: LocalAttachment = {
     localId,
     uri,
-    fileName:
-      mimeType === "image/jpeg"
-        ? `${localId}.jpg`
-        : (asset.fileName ?? `${localId}.png`),
+    fileName: mimeType === 'image/jpeg' ? `${localId}.jpg` : (asset.fileName ?? `${localId}.png`),
     mimeType,
     sizeBytes,
     width,
     height,
-    uploadStatus: "ready",
+    uploadStatus: 'ready',
   };
   return attachment;
 }
 
-async function renderJpeg(
-  uri: string,
-  width: number | undefined,
-  compress: number,
-) {
+async function renderJpeg(uri: string, width: number | undefined, compress: number) {
   const context = ImageManipulator.manipulate(uri);
   if (width !== undefined) context.resize({ width });
   const image = await context.renderAsync();
@@ -112,7 +90,7 @@ function getFileSize(uri: string): number | null {
   }
 }
 
-function normalizeMimeType(value: string): LocalAttachment["mimeType"] {
-  if (value === "image/png" || value === "image/webp") return value;
-  return "image/jpeg";
+function normalizeMimeType(value: string): LocalAttachment['mimeType'] {
+  if (value === 'image/png' || value === 'image/webp') return value;
+  return 'image/jpeg';
 }

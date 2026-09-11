@@ -1,32 +1,21 @@
-import { uploadSchema } from "@/features/handoffs/api/attachment.schema";
-import { File } from "expo-file-system";
-import { fetch } from "expo/fetch";
-import { post, del } from "@/shared/api/client";
-import { AppError, isAppError, normalizeError } from "@/shared/api/errors";
-import { attachmentSchema } from "@/features/handoffs/api/handoff.schema";
-import type { LocalAttachment } from "@/features/handoffs/types";
+import { uploadSchema } from '@/features/handoffs/api/attachment.schema';
+import { File } from 'expo-file-system';
+import { fetch } from 'expo/fetch';
+import { post, del } from '@/shared/api/client';
+import { AppError, isAppError, normalizeError } from '@/shared/api/errors';
+import { attachmentSchema } from '@/features/handoffs/api/handoff.schema';
+import type { LocalAttachment } from '@/features/handoffs/types';
 
 const extension = {
-  "image/jpeg": "jpg",
-  "image/png": "png",
-  "image/webp": "webp",
+  'image/jpeg': 'jpg',
+  'image/png': 'png',
+  'image/webp': 'webp',
 } as const;
 export const deleteAttachment = (id: number) => del(`/files/${id}`);
 export async function completeAttachment(id: number, signal?: AbortSignal) {
-  const attachment = await post(
-    `/files/${id}/complete`,
-    undefined,
-    attachmentSchema,
-    { signal },
-  );
-  if (
-    attachment.id !== id ||
-    !["VERIFIED", "LINKED"].includes(attachment.status)
-  )
-    throw new AppError(
-      "schema",
-      "사진 업로드 완료 상태를 확인하지 못했습니다.",
-    );
+  const attachment = await post(`/files/${id}/complete`, undefined, attachmentSchema, { signal });
+  if (attachment.id !== id || !['VERIFIED', 'LINKED'].includes(attachment.status))
+    throw new AppError('schema', '사진 업로드 완료 상태를 확인하지 못했습니다.');
   return attachment;
 }
 
@@ -37,24 +26,23 @@ export async function uploadAttachment(
   signal: AbortSignal,
 ): Promise<void> {
   try {
-    if (file.isLinked || file.uploadStatus === "complete") return;
-    onProgress({ uploadStatus: "uploading" });
+    if (file.isLinked || file.uploadStatus === 'complete') return;
+    onProgress({ uploadStatus: 'uploading' });
     if (file.attachmentId !== undefined) {
       try {
         await completeAttachment(file.attachmentId, signal);
-        onProgress({ uploadStatus: "complete" });
+        onProgress({ uploadStatus: 'complete' });
         return;
       } catch (error) {
-        if (!isAppError(error) || ![400, 404].includes(error.status ?? 0))
-          throw error;
+        if (!isAppError(error) || ![400, 404].includes(error.status ?? 0)) throw error;
         if (error.status === 400) await deleteAttachment(file.attachmentId);
       }
     }
     signal.throwIfAborted();
     const ticket = await post(
-      "/files/presign",
+      '/files/presign',
       {
-        purpose: "HANDOVER",
+        purpose: 'HANDOVER',
         contentType: file.mimeType,
         sizeBytes: file.sizeBytes,
         extension: extension[file.mimeType],
@@ -64,26 +52,20 @@ export async function uploadAttachment(
     );
     onProgress({ attachmentId: ticket.attachmentId });
     const headers = new Headers(ticket.requiredHeaders);
-    if (
-      headers.get("content-type") !== file.mimeType ||
-      headers.get("if-none-match") !== "*"
-    )
-      throw new AppError(
-        "schema",
-        "사진 업로드 필수 헤더를 확인하지 못했습니다.",
-      );
+    if (headers.get('content-type') !== file.mimeType || headers.get('if-none-match') !== '*')
+      throw new AppError('schema', '사진 업로드 필수 헤더를 확인하지 못했습니다.');
     // 별도 호스트에는 API 인증 헤더를 절대 전달하지 않는다.
-    headers.delete("authorization");
+    headers.delete('authorization');
     let putError: unknown;
     try {
       const response = await fetch(ticket.uploadUrl, {
-        method: "PUT",
+        method: 'PUT',
         headers,
         body: new File(file.uri),
         signal: AbortSignal.any([signal, AbortSignal.timeout(60_000)]),
       });
       if (!response.ok)
-        throw new AppError("server", "사진을 업로드하지 못했습니다.", {
+        throw new AppError('server', '사진을 업로드하지 못했습니다.', {
           status: response.status,
         });
     } catch (error) {
@@ -96,9 +78,9 @@ export async function uploadAttachment(
     } catch (error) {
       throw putError ?? error;
     }
-    onProgress({ uploadStatus: "complete" });
+    onProgress({ uploadStatus: 'complete' });
   } catch (error) {
-    onProgress({ uploadStatus: "failed" });
+    onProgress({ uploadStatus: 'failed' });
     throw normalizeError(error);
   }
 }

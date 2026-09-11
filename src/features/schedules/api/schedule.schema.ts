@@ -1,7 +1,7 @@
-import { memberSchema } from "@/features/stores/api/store.schema";
-import { z } from "zod";
+import { memberSchema } from '@/features/stores/api/store.schema';
+import { z } from 'zod';
 
-import { isCalendarDate } from "@/features/schedules/lib/scheduleDate";
+import { isCalendarDate } from '@/features/schedules/lib/scheduleDate';
 
 const id = z.number().int().positive();
 const date = z.string().refine(isCalendarDate);
@@ -14,7 +14,7 @@ export const scheduleSchema = z.object({
   workDate: date,
   startTime,
   endTime,
-  status: z.literal("ACTIVE"),
+  status: z.literal('ACTIVE'),
 });
 export const monthlyScheduleSchema = z.object({
   monthStart: date,
@@ -36,7 +36,7 @@ export const scheduleBatchSchema = z.object({
   results: z.array(
     z.object({
       workDate: date,
-      status: z.enum(["CREATED", "DUPLICATE", "FAILED"]),
+      status: z.enum(['CREATED', 'DUPLICATE', 'FAILED']),
       schedule: scheduleSchema.nullish(),
       errorCode: z.string().nullish(),
     }),

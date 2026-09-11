@@ -1,9 +1,9 @@
-import { Controller, type Control } from "react-hook-form";
-import { StyleSheet, View } from "react-native";
+import { Controller, type Control } from 'react-hook-form';
+import { StyleSheet, View } from 'react-native';
 
-import type { ScheduleFormValues } from "@/features/schedules/types";
-import { TextField } from "@/shared/ui";
-import { spacing } from "@/theme";
+import type { ScheduleFormValues } from '@/features/schedules/types';
+import { TextField } from '@/shared/ui';
+import { spacing } from '@/theme';
 
 type ScheduleTimeFieldsProps = {
   control: Control<ScheduleFormValues>;
@@ -12,17 +12,11 @@ type ScheduleTimeFieldsProps = {
 };
 
 function formatInput(text: string) {
-  const digits = text.replace(/\D/g, "").slice(0, 4);
-  return digits.length > 2
-    ? `${digits.slice(0, 2)}:${digits.slice(2)}`
-    : digits;
+  const digits = text.replace(/\D/g, '').slice(0, 4);
+  return digits.length > 2 ? `${digits.slice(0, 2)}:${digits.slice(2)}` : digits;
 }
 
-export function ScheduleTimeFields({
-  control,
-  disabled,
-  onChange,
-}: ScheduleTimeFieldsProps) {
+export function ScheduleTimeFields({ control, disabled, onChange }: ScheduleTimeFieldsProps) {
   return (
     <View style={styles.row}>
       <View style={styles.field}>
@@ -42,7 +36,7 @@ export function ScheduleTimeFields({
               }}
               onBlur={field.onBlur}
               disabled={disabled}
-              status={fieldState.error ? "error" : "none"}
+              status={fieldState.error ? 'error' : 'none'}
               subtitle={fieldState.error?.message}
             />
           )}
@@ -65,7 +59,7 @@ export function ScheduleTimeFields({
               }}
               onBlur={field.onBlur}
               disabled={disabled}
-              status={fieldState.error ? "error" : "none"}
+              status={fieldState.error ? 'error' : 'none'}
               subtitle={fieldState.error?.message}
             />
           )}
@@ -75,6 +69,6 @@ export function ScheduleTimeFields({
   );
 }
 const styles = StyleSheet.create({
-  row: { flexDirection: "row", gap: spacing.md },
+  row: { flexDirection: 'row', gap: spacing.md },
   field: { flex: 1 },
 });

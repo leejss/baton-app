@@ -1,41 +1,31 @@
-import { ErrorState } from "@/shared/ui/ErrorState";
-import { normalizeError, isAppError } from "@/shared/api/errors";
-import { useAttachmentUploads } from "@/features/handoffs/hooks/useAttachmentUploads";
-import { useMainContext } from "@/features/stores/hooks/useMainContext";
-import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  useMutation,
-  useQueryClient,
-  useSuspenseQueries,
-} from "@tanstack/react-query";
-import { useState } from "react";
-import { useController, useForm } from "react-hook-form";
-import { Alert, ScrollView, StyleSheet, View } from "react-native";
+import { ErrorState } from '@/shared/ui/ErrorState';
+import { normalizeError, isAppError } from '@/shared/api/errors';
+import { useAttachmentUploads } from '@/features/handoffs/hooks/useAttachmentUploads';
+import { useMainContext } from '@/features/stores/hooks/useMainContext';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useMutation, useQueryClient, useSuspenseQueries } from '@tanstack/react-query';
+import { useState } from 'react';
+import { useController, useForm } from 'react-hook-form';
+import { Alert, ScrollView, StyleSheet, View } from 'react-native';
 
-import {
-  getHandoffTypeLabel,
-  toLocalAttachments,
-} from "@/features/handoffs/api/mappers";
-import { handoffQueries } from "@/features/handoffs/api/handoff.queries";
-import { handoffMutations } from "@/features/handoffs/api/handoff.mutations";
-import { HandoffAttachmentStrip } from "@/features/handoffs/components/HandoffAttachmentStrip";
-import { HandoffEditorFields } from "@/features/handoffs/components/HandoffEditorFields";
-import { HandoffFooterActions } from "@/features/handoffs/components/HandoffFooterActions";
-import { HandoffRecipientCard } from "@/features/handoffs/components/HandoffRecipientCard";
-import { HandoffRecipientPickerModal } from "@/features/handoffs/components/HandoffRecipientPickerModal";
-import type {
-  LocalAttachment,
-  RecipientModel,
-} from "@/features/handoffs/types";
+import { getHandoffTypeLabel, toLocalAttachments } from '@/features/handoffs/api/mappers';
+import { handoffQueries } from '@/features/handoffs/api/handoff.queries';
+import { handoffMutations } from '@/features/handoffs/api/handoff.mutations';
+import { HandoffAttachmentStrip } from '@/features/handoffs/components/HandoffAttachmentStrip';
+import { HandoffEditorFields } from '@/features/handoffs/components/HandoffEditorFields';
+import { HandoffFooterActions } from '@/features/handoffs/components/HandoffFooterActions';
+import { HandoffRecipientCard } from '@/features/handoffs/components/HandoffRecipientCard';
+import { HandoffRecipientPickerModal } from '@/features/handoffs/components/HandoffRecipientPickerModal';
+import type { LocalAttachment, RecipientModel } from '@/features/handoffs/types';
 import {
   handoffContentFormSchema,
   type HandoffContentFormValues,
-} from "@/features/handoffs/lib/handoffForm";
-import { useHandoffImagePicker } from "@/features/handoffs/hooks/useHandoffImagePicker";
-import { useUnsavedHandoffGuard } from "@/features/handoffs/hooks/useUnsavedHandoffGuard";
-import { ScreenHeader } from "@/shared/ui/ScreenHeader";
-import { Text } from "@/shared/ui";
-import { spacing, useTheme } from "@/theme";
+} from '@/features/handoffs/lib/handoffForm';
+import { useHandoffImagePicker } from '@/features/handoffs/hooks/useHandoffImagePicker';
+import { useUnsavedHandoffGuard } from '@/features/handoffs/hooks/useUnsavedHandoffGuard';
+import { ScreenHeader } from '@/shared/ui/ScreenHeader';
+import { Text } from '@/shared/ui';
+import { spacing, useTheme } from '@/theme';
 
 type HandoffEditScreenProps = {
   handoffId: string;
@@ -43,11 +33,7 @@ type HandoffEditScreenProps = {
   onSaved: () => void;
 };
 
-export function HandoffEditScreen({
-  handoffId,
-  onBack,
-  onSaved,
-}: HandoffEditScreenProps) {
+export function HandoffEditScreen({ handoffId, onBack, onSaved }: HandoffEditScreenProps) {
   const queryClient = useQueryClient();
   const context = useMainContext();
   const theme = useTheme();
@@ -64,23 +50,20 @@ export function HandoffEditScreen({
     toLocalAttachments(handoff.attachments),
   );
   const [recipientPickerVisible, setRecipientPickerVisible] = useState(false);
-  const [pickerSelectedId, setPickerSelectedId] = useState<number | null>(
-    recipient.userId,
-  );
+  const [pickerSelectedId, setPickerSelectedId] = useState<number | null>(recipient.userId);
 
-  const { control, formState, handleSubmit } =
-    useForm<HandoffContentFormValues>({
-      defaultValues: { title: handoff.title, body: handoff.body },
-      mode: "onChange",
-      resolver: zodResolver(handoffContentFormSchema),
-    });
-  const titleController = useController({ control, name: "title" });
-  const bodyController = useController({ control, name: "body" });
+  const { control, formState, handleSubmit } = useForm<HandoffContentFormValues>({
+    defaultValues: { title: handoff.title, body: handoff.body },
+    mode: 'onChange',
+    resolver: zodResolver(handoffContentFormSchema),
+  });
+  const titleController = useController({ control, name: 'title' });
+  const bodyController = useController({ control, name: 'body' });
   const hasChanges =
     formState.isDirty ||
     recipient.userId !== handoff.recipient.user.userId ||
-    attachments.map(({ attachmentId }) => attachmentId).join(",") !==
-      handoff.attachments.map(({ id }) => id).join(",");
+    attachments.map(({ attachmentId }) => attachmentId).join(',') !==
+      handoff.attachments.map(({ id }) => id).join(',');
   const handleSelectedImages = (selected: LocalAttachment[]) => {
     setAttachments((current) => [...current, ...selected].slice(0, 10));
   };
@@ -89,14 +72,9 @@ export function HandoffEditScreen({
     onAdd: handleSelectedImages,
     onUpdate: (id, patch) =>
       setAttachments((current) =>
-        current.map((item) =>
-          item.localId === id ? { ...item, ...patch } : item,
-        ),
+        current.map((item) => (item.localId === id ? { ...item, ...patch } : item)),
       ),
-    onRemove: (id) =>
-      setAttachments((current) =>
-        current.filter((item) => item.localId !== id),
-      ),
+    onRemove: (id) => setAttachments((current) => current.filter((item) => item.localId !== id)),
   });
   const { addImages, isPickingImages } = useHandoffImagePicker({
     attachmentCount: attachments.length,
@@ -110,9 +88,9 @@ export function HandoffEditScreen({
   const handleBack = useUnsavedHandoffGuard({
     hasChanges,
     isBusy: updateMutation.isPending,
-    continueLabel: "계속 수정",
-    title: "수정을 그만할까요?",
-    message: "변경한 내용은 저장되지 않아요.",
+    continueLabel: '계속 수정',
+    title: '수정을 그만할까요?',
+    message: '변경한 내용은 저장되지 않아요.',
     onLeave: onBack,
   });
 
@@ -120,12 +98,9 @@ export function HandoffEditScreen({
     setPickerSelectedId(recipient.userId);
     setRecipientPickerVisible(true);
   };
-  const handleSelectRecipient = (item: RecipientModel) =>
-    setPickerSelectedId(item.member.userId);
+  const handleSelectRecipient = (item: RecipientModel) => setPickerSelectedId(item.member.userId);
   const handleConfirmRecipient = () => {
-    const selected = recipients.find(
-      ({ member }) => member.userId === pickerSelectedId,
-    );
+    const selected = recipients.find(({ member }) => member.userId === pickerSelectedId);
     if (selected === undefined) return;
     setRecipient(selected.member);
     setRecipientPickerVisible(false);
@@ -135,7 +110,7 @@ export function HandoffEditScreen({
       updateMutation.isPending ||
       !uploads.isReady ||
       isPickingImages ||
-      handoff.status !== "UNCONFIRMED" ||
+      handoff.status !== 'UNCONFIRMED' ||
       handoff.sender.userId !== context.userId
     )
       return;
@@ -150,15 +125,11 @@ export function HandoffEditScreen({
       {
         onSuccess: onSaved,
         onError: (error) => {
-          Alert.alert("수정하지 못했어요", normalizeError(error).message, [
+          Alert.alert('수정하지 못했어요', normalizeError(error).message, [
             {
-              text: "확인",
+              text: '확인',
               onPress: () => {
-                if (
-                  isAppError(error) &&
-                  [403, 404, 409].includes(error.status ?? 0)
-                )
-                  onBack();
+                if (isAppError(error) && [403, 404, 409].includes(error.status ?? 0)) onBack();
               },
             },
           ]);
@@ -167,15 +138,10 @@ export function HandoffEditScreen({
     );
   });
 
-  if (
-    isAppError(detailQuery.error) &&
-    [403, 404].includes(detailQuery.error.status ?? 0)
-  )
+  if (isAppError(detailQuery.error) && [403, 404].includes(detailQuery.error.status ?? 0))
     return <ErrorState error={detailQuery.error} onBack={onBack} />;
   return (
-    <View
-      style={[styles.root, { backgroundColor: theme.colors.surfaceSunken }]}
-    >
+    <View style={[styles.root, { backgroundColor: theme.colors.surfaceSunken }]}>
       <ScreenHeader
         title="인수인계 수정"
         onBack={() => {
@@ -189,11 +155,9 @@ export function HandoffEditScreen({
         keyboardShouldPersistTaps="handled"
         style={styles.scroll}
       >
-        {(handoff.status !== "UNCONFIRMED" ||
-          handoff.sender.userId !== context.userId) && (
+        {(handoff.status !== 'UNCONFIRMED' || handoff.sender.userId !== context.userId) && (
           <Text color="dangerText">
-            수정할 수 없는 인수인계입니다. 이전 화면으로 돌아가 최신 상태를
-            확인해주세요.
+            수정할 수 없는 인수인계입니다. 이전 화면으로 돌아가 최신 상태를 확인해주세요.
           </Text>
         )}
         <View style={styles.heading}>
@@ -230,8 +194,7 @@ export function HandoffEditScreen({
           <HandoffRecipientCard
             recipient={recipient}
             isRecommended={recipients.some(
-              (item) =>
-                item.isRecommended && item.member.userId === recipient.userId,
+              (item) => item.isRecommended && item.member.userId === recipient.userId,
             )}
             onPress={handleOpenRecipientPicker}
           />
@@ -245,7 +208,7 @@ export function HandoffEditScreen({
           isPickingImages ||
           !formState.isValid ||
           !hasChanges ||
-          handoff.status !== "UNCONFIRMED" ||
+          handoff.status !== 'UNCONFIRMED' ||
           handoff.sender.userId !== context.userId ||
           !recipients.some((item) => item.member.userId === recipient.userId)
         }

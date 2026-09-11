@@ -1,11 +1,11 @@
-import { Text } from "@/shared/ui/Text";
-import { QueryErrorResetBoundary, onlineManager } from "@tanstack/react-query";
-import { ActivityIndicator, StyleSheet, View } from "react-native";
-import { Suspense, useSyncExternalStore, type ReactNode } from "react";
+import { Text } from '@/shared/ui/Text';
+import { QueryErrorResetBoundary, onlineManager } from '@tanstack/react-query';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { Suspense, useSyncExternalStore, type ReactNode } from 'react';
 
-import { ErrorBoundary } from "@/shared/ui/ErrorBoundary";
-import { ErrorState } from "@/shared/ui/ErrorState";
-import { useTheme } from "@/theme";
+import { ErrorBoundary } from '@/shared/ui/ErrorBoundary';
+import { ErrorState } from '@/shared/ui/ErrorState';
+import { useTheme } from '@/theme';
 
 type QueryBoundaryProps = {
   children: ReactNode;
@@ -37,11 +37,7 @@ export function QueryBoundary({
   if (query && query.data === undefined) {
     if (query.isError)
       return (
-        <ErrorState
-          onBack={onBack}
-          error={query.error}
-          onRetry={() => void query.refetch()}
-        />
+        <ErrorState onBack={onBack} error={query.error} onRetry={() => void query.refetch()} />
       );
     if (query.isPending) return <>{pendingFallback ?? <PendingFallback />}</>;
   }
@@ -61,9 +57,7 @@ export function QueryBoundary({
             />
           )}
         >
-          <Suspense fallback={pendingFallback ?? <PendingFallback />}>
-            {children}
-          </Suspense>
+          <Suspense fallback={pendingFallback ?? <PendingFallback />}>{children}</Suspense>
         </ErrorBoundary>
       )}
     </QueryErrorResetBoundary>
@@ -89,5 +83,5 @@ function PendingFallback() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, alignItems: "center", justifyContent: "center" },
+  container: { flex: 1, alignItems: 'center', justifyContent: 'center' },
 });

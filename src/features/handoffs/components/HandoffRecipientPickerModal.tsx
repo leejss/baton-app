@@ -1,12 +1,12 @@
-import { FlashList, type ListRenderItem } from "@shopify/flash-list";
-import { Modal, StyleSheet, View } from "react-native";
+import { FlashList, type ListRenderItem } from '@shopify/flash-list';
+import { Modal, StyleSheet, View } from 'react-native';
 
-import { HandoffFooterActions } from "@/features/handoffs/components/HandoffFooterActions";
-import { HandoffRecipientRow } from "@/features/handoffs/components/HandoffRecipientRow";
-import type { RecipientModel } from "@/features/handoffs/types";
-import { EmptyState } from "@/shared/ui";
-import { ScreenHeader } from "@/shared/ui/ScreenHeader";
-import { useTheme } from "@/theme";
+import { HandoffFooterActions } from '@/features/handoffs/components/HandoffFooterActions';
+import { HandoffRecipientRow } from '@/features/handoffs/components/HandoffRecipientRow';
+import type { RecipientModel } from '@/features/handoffs/types';
+import { EmptyState } from '@/shared/ui';
+import { ScreenHeader } from '@/shared/ui/ScreenHeader';
+import { useTheme } from '@/theme';
 
 type HandoffRecipientPickerModalProps = {
   recipients: RecipientModel[];
@@ -34,9 +34,7 @@ export function HandoffRecipientPickerModal({
     />
   );
   const separator = () => (
-    <View
-      style={[styles.separator, { backgroundColor: theme.colors.border }]}
-    />
+    <View style={[styles.separator, { backgroundColor: theme.colors.border }]} />
   );
 
   return (
@@ -51,9 +49,7 @@ export function HandoffRecipientPickerModal({
           contentInsetAdjustmentBehavior="automatic"
           ItemSeparatorComponent={separator}
           keyExtractor={keyExtractor}
-          ListEmptyComponent={
-            <EmptyState title="선택할 수 있는 직원이 없어요" />
-          }
+          ListEmptyComponent={<EmptyState title="선택할 수 있는 직원이 없어요" />}
           renderItem={renderItem}
           style={styles.list}
         />

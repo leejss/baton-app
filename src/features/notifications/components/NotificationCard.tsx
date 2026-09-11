@@ -1,9 +1,9 @@
-import { Image } from "expo-image";
-import { StyleSheet, View } from "react-native";
+import { Image } from 'expo-image';
+import { StyleSheet, View } from 'react-native';
 
-import type { Notification } from "@/features/notifications/types";
-import { Pressable, Text } from "@/shared/ui";
-import { spacing, useTheme } from "@/theme";
+import type { Notification } from '@/features/notifications/types';
+import { Pressable, Text } from '@/shared/ui';
+import { spacing, useTheme } from '@/theme';
 
 type NotificationCardProps = {
   notification: Notification;
@@ -12,10 +12,10 @@ type NotificationCardProps = {
 };
 
 const ICONS = {
-  announcement: require("@/assets/images/notifications/announcement.svg"),
-  handoffReceived: require("@/assets/images/notifications/handoff-received.svg"),
-  handoffConfirmed: require("@/assets/images/notifications/handoff-confirmed.svg"),
-  schedule: require("@/assets/images/notifications/schedule.svg"),
+  announcement: require('@/assets/images/notifications/announcement.svg'),
+  handoffReceived: require('@/assets/images/notifications/handoff-received.svg'),
+  handoffConfirmed: require('@/assets/images/notifications/handoff-confirmed.svg'),
+  schedule: require('@/assets/images/notifications/schedule.svg'),
 };
 
 // Figma 943:103882의 치수. 전역 스케일을 변경하지 않고 이 카드에만 한정한다.
@@ -28,21 +28,17 @@ const CARD = {
   dotSize: 6,
 } as const;
 
-export function NotificationCard({
-  notification,
-  isOpening,
-  onPress,
-}: NotificationCardProps) {
+export function NotificationCard({ notification, isOpening, onPress }: NotificationCardProps) {
   const { colors } = useTheme();
   const handlePress = () => onPress(notification);
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={`${notification.isUnread ? "읽지 않음, " : ""}${notification.heading}, ${notification.message}, ${notification.timeLabel}`}
+      accessibilityLabel={`${notification.isUnread ? '읽지 않음, ' : ''}${notification.heading}, ${notification.message}, ${notification.timeLabel}`}
       accessibilityHint={
-        notification.target.kind === "none"
-          ? "알림을 읽음 처리합니다"
-          : "연결된 화면으로 이동합니다"
+        notification.target.kind === 'none'
+          ? '알림을 읽음 처리합니다'
+          : '연결된 화면으로 이동합니다'
       }
       accessibilityState={{ busy: isOpening, disabled: isOpening }}
       disabled={isOpening}
@@ -73,9 +69,7 @@ export function NotificationCard({
         </Text>
       </View>
       <View style={styles.dotSlot}>
-        {notification.isUnread && (
-          <View style={[styles.dot, { backgroundColor: colors.accent }]} />
-        )}
+        {notification.isUnread && <View style={[styles.dot, { backgroundColor: colors.accent }]} />}
       </View>
     </Pressable>
   );
@@ -83,8 +77,8 @@ export function NotificationCard({
 
 const styles = StyleSheet.create({
   card: {
-    flexDirection: "row",
-    alignItems: "flex-start",
+    flexDirection: 'row',
+    alignItems: 'flex-start',
     gap: CARD.iconGap,
     borderRadius: CARD.radius,
     paddingHorizontal: spacing.md,

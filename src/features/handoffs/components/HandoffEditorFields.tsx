@@ -1,7 +1,7 @@
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, View } from 'react-native';
 
-import { Text, TextInput } from "@/shared/ui";
-import { radius, spacing, typography, useTheme } from "@/theme";
+import { Text, TextInput } from '@/shared/ui';
+import { radius, spacing, typography, useTheme } from '@/theme';
 
 type HandoffEditorFieldsProps = {
   body: string;
@@ -52,12 +52,7 @@ export function HandoffEditorFields({
           style={styles.titleInput}
           value={title}
         />
-        <View
-          style={[
-            styles.divider,
-            { backgroundColor: theme.colors.surfaceSunken },
-          ]}
-        />
+        <View style={[styles.divider, { backgroundColor: theme.colors.surfaceSunken }]} />
         <TextInput
           editable={!disabled}
           accessibilityState={{ disabled }}
@@ -103,12 +98,12 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
     borderWidth: 1,
     borderRadius: radius.md,
-    borderCurve: "continuous",
+    borderCurve: 'continuous',
   },
   titleInput: {
     ...typography.body.medium,
     padding: 0,
-    color: "#1F2937",
+    color: '#1F2937',
   },
   divider: {
     height: StyleSheet.hairlineWidth,
@@ -119,11 +114,11 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 0,
     paddingTop: 10,
-    color: "#1F2937",
+    color: '#1F2937',
   },
   counter: {
-    alignSelf: "flex-end",
-    fontVariant: ["tabular-nums"],
+    alignSelf: 'flex-end',
+    fontVariant: ['tabular-nums'],
   },
   // TODO(design-system): Figma foreground/strong가 시맨틱 컬러에 추가되면 입력 원시 색상을 교체한다.
 });

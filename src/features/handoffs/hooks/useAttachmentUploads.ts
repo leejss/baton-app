@@ -1,11 +1,8 @@
-import { useMutation } from "@tanstack/react-query";
-import { useEffect, useRef } from "react";
-import {
-  uploadAttachment,
-  deleteAttachment,
-} from "@/features/handoffs/api/attachment.api";
-import type { LocalAttachment } from "@/features/handoffs/types";
-import { logApiFailure } from "@/shared/api/queryClient";
+import { useMutation } from '@tanstack/react-query';
+import { useEffect, useRef } from 'react';
+import { uploadAttachment, deleteAttachment } from '@/features/handoffs/api/attachment.api';
+import type { LocalAttachment } from '@/features/handoffs/types';
+import { logApiFailure } from '@/shared/api/queryClient';
 
 type Options = {
   attachments: LocalAttachment[];
@@ -13,20 +10,12 @@ type Options = {
   onUpdate: (id: string, patch: Partial<LocalAttachment>) => void;
   onRemove: (id: string) => void;
 };
-export function useAttachmentUploads({
-  attachments,
-  onAdd,
-  onUpdate,
-  onRemove,
-}: Options) {
+export function useAttachmentUploads({ attachments, onAdd, onUpdate, onRemove }: Options) {
   const tasks = useRef(
-    new Map<
-      string,
-      { controller: AbortController; file: LocalAttachment; removed: boolean }
-    >(),
+    new Map<string, { controller: AbortController; file: LocalAttachment; removed: boolean }>(),
   );
   const upload = useMutation({
-    mutationKey: ["attachments", "upload"],
+    mutationKey: ['attachments', 'upload'],
     mutationFn: async (file: LocalAttachment) => {
       const task = { controller: new AbortController(), file, removed: false };
       tasks.current.set(file.localId, task);
@@ -43,7 +32,7 @@ export function useAttachmentUploads({
         tasks.current.delete(file.localId);
         if (task.removed && task.file.attachmentId !== undefined)
           void deleteAttachment(task.file.attachmentId).catch((error) =>
-            logApiFailure(error, "attachments.remove"),
+            logApiFailure(error, 'attachments.remove'),
           );
       }
     },
@@ -70,7 +59,7 @@ export function useAttachmentUploads({
       task.controller.abort();
     } else if (file?.attachmentId !== undefined && !file.isLinked)
       void deleteAttachment(file.attachmentId).catch((error) =>
-        logApiFailure(error, "attachments.remove"),
+        logApiFailure(error, 'attachments.remove'),
       );
     onRemove(id);
   };
@@ -78,7 +67,7 @@ export function useAttachmentUploads({
     add,
     retry,
     remove,
-    isReady: attachments.every((file) => file.uploadStatus === "complete"),
-    isUploading: attachments.some((file) => file.uploadStatus === "uploading"),
+    isReady: attachments.every((file) => file.uploadStatus === 'complete'),
+    isUploading: attachments.some((file) => file.uploadStatus === 'uploading'),
   };
 }

@@ -1,31 +1,27 @@
-import { ErrorState } from "@/shared/ui/ErrorState";
-import { QueryRefreshNotice } from "@/shared/ui/QueryRefreshNotice";
-import { normalizeError, isAppError } from "@/shared/api/errors";
-import { useMainContext } from "@/features/stores/hooks/useMainContext";
-import {
-  useMutation,
-  useQueryClient,
-  useSuspenseQuery,
-} from "@tanstack/react-query";
-import { useRef, useState } from "react";
-import { Alert, ScrollView, StyleSheet, View } from "react-native";
+import { ErrorState } from '@/shared/ui/ErrorState';
+import { QueryRefreshNotice } from '@/shared/ui/QueryRefreshNotice';
+import { normalizeError, isAppError } from '@/shared/api/errors';
+import { useMainContext } from '@/features/stores/hooks/useMainContext';
+import { useMutation, useQueryClient, useSuspenseQuery } from '@tanstack/react-query';
+import { useRef, useState } from 'react';
+import { Alert, ScrollView, StyleSheet, View } from 'react-native';
 
-import { toHandoffDetailModel } from "@/features/handoffs/api/mappers";
-import { handoffQueries } from "@/features/handoffs/api/handoff.queries";
-import { handoffMutations } from "@/features/handoffs/api/handoff.mutations";
-import { DeleteHandoffDialog } from "@/features/handoffs/components/DeleteHandoffDialog";
+import { toHandoffDetailModel } from '@/features/handoffs/api/mappers';
+import { handoffQueries } from '@/features/handoffs/api/handoff.queries';
+import { handoffMutations } from '@/features/handoffs/api/handoff.mutations';
+import { DeleteHandoffDialog } from '@/features/handoffs/components/DeleteHandoffDialog';
 import {
   HandoffActionSheet,
   type HandoffActionSheetMethods,
-} from "@/features/handoffs/components/HandoffActionSheet";
-import { HandoffDetailAttachments } from "@/features/handoffs/components/HandoffDetailAttachments";
-import { HandoffDetailStatusBar } from "@/features/handoffs/components/HandoffDetailStatusBar";
-import { HandoffTypeBadge } from "@/features/handoffs/components/HandoffTypeBadge";
-import { KebabMenu } from "@/shared/ui/icons";
-import { Pressable } from "@/shared/ui/Pressable";
-import { ScreenHeader } from "@/shared/ui/ScreenHeader";
-import { Button, Text } from "@/shared/ui";
-import { SCREEN_PADDING_X, useTheme } from "@/theme";
+} from '@/features/handoffs/components/HandoffActionSheet';
+import { HandoffDetailAttachments } from '@/features/handoffs/components/HandoffDetailAttachments';
+import { HandoffDetailStatusBar } from '@/features/handoffs/components/HandoffDetailStatusBar';
+import { HandoffTypeBadge } from '@/features/handoffs/components/HandoffTypeBadge';
+import { KebabMenu } from '@/shared/ui/icons';
+import { Pressable } from '@/shared/ui/Pressable';
+import { ScreenHeader } from '@/shared/ui/ScreenHeader';
+import { Button, Text } from '@/shared/ui';
+import { SCREEN_PADDING_X, useTheme } from '@/theme';
 
 type HandoffDetailScreenProps = {
   handoffId: string;
@@ -46,19 +42,13 @@ export function HandoffDetailScreen({
   const context = useMainContext();
   const theme = useTheme();
   const actionSheetRef = useRef<HandoffActionSheetMethods>(null);
-  const detailQuery = useSuspenseQuery(
-    handoffQueries.detail(context.storeId, handoffId),
-  );
+  const detailQuery = useSuspenseQuery(handoffQueries.detail(context.storeId, handoffId));
   const data = detailQuery.data;
   const detail = toHandoffDetailModel(data, context.userId);
   const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
 
-  const deleteMutation = useMutation(
-    handoffMutations(queryClient, context.storeId).remove(),
-  );
-  const confirmMutation = useMutation(
-    handoffMutations(queryClient, context.storeId).confirm(),
-  );
+  const deleteMutation = useMutation(handoffMutations(queryClient, context.storeId).remove());
+  const confirmMutation = useMutation(handoffMutations(queryClient, context.storeId).confirm());
 
   const handleEdit = () => {
     onEdit();
@@ -70,10 +60,7 @@ export function HandoffDetailScreen({
     actionSheetRef.current?.present();
   };
 
-  if (
-    isAppError(detailQuery.error) &&
-    [403, 404].includes(detailQuery.error.status ?? 0)
-  )
+  if (isAppError(detailQuery.error) && [403, 404].includes(detailQuery.error.status ?? 0))
     return <ErrorState error={detailQuery.error} onBack={onBack} />;
   return (
     <View style={[styles.root, { backgroundColor: theme.colors.background }]}>
@@ -109,61 +96,33 @@ export function HandoffDetailScreen({
         <View style={styles.article}>
           <View style={styles.headingSection}>
             <View style={styles.headingCopy}>
-              <Text
-                variant="subheading"
-                weight="semibold"
-                selectable
-                style={styles.title}
-              >
+              <Text variant="subheading" weight="semibold" selectable style={styles.title}>
                 {detail.title}
               </Text>
               <View style={styles.meta}>
-                <Text
-                  variant="caption"
-                  weight="medium"
-                  selectable
-                  style={styles.subtleText}
-                >
+                <Text variant="caption" weight="medium" selectable style={styles.subtleText}>
                   {detail.dateLabel}
                 </Text>
-                <Text
-                  variant="caption"
-                  weight="medium"
-                  style={styles.subtleText}
-                >
+                <Text variant="caption" weight="medium" style={styles.subtleText}>
                   ∙
                 </Text>
-                <Text
-                  variant="caption"
-                  weight="medium"
-                  selectable
-                  style={styles.subtleText}
-                >
+                <Text variant="caption" weight="medium" selectable style={styles.subtleText}>
                   {detail.recipientLabel}
                 </Text>
               </View>
             </View>
-            <View
-              style={[styles.divider, { backgroundColor: theme.colors.border }]}
-            />
+            <View style={[styles.divider, { backgroundColor: theme.colors.border }]} />
           </View>
 
           <View style={styles.bodyCopy}>
-            {detail.body.split("\n").map((paragraph, index) => (
-              <Text
-                key={index}
-                weight="regular"
-                color="textSecondary"
-                selectable
-              >
+            {detail.body.split('\n').map((paragraph, index) => (
+              <Text key={index} weight="regular" color="textSecondary" selectable>
                 {paragraph}
               </Text>
             ))}
           </View>
 
-          <View
-            style={[styles.divider, { backgroundColor: theme.colors.border }]}
-          />
+          <View style={[styles.divider, { backgroundColor: theme.colors.border }]} />
         </View>
 
         <HandoffDetailAttachments
@@ -172,30 +131,21 @@ export function HandoffDetailScreen({
         />
       </ScrollView>
 
-      {data.recipient.user.userId === context.userId &&
-      data.status === "UNCONFIRMED" ? (
+      {data.recipient.user.userId === context.userId && data.status === 'UNCONFIRMED' ? (
         <Button
           label="확인 하기"
           isLoading={confirmMutation.isPending}
           onPress={() => {
             if (!confirmMutation.isPending)
               confirmMutation.mutate(data.id, {
-                onError: (error) =>
-                  Alert.alert(
-                    "확인하지 못했어요",
-                    normalizeError(error).message,
-                  ),
+                onError: (error) => Alert.alert('확인하지 못했어요', normalizeError(error).message),
               });
           }}
         />
       ) : (
         <HandoffDetailStatusBar label={detail.statusActionLabel} />
       )}
-      <HandoffActionSheet
-        ref={actionSheetRef}
-        onDelete={handleDelete}
-        onEdit={handleEdit}
-      />
+      <HandoffActionSheet ref={actionSheetRef} onDelete={handleDelete} onEdit={handleEdit} />
       <DeleteHandoffDialog
         isDeleting={deleteMutation.isPending}
         visible={deleteDialogVisible}
@@ -206,19 +156,14 @@ export function HandoffDetailScreen({
               onSuccess: onDeleted,
               onError: (error) => {
                 setDeleteDialogVisible(false);
-                Alert.alert(
-                  "삭제하지 못했어요",
-                  normalizeError(error).message,
-                  [
-                    {
-                      text: "확인",
-                      onPress: () => {
-                        if (isAppError(error) && error.status === 404)
-                          onDeleted();
-                      },
+                Alert.alert('삭제하지 못했어요', normalizeError(error).message, [
+                  {
+                    text: '확인',
+                    onPress: () => {
+                      if (isAppError(error) && error.status === 404) onDeleted();
                     },
-                  ],
-                );
+                  },
+                ]);
               },
             });
         }}
@@ -232,8 +177,8 @@ const styles = StyleSheet.create({
   manageButton: {
     width: 44,
     minHeight: 44,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   scroll: { flex: 1 },
   content: {
@@ -247,9 +192,9 @@ const styles = StyleSheet.create({
   headingSection: { gap: 20 },
   headingCopy: { gap: 10 },
   bodyCopy: { gap: 5 },
-  meta: { flexDirection: "row", alignItems: "center", gap: 5 },
-  divider: { width: "100%", height: StyleSheet.hairlineWidth },
+  meta: { flexDirection: 'row', alignItems: 'center', gap: 5 },
+  divider: { width: '100%', height: StyleSheet.hairlineWidth },
   // TODO(design-system): foreground/strong·subtle가 시맨틱 컬러에 추가되면 원시값을 교체한다.
-  title: { color: "#1F2937" },
-  subtleText: { color: "#9CA3AF" },
+  title: { color: '#1F2937' },
+  subtleText: { color: '#9CA3AF' },
 });
