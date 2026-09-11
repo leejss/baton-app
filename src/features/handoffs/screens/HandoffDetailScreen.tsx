@@ -2,7 +2,7 @@ import { ErrorState } from '@/shared/ui/ErrorState';
 import { QueryRefreshNotice } from '@/shared/ui/QueryRefreshNotice';
 import { normalizeError, isAppError } from '@/shared/api/errors';
 import { useMainContext } from '@/features/stores/hooks/useMainContext';
-import { useMutation, useQueryClient, useSuspenseQuery } from '@tanstack/react-query';
+import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { useRef, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, View } from 'react-native';
 
@@ -20,7 +20,7 @@ import { HandoffTypeBadge } from '@/features/handoffs/components/HandoffTypeBadg
 import { KebabMenu } from '@/shared/ui/icons';
 import { Pressable } from '@/shared/ui/Pressable';
 import { ScreenHeader } from '@/shared/ui/ScreenHeader';
-import { Button, Text } from '@/shared/ui';
+import { Button, QueryBoundary, Text } from '@/shared/ui';
 import { SCREEN_PADDING_X, useTheme } from '@/theme';
 
 type HandoffDetailScreenProps = {
@@ -42,9 +42,13 @@ export function HandoffDetailScreen({
   const context = useMainContext();
   const theme = useTheme();
   const actionSheetRef = useRef<HandoffActionSheetMethods>(null);
-  const detailQuery = useSuspenseQuery(handoffQueries.detail(context.storeId, handoffId));
+  const detailQuery = useQuery(handoffQueries.detail(context.storeId, handoffId));
   const data = detailQuery.data;
-  const detail = toHandoffDetailModel(data, context.userId);
+  const accessError =
+    isAppError(detailQuery.error) && [403, 404].includes(detailQuery.error.status ?? 0)
+      ? detailQuery.error
+      : null;
+  const detail = data && !accessError ? toHandoffDetailModel(data, context.userId) : null;
   const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
 
   const deleteMutation = useMutation(handoffMutations(queryClient, context.storeId).remove());
@@ -60,15 +64,13 @@ export function HandoffDetailScreen({
     actionSheetRef.current?.present();
   };
 
-  if (isAppError(detailQuery.error) && [403, 404].includes(detailQuery.error.status ?? 0))
-    return <ErrorState error={detailQuery.error} onBack={onBack} />;
   return (
     <View style={[styles.root, { backgroundColor: theme.colors.background }]}>
       <ScreenHeader
         onBack={onBack}
         onHome={onHome}
         right={
-          detail.canManage && (
+          detail?.canManage && (
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="인수인계 수정 및 삭제 메뉴"
@@ -81,93 +83,102 @@ export function HandoffDetailScreen({
         }
       />
 
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        contentContainerStyle={styles.content}
-        showsVerticalScrollIndicator={false}
-        style={styles.scroll}
-      >
-        <QueryRefreshNotice
-          failed={detailQuery.isRefetchError}
-          onRetry={() => void detailQuery.refetch()}
-        />
-        <HandoffTypeBadge label={detail.typeLabel} />
+      <QueryBoundary query={detailQuery} resetKey={handoffId}>
+        {accessError ? (
+          <ErrorState error={accessError} />
+        ) : data && detail ? (
+          <>
+            <ScrollView
+              contentInsetAdjustmentBehavior="automatic"
+              contentContainerStyle={styles.content}
+              showsVerticalScrollIndicator={false}
+              style={styles.scroll}
+            >
+              <QueryRefreshNotice
+                failed={detailQuery.isRefetchError}
+                onRetry={() => void detailQuery.refetch()}
+              />
+              <HandoffTypeBadge label={detail.typeLabel} />
 
-        <View style={styles.article}>
-          <View style={styles.headingSection}>
-            <View style={styles.headingCopy}>
-              <Text variant="subheading" weight="semibold" selectable style={styles.title}>
-                {detail.title}
-              </Text>
-              <View style={styles.meta}>
-                <Text variant="caption" weight="medium" selectable style={styles.subtleText}>
-                  {detail.dateLabel}
-                </Text>
-                <Text variant="caption" weight="medium" style={styles.subtleText}>
-                  ∙
-                </Text>
-                <Text variant="caption" weight="medium" selectable style={styles.subtleText}>
-                  {detail.recipientLabel}
-                </Text>
+              <View style={styles.article}>
+                <View style={styles.headingSection}>
+                  <View style={styles.headingCopy}>
+                    <Text variant="subheading" weight="semibold" selectable style={styles.title}>
+                      {detail.title}
+                    </Text>
+                    <View style={styles.meta}>
+                      <Text variant="caption" weight="medium" selectable style={styles.subtleText}>
+                        {detail.dateLabel}
+                      </Text>
+                      <Text variant="caption" weight="medium" style={styles.subtleText}>
+                        ∙
+                      </Text>
+                      <Text variant="caption" weight="medium" selectable style={styles.subtleText}>
+                        {detail.recipientLabel}
+                      </Text>
+                    </View>
+                  </View>
+                  <View style={[styles.divider, { backgroundColor: theme.colors.border }]} />
+                </View>
+
+                <View style={styles.bodyCopy}>
+                  {detail.body.split('\n').map((paragraph, index) => (
+                    <Text key={index} weight="regular" color="textSecondary" selectable>
+                      {paragraph}
+                    </Text>
+                  ))}
+                </View>
+
+                <View style={[styles.divider, { backgroundColor: theme.colors.border }]} />
               </View>
-            </View>
-            <View style={[styles.divider, { backgroundColor: theme.colors.border }]} />
-          </View>
 
-          <View style={styles.bodyCopy}>
-            {detail.body.split('\n').map((paragraph, index) => (
-              <Text key={index} weight="regular" color="textSecondary" selectable>
-                {paragraph}
-              </Text>
-            ))}
-          </View>
+              <HandoffDetailAttachments
+                attachments={detail.attachments}
+                onRefresh={() => detailQuery.refetch()}
+              />
+            </ScrollView>
 
-          <View style={[styles.divider, { backgroundColor: theme.colors.border }]} />
-        </View>
-
-        <HandoffDetailAttachments
-          attachments={detail.attachments}
-          onRefresh={() => detailQuery.refetch()}
-        />
-      </ScrollView>
-
-      {data.recipient.user.userId === context.userId && data.status === 'UNCONFIRMED' ? (
-        <Button
-          label="확인 하기"
-          isLoading={confirmMutation.isPending}
-          onPress={() => {
-            if (!confirmMutation.isPending)
-              confirmMutation.mutate(data.id, {
-                onError: (error) => Alert.alert('확인하지 못했어요', normalizeError(error).message),
-              });
-          }}
-        />
-      ) : (
-        <HandoffDetailStatusBar label={detail.statusActionLabel} />
-      )}
-      <HandoffActionSheet ref={actionSheetRef} onDelete={handleDelete} onEdit={handleEdit} />
-      <DeleteHandoffDialog
-        isDeleting={deleteMutation.isPending}
-        visible={deleteDialogVisible}
-        onCancel={() => setDeleteDialogVisible(false)}
-        onConfirm={() => {
-          if (!deleteMutation.isPending)
-            deleteMutation.mutate(handoffId, {
-              onSuccess: onDeleted,
-              onError: (error) => {
-                setDeleteDialogVisible(false);
-                Alert.alert('삭제하지 못했어요', normalizeError(error).message, [
-                  {
-                    text: '확인',
-                    onPress: () => {
-                      if (isAppError(error) && error.status === 404) onDeleted();
+            {data.recipient.user.userId === context.userId && data.status === 'UNCONFIRMED' ? (
+              <Button
+                label="확인 하기"
+                isLoading={confirmMutation.isPending}
+                onPress={() => {
+                  if (!confirmMutation.isPending)
+                    confirmMutation.mutate(data.id, {
+                      onError: (error) =>
+                        Alert.alert('확인하지 못했어요', normalizeError(error).message),
+                    });
+                }}
+              />
+            ) : (
+              <HandoffDetailStatusBar label={detail.statusActionLabel} />
+            )}
+            <HandoffActionSheet ref={actionSheetRef} onDelete={handleDelete} onEdit={handleEdit} />
+            <DeleteHandoffDialog
+              isDeleting={deleteMutation.isPending}
+              visible={deleteDialogVisible}
+              onCancel={() => setDeleteDialogVisible(false)}
+              onConfirm={() => {
+                if (!deleteMutation.isPending)
+                  deleteMutation.mutate(handoffId, {
+                    onSuccess: onDeleted,
+                    onError: (error) => {
+                      setDeleteDialogVisible(false);
+                      Alert.alert('삭제하지 못했어요', normalizeError(error).message, [
+                        {
+                          text: '확인',
+                          onPress: () => {
+                            if (isAppError(error) && error.status === 404) onDeleted();
+                          },
+                        },
+                      ]);
                     },
-                  },
-                ]);
-              },
-            });
-        }}
-      />
+                  });
+              }}
+            />
+          </>
+        ) : null}
+      </QueryBoundary>
     </View>
   );
 }

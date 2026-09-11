@@ -1,7 +1,6 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 
 import { HandoffDetailScreen } from '@/features/handoffs/screens/HandoffDetailScreen';
-import { QueryBoundary } from '@/shared/ui';
 
 export default function HandoffDetailRoute() {
   const router = useRouter();
@@ -19,24 +18,22 @@ export default function HandoffDetailRoute() {
   };
 
   return (
-    <QueryBoundary resetKey={handoffId} onBack={handleBack}>
-      <HandoffDetailScreen
-        handoffId={handoffId}
-        onBack={handleBack}
-        onDeleted={() =>
-          router.replace({
-            pathname: '/(main)/(tabs)/handoffs',
-            params: { scope: 'sent' },
-          })
-        }
-        onEdit={() =>
-          router.push({
-            pathname: '/(main)/handoffs/[handoffId]/edit',
-            params: { handoffId },
-          })
-        }
-        onHome={() => router.navigate('/(main)/(tabs)/home')}
-      />
-    </QueryBoundary>
+    <HandoffDetailScreen
+      handoffId={handoffId}
+      onBack={handleBack}
+      onDeleted={() =>
+        router.replace({
+          pathname: '/(main)/(tabs)/handoffs',
+          params: { scope: 'sent' },
+        })
+      }
+      onEdit={() =>
+        router.push({
+          pathname: '/(main)/handoffs/[handoffId]/edit',
+          params: { handoffId },
+        })
+      }
+      onHome={() => router.navigate('/(main)/(tabs)/home')}
+    />
   );
 }
