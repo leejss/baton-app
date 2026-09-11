@@ -9,7 +9,8 @@ import { mapHomeScheduleModel } from '@/features/home/api/mappers';
 import { homeQueries } from '@/features/home/api/home.queries';
 import { HomeShiftRow } from '@/features/home/components/HomeShiftRow';
 import { WeekDayButton } from '@/features/home/components/WeekDayButton';
-import { formatHomeDateTitle, getHomeWeekDays } from '@/features/home/lib/homeDate';
+import { getHomeWeekDays } from '@/features/home/lib/homeDate';
+import { formatKoreanDate } from '@/shared/lib/formatters';
 import { Text } from '@/shared/ui';
 import { ArrowRightS } from '@/shared/ui/icons';
 import { shadows, spacing, useTheme } from '@/theme';
@@ -36,7 +37,7 @@ export function WeekScheduleCard({
     summaryQuery.data === undefined
       ? undefined
       : mapHomeScheduleModel(currentUserId, summaryQuery.data, selectedDate);
-  const title = formatHomeDateTitle(selectedDate);
+  const title = formatKoreanDate(selectedDate);
   const weekDays = getHomeWeekDays(selectedDate);
   const handleDetailsPress = () => onDetailsPress(selectedDate);
   const handleQueryRetry = () => void summaryQuery.refetch();

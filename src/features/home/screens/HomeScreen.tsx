@@ -4,8 +4,8 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { HandoffCard } from '@/features/home/components/HandoffCard';
 import { WeekScheduleCard } from '@/features/home/components/WeekScheduleCard';
-import { getTodayInSeoul } from '@/features/home/lib/homeDate';
 import { MainHeader } from '@/features/tabs/components/MainHeader';
+import { getTodayInSeoul } from '@/shared/lib/date';
 import { Text } from '@/shared/ui';
 import { spacing } from '@/theme';
 

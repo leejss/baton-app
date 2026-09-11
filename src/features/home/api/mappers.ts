@@ -1,5 +1,6 @@
 import type { HomeSummary } from '@/features/home/api/home.schema';
-import { formatHomeDateTitle, getHomeWeekDays } from '@/features/home/lib/homeDate';
+import { getHomeWeekDays } from '@/features/home/lib/homeDate';
+import { formatKoreanDate } from '@/shared/lib/formatters';
 import type { HomeHandoffSectionModel, HomeScheduleModel } from '@/features/home/types';
 
 export function mapHomeHandoffSectionModel(summary: HomeSummary): HomeHandoffSectionModel {
@@ -22,7 +23,7 @@ export function mapHomeScheduleModel(
 ): HomeScheduleModel {
   return {
     selectedDate,
-    title: formatHomeDateTitle(selectedDate),
+    title: formatKoreanDate(selectedDate),
     weekDays: getHomeWeekDays(selectedDate),
     // HOME-P15: API의 근무 시작순을 다시 정렬하지 않는다.
     items: summary.schedulePreview.map((schedule) => ({
