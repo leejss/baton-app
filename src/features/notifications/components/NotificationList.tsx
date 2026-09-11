@@ -1,30 +1,30 @@
-import { FlashList, type ListRenderItemInfo } from '@shopify/flash-list';
-import { useSuspenseQuery } from '@tanstack/react-query';
-import { useFocusEffect } from 'expo-router';
-import { useCallback, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { useMainContext } from "@/features/stores/hooks/useMainContext";
+import { FlashList, type ListRenderItemInfo } from "@shopify/flash-list";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { useFocusEffect } from "expo-router";
+import { useCallback, useState } from "react";
+import { StyleSheet, View } from "react-native";
 
-import type { NotificationDataSource } from '@/features/notifications/api/notification.dataSource';
-import { notificationQueries } from '@/features/notifications/api/notification.queries';
-import { NotificationCard } from '@/features/notifications/components/NotificationCard';
-import { useOpenNotification } from '@/features/notifications/hooks/useOpenNotification';
-import type { Notification } from '@/features/notifications/model/notification';
-import { mainQueries } from '@/features/tabs/api/main.queries';
-import { EmptyState, Snackbar, Text } from '@/shared/ui';
-import { SCREEN_PADDING_X, spacing } from '@/theme';
-
-type NotificationListProps = { source: NotificationDataSource };
+import { notificationQueries } from "@/features/notifications/api/notification.queries";
+import { NotificationCard } from "@/features/notifications/components/NotificationCard";
+import { useOpenNotification } from "@/features/notifications/hooks/useOpenNotification";
+import type { Notification } from "@/features/notifications/types";
+import { EmptyState, Snackbar, Text } from "@/shared/ui";
+import { SCREEN_PADDING_X, spacing } from "@/theme";
 
 const keyExtractor = (notification: Notification) => notification.id;
 
-export function NotificationList({ source }: NotificationListProps) {
-  const { data: context } = useSuspenseQuery(mainQueries.context());
-  const scope = { storeId: context.membership.store.id, userId: context.profile.id };
+export function NotificationList() {
+  const context = useMainContext();
+  const scope = {
+    storeId: context.membership.store.id,
+    userId: context.profile.id,
+  };
   const { data, refetch, isRefetchError } = useSuspenseQuery(
-    notificationQueries.list(source, scope),
+    notificationQueries.list(scope),
   );
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const { open, openingId, message, clearMessage } = useOpenNotification(source, scope);
+  const { open, openingId, message, clearMessage } = useOpenNotification(scope);
 
   // useFocusEffect는 콜백 참조가 달라지면 다시 실행하므로 안정된 참조가 필요하다.
   useFocusEffect(
@@ -42,7 +42,11 @@ export function NotificationList({ source }: NotificationListProps) {
     void open(notification);
   };
   const renderItem = ({ item }: ListRenderItemInfo<Notification>) => (
-    <NotificationCard notification={item} isOpening={openingId === item.id} onPress={handlePress} />
+    <NotificationCard
+      notification={item}
+      isOpening={openingId === item.id}
+      onPress={handlePress}
+    />
   );
 
   return (
@@ -71,8 +75,8 @@ export function NotificationList({ source }: NotificationListProps) {
       {(message || isRefetchError) && (
         <View style={styles.feedback}>
           <Snackbar
-            title={message ?? '알림을 새로 불러오지 못했어요.'}
-            actionLabel={message ? '닫기' : '다시 시도'}
+            title={message ?? "알림을 새로 불러오지 못했어요."}
+            actionLabel={message ? "닫기" : "다시 시도"}
             onAction={message ? clearMessage : handleRefresh}
           />
         </View>
@@ -88,6 +92,10 @@ const styles = StyleSheet.create({
     paddingTop: spacing.md,
     paddingBottom: spacing.xl,
   },
-  footer: { paddingTop: spacing.md, paddingBottom: spacing.sm, textAlign: 'center' },
+  footer: {
+    paddingTop: spacing.md,
+    paddingBottom: spacing.sm,
+    textAlign: "center",
+  },
   feedback: { paddingHorizontal: SCREEN_PADDING_X, paddingBottom: spacing.md },
 });
