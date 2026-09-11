@@ -78,8 +78,11 @@ export const useAuthStore = create<AuthStore>()((set, get) => ({
   },
 
   signOut: async (reason) => {
-    // 서버 세션 → 카카오 세션 → 로컬 순으로 정리한다. 앞의 둘은 실패해도 던지지 않는다.
-    await signOutFromServer();
+    // 갱신 실패로 들어온 경우 서버 로그아웃의 401이 같은 갱신 작업을 기다리면
+    // 서로 완료를 기다리게 된다. 이미 거부된 세션은 기기에서만 정리한다.
+    if (reason !== 'sessionRevoked') {
+      await signOutFromServer();
+    }
     await signOutFromKakao();
     await secureStorage.remove(SESSION_KEY);
     set({ status: 'signedOut', session: null, signOutReason: reason ?? null });
@@ -112,7 +115,7 @@ registerAuthBridge({
   onTokensRefreshed: (tokens) => useAuthStore.getState().applyTokens(tokens),
   onSessionExpired: async () => {
     // Refresh Token까지 죽었으면 되살릴 방법이 없다. 조용히 로그아웃 상태로 되돌린다.
-    logger.warn('세션이 만료되어 로그아웃했습니다');
     await useAuthStore.getState().signOut('sessionRevoked');
+    logger.warn('세션이 만료되어 로그아웃했습니다');
   },
 });
