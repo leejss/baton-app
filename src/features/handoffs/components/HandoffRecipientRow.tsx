@@ -1,10 +1,10 @@
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from "react-native";
 
-import { HandoffAvatar } from '@/features/handoffs/components/HandoffAvatar';
-import type { RecipientModel } from '@/features/handoffs/model/handoff';
-import { Pressable, Text } from '@/shared/ui';
-import { Check } from '@/shared/ui/icons';
-import { spacing, useTheme } from '@/theme';
+import { HandoffAvatar } from "@/features/handoffs/components/HandoffAvatar";
+import type { RecipientModel } from "@/features/handoffs/types";
+import { Pressable, Text } from "@/shared/ui";
+import { Check } from "@/shared/ui/icons";
+import { spacing, useTheme } from "@/theme";
 
 type HandoffRecipientRowProps = {
   item: RecipientModel;
@@ -12,14 +12,18 @@ type HandoffRecipientRowProps = {
   onSelect: (item: RecipientModel) => void;
 };
 
-export function HandoffRecipientRow({ item, selected, onSelect }: HandoffRecipientRowProps) {
+export function HandoffRecipientRow({
+  item,
+  selected,
+  onSelect,
+}: HandoffRecipientRowProps) {
   const theme = useTheme();
   const handlePress = () => onSelect(item);
 
   return (
     <Pressable
       accessibilityRole="radio"
-      accessibilityLabel={`${item.member.displayName}, ${item.nextShiftLabel ?? '근무 시간 미정'}`}
+      accessibilityLabel={`${item.member.displayName}, ${item.nextShiftLabel ?? "근무 시간 미정"}`}
       accessibilityState={{ selected }}
       onPress={handlePress}
       style={({ pressed }) => [styles.root, pressed && styles.pressed]}
@@ -29,7 +33,12 @@ export function HandoffRecipientRow({ item, selected, onSelect }: HandoffRecipie
         <View style={styles.nameRow}>
           <Text weight="semibold">{item.member.displayName}</Text>
           {item.isRecommended && (
-            <View style={[styles.badge, { backgroundColor: theme.colors.accentSubtle }]}>
+            <View
+              style={[
+                styles.badge,
+                { backgroundColor: theme.colors.accentSubtle },
+              ]}
+            >
               <Text variant="caption" weight="medium" color="accentText">
                 다음 근무자
               </Text>
@@ -37,15 +46,19 @@ export function HandoffRecipientRow({ item, selected, onSelect }: HandoffRecipie
           )}
         </View>
         <Text variant="bodySmall" color="textSecondary">
-          {item.nextShiftLabel ?? '근무 시간 미정'}
+          {item.nextShiftLabel ?? "근무 시간 미정"}
         </Text>
       </View>
       <View
         style={[
           styles.check,
           {
-            backgroundColor: selected ? theme.colors.navigationForeground : theme.colors.background,
-            borderColor: selected ? theme.colors.navigationForeground : theme.colors.border,
+            backgroundColor: selected
+              ? theme.colors.navigationForeground
+              : theme.colors.background,
+            borderColor: selected
+              ? theme.colors.navigationForeground
+              : theme.colors.border,
           },
         ]}
       >
@@ -60,14 +73,14 @@ const styles = StyleSheet.create({
     minHeight: 76,
     paddingHorizontal: spacing.md,
     paddingVertical: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 12,
     // TODO(design-system): 수신자 행의 12px 세로·요소 간격을 토큰화한다.
   },
   pressed: { opacity: 0.72 },
   copy: { flex: 1, minWidth: 0, gap: 2 },
-  nameRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  nameRow: { flexDirection: "row", alignItems: "center", gap: spacing.sm },
   badge: {
     paddingHorizontal: spacing.sm,
     paddingVertical: 2,
@@ -78,7 +91,7 @@ const styles = StyleSheet.create({
     height: 24,
     borderWidth: 1,
     borderRadius: 999,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
 });

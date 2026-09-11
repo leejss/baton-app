@@ -1,17 +1,17 @@
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from "react-native";
 
-import type { HandoffTypeDto } from '@/features/handoffs/api/handoff.schema';
-import { HandoffFooterActions } from '@/features/handoffs/components/HandoffFooterActions';
-import { HandoffTypeOption } from '@/features/handoffs/components/HandoffTypeOption';
-import { HandoffPresetRecipientNext } from '@/features/handoffs/components/HandoffPresetRecipientNext';
+import type { HandoffTypeDto } from "@/features/handoffs/api/handoff.schema";
+import { HandoffFooterActions } from "@/features/handoffs/components/HandoffFooterActions";
+import { HandoffTypeOption } from "@/features/handoffs/components/HandoffTypeOption";
+import { HandoffPresetRecipientNext } from "@/features/handoffs/components/HandoffPresetRecipientNext";
 import {
   hasHandoffDraftChanges,
   useHandoffDraftStore,
-} from '@/features/handoffs/model/handoffDraftStore';
-import { useUnsavedHandoffGuard } from '@/features/handoffs/model/useUnsavedHandoffGuard';
-import { ScreenHeader } from '@/shared/ui/ScreenHeader';
-import { Text } from '@/shared/ui';
-import { SCREEN_PADDING_X, useTheme } from '@/theme';
+} from "@/features/handoffs/store/handoffDraftStore";
+import { useUnsavedHandoffGuard } from "@/features/handoffs/hooks/useUnsavedHandoffGuard";
+import { ScreenHeader } from "@/shared/ui/ScreenHeader";
+import { Text } from "@/shared/ui";
+import { SCREEN_PADDING_X, useTheme } from "@/theme";
 
 type HandoffTypeSelectScreenProps = {
   initialRecipientId?: string;
@@ -24,11 +24,15 @@ const OPTIONS: readonly {
   label: string;
   description: string;
 }[] = [
-  { type: 'WORK_TASK', label: '업무 처리', description: '못 끝낸 일, 정산 등' },
-  { type: 'STORE_STATUS', label: '매장 상태', description: '장비 ∙ 기기, 재고 등' },
-  { type: 'OTHER', label: '기타', description: '고객, 특이사항 등' },
+  { type: "WORK_TASK", label: "업무 처리", description: "못 끝낸 일, 정산 등" },
+  {
+    type: "STORE_STATUS",
+    label: "매장 상태",
+    description: "장비 ∙ 기기, 재고 등",
+  },
+  { type: "OTHER", label: "기타", description: "고객, 특이사항 등" },
 ];
-const DEFAULT_HANDOFF_TYPE: HandoffTypeDto = 'WORK_TASK';
+const DEFAULT_HANDOFF_TYPE: HandoffTypeDto = "WORK_TASK";
 
 export function HandoffTypeSelectScreen({
   onExit,
@@ -44,8 +48,8 @@ export function HandoffTypeSelectScreen({
   const selectedType = type ?? DEFAULT_HANDOFF_TYPE;
   const handleExit = useUnsavedHandoffGuard({
     hasChanges,
-    title: '작성을 그만할까요?',
-    message: '작성 중인 내용은 저장되지 않아요.',
+    title: "작성을 그만할까요?",
+    message: "작성 중인 내용은 저장되지 않아요.",
     onDiscard: reset,
     onLeave: onExit,
   });
@@ -78,7 +82,10 @@ export function HandoffTypeSelectScreen({
         </View>
       </ScrollView>
       {initialRecipientId ? (
-        <HandoffPresetRecipientNext recipientId={initialRecipientId} onNext={handleNext} />
+        <HandoffPresetRecipientNext
+          recipientId={initialRecipientId}
+          onNext={handleNext}
+        />
       ) : (
         <HandoffFooterActions primaryLabel="다음" onPrimaryPress={handleNext} />
       )}
@@ -98,5 +105,5 @@ const styles = StyleSheet.create({
   },
   options: { gap: 16 },
   // TODO(design-system): foreground/strong가 시맨틱 컬러에 추가되면 원시값을 교체한다.
-  heading: { color: '#1F2937' },
+  heading: { color: "#1F2937" },
 });

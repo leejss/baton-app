@@ -2,12 +2,14 @@ import type {
   HandoffStatusDto,
   HandoffTypeDto,
   MemberDto,
-} from '@/features/handoffs/api/handoff.schema';
+} from "@/features/handoffs/api/handoff.schema";
 
-export const HANDOFF_SCOPES = ['all', 'received', 'sent'] as const;
+export const HANDOFF_SCOPES = ["all", "received", "sent"] as const;
 export type HandoffScope = (typeof HANDOFF_SCOPES)[number];
 
-export function isHandoffScope(value: string | undefined): value is HandoffScope {
+export function isHandoffScope(
+  value: string | undefined,
+): value is HandoffScope {
   return HANDOFF_SCOPES.some((scope) => scope === value);
 }
 
@@ -52,11 +54,13 @@ export type LocalAttachment = {
   localId: string;
   uri: string;
   fileName: string;
-  mimeType: 'image/jpeg' | 'image/png' | 'image/webp';
+  mimeType: "image/jpeg" | "image/png" | "image/webp";
   sizeBytes: number;
   width: number;
   height: number;
-  attachmentId?: string;
+  attachmentId?: number;
+  uploadStatus?: "ready" | "uploading" | "complete" | "failed";
+  isLinked?: boolean;
 };
 
 export type HandoffDraft = {

@@ -15,7 +15,7 @@ import type {
   HandoffScope,
   RecipientModel,
   LocalAttachment,
-} from "@/features/handoffs/model/handoff";
+} from "@/features/handoffs/types";
 
 const TYPE_LABELS: Record<HandoffTypeDto, string> = {
   WORK_TASK: "업무 처리",
@@ -51,7 +51,7 @@ export function getHandoffTypeLabel(type: HandoffTypeDto): string {
 
 export function toHandoffCardModel(
   item: HandoffListItemDto,
-  viewerId: string,
+  viewerId: number,
   now = new Date(),
   scope: HandoffScope = "all",
 ): HandoffCardModel {
@@ -59,7 +59,7 @@ export function toHandoffCardModel(
   const isRecipient = item.recipient.user.userId === viewerId;
 
   return {
-    id: item.id,
+    id: String(item.id),
     type: item.type,
     typeLabel: getHandoffTypeLabel(item.type),
     title: item.title,
@@ -76,22 +76,21 @@ export function toHandoffCardModel(
 
 export function toHandoffDetailModel(
   handoff: HandoffDto,
-  viewerId: string,
+  viewerId: number,
   now = new Date(),
 ): HandoffDetailModel {
   return {
-    id: handoff.id,
+    id: String(handoff.id),
     typeLabel: getHandoffTypeLabel(handoff.type),
     title: handoff.title,
     body: handoff.body,
     dateLabel: formatHandoffDate(handoff.sentAt, now),
     recipientLabel: `${handoff.recipient.user.displayName}님께`,
     statusActionLabel: DETAIL_STATUS_ACTION_LABELS[handoff.status],
-    attachments: handoff.attachments.flatMap(({ id, downloadUrl }) =>
-      downloadUrl === undefined || downloadUrl === null
-        ? []
-        : [{ id, uri: downloadUrl }],
-    ),
+    attachments: handoff.attachments.map(({ id, downloadUrl }) => ({
+      id: String(id),
+      uri: downloadUrl ?? "",
+    })),
     canManage:
       handoff.sender.userId === viewerId && handoff.status === "UNCONFIRMED",
   };
@@ -99,20 +98,30 @@ export function toHandoffDetailModel(
 
 export function toRecipientModels(
   dto: RecipientRecommendationDto,
-  nextShiftByUserId: Readonly<Record<string, string | undefined>> = {},
+  members: import("@/features/stores/api/store.schema").MemberDto[],
+  viewerId: number,
 ): RecipientModel[] {
-  return dto.candidates.map((member) => ({
-    member,
-    isRecommended: dto.recommended?.userId === member.userId,
-    // 현재 계약은 추천 대상 외 후보의 근무 시각을 주지 않는다. 계약 보완 시 이 보조값을 제거한다.
-    nextShiftLabel:
-      nextShiftByUserId[member.userId] ??
-      (dto.recommended?.userId === member.userId &&
-      dto.recommendedStartAt !== undefined &&
-      dto.recommendedStartAt !== null
-        ? formatShiftTime(dto.recommendedStartAt)
-        : undefined),
-  }));
+  const recommendedIds = new Set(
+    dto.recommended ? dto.candidates.map((member) => member.userId) : [],
+  );
+  if (dto.recommended) recommendedIds.add(dto.recommended.userId);
+  return members
+    .filter(
+      (member) => member.status === "ACTIVE" && member.userId !== viewerId,
+    )
+    .map((member) => ({
+      member,
+      isRecommended: recommendedIds.has(member.userId),
+      nextShiftLabel:
+        recommendedIds.has(member.userId) && dto.recommendedStartAt
+          ? formatShiftTime(dto.recommendedStartAt)
+          : undefined,
+    }))
+    .sort(
+      (a, b) =>
+        Number(b.isRecommended) - Number(a.isRecommended) ||
+        a.member.displayName.localeCompare(b.member.displayName, "ko"),
+    );
 }
 
 export function toCreateRequest(draft: HandoffDraft): HandoffCreateRequestDto {
@@ -120,6 +129,13 @@ export function toCreateRequest(draft: HandoffDraft): HandoffCreateRequestDto {
     throw new Error("유형과 받는 사람을 선택해 주세요.");
   }
 
+  if (
+    draft.attachments.some(
+      (file) =>
+        file.uploadStatus !== "complete" || file.attachmentId === undefined,
+    )
+  )
+    throw new Error("사진 업로드를 완료해주세요.");
   return {
     type: draft.type,
     title: draft.title.trim(),
@@ -127,41 +143,37 @@ export function toCreateRequest(draft: HandoffDraft): HandoffCreateRequestDto {
     recipientId: draft.recipient.member.userId,
     attachmentIds: draft.attachments
       .map(({ attachmentId }) => attachmentId)
-      .filter((id): id is string => id !== undefined),
+      .filter((id): id is number => id !== undefined),
   };
 }
 
 export function toLocalAttachments(
   attachments: AttachmentDto[],
 ): LocalAttachment[] {
-  return attachments.flatMap((attachment) =>
-    attachment.downloadUrl === undefined || attachment.downloadUrl === null
-      ? []
-      : [
-          {
-            localId: attachment.id,
-            uri: attachment.downloadUrl,
-            fileName: attachment.id,
-            mimeType: attachment.contentType,
-            sizeBytes: attachment.sizeBytes,
-            width: 0,
-            height: 0,
-            attachmentId: attachment.id,
-          },
-        ],
-  );
+  return attachments.map((attachment) => ({
+    localId: String(attachment.id),
+    uri: attachment.downloadUrl ?? "",
+    fileName: String(attachment.id),
+    mimeType: attachment.contentType,
+    sizeBytes: attachment.sizeBytes,
+    width: 0,
+    height: 0,
+    attachmentId: attachment.id,
+    uploadStatus: "complete",
+    isLinked: true,
+  }));
 }
 
 function formatHandoffDate(sentAt: string, now: Date): string {
   const date = new Date(sentAt);
   const isToday =
-    date.getFullYear() === now.getFullYear() &&
-    date.getMonth() === now.getMonth() &&
-    date.getDate() === now.getDate();
+    date.toLocaleDateString("en-CA", { timeZone: "Asia/Seoul" }) ===
+    now.toLocaleDateString("en-CA", { timeZone: "Asia/Seoul" });
 
   if (isToday) return "오늘";
 
   return new Intl.DateTimeFormat("ko-KR", {
+    timeZone: "Asia/Seoul",
     year: date.getFullYear() === now.getFullYear() ? undefined : "numeric",
     month: "long",
     day: "numeric",
@@ -170,6 +182,7 @@ function formatHandoffDate(sentAt: string, now: Date): string {
 
 function formatShiftTime(value: string): string {
   return new Intl.DateTimeFormat("ko-KR", {
+    timeZone: "Asia/Seoul",
     month: "numeric",
     day: "numeric",
     hour: "2-digit",

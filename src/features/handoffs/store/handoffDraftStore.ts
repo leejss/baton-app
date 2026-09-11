@@ -1,16 +1,16 @@
-import { create } from 'zustand';
+import { create } from "zustand";
 
-import type { HandoffTypeDto } from '@/features/handoffs/api/handoff.schema';
+import type { HandoffTypeDto } from "@/features/handoffs/api/handoff.schema";
 import type {
   HandoffDraft,
   LocalAttachment,
   RecipientModel,
-} from '@/features/handoffs/model/handoff';
+} from "@/features/handoffs/types";
 
 export const EMPTY_HANDOFF_DRAFT: HandoffDraft = {
   type: null,
-  title: '',
-  body: '',
+  title: "",
+  body: "",
   recipient: null,
   attachments: [],
 };
@@ -20,6 +20,7 @@ type HandoffDraftState = HandoffDraft & {
   setContent: (title: string, body: string) => void;
   setRecipient: (recipient: RecipientModel) => void;
   addAttachments: (attachments: LocalAttachment[]) => void;
+  updateAttachment: (localId: string, patch: Partial<LocalAttachment>) => void;
   removeAttachment: (localId: string) => void;
   reset: () => void;
 };
@@ -30,10 +31,20 @@ export const useHandoffDraftStore = create<HandoffDraftState>((set) => ({
   setContent: (title, body) => set({ title, body }),
   setRecipient: (recipient) => set({ recipient }),
   addAttachments: (attachments) =>
-    set((state) => ({ attachments: [...state.attachments, ...attachments].slice(0, 10) })),
+    set((state) => ({
+      attachments: [...state.attachments, ...attachments].slice(0, 10),
+    })),
+  updateAttachment: (localId, patch) =>
+    set((state) => ({
+      attachments: state.attachments.map((item) =>
+        item.localId === localId ? { ...item, ...patch } : item,
+      ),
+    })),
   removeAttachment: (localId) =>
     set((state) => ({
-      attachments: state.attachments.filter((attachment) => attachment.localId !== localId),
+      attachments: state.attachments.filter(
+        (attachment) => attachment.localId !== localId,
+      ),
     })),
   reset: () => set(EMPTY_HANDOFF_DRAFT),
 }));
