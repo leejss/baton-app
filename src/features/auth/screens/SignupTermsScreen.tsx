@@ -5,13 +5,14 @@ import { normalizeError } from '@/shared/api/errors';
 import { logger } from '@/shared/lib/logger';
 import { Button } from '@/shared/ui';
 
-import { useSignUp } from '@/features/auth/api/signup.mutations';
+import { isSocialSignupTokenInvalid, useSignUp } from '@/features/auth/api/signup.mutations';
 import { TERMS, type TermsCode } from '@/features/auth/api/signup.schema';
 import { SignupLayout } from '@/features/auth/components/SignupLayout';
 import { TermsCheckItem } from '@/features/auth/components/TermsCheckItem';
 import {
   getStepProgress,
   hasRequiredAgreements,
+  hasSocialSignupTokenExpired,
   toAgreementDecisions,
   useSignupStore,
 } from '@/features/auth/store/signupStore';
@@ -23,6 +24,11 @@ export type SignupTermsScreenProps = {
   onOpenTerm?: (code: TermsCode) => void;
   /** 계정이 만들어졌을 때. 라우트가 완료 화면으로 보낸다. */
   onComplete: () => void;
+  /**
+   * 소셜 가입 token이 만료·소비·대체돼 이 가입을 이어갈 수 없을 때.
+   * 라우트가 소셜 로그인 화면으로 되돌린다 — 거기서 다시 인증하면 서버가 새 token을 준다.
+   */
+  onSocialSignupExpired: () => void;
 };
 
 const SPEC = {
@@ -41,11 +47,13 @@ export function SignupTermsScreen({
   onBack,
   onOpenTerm = notWired,
   onComplete,
+  onSocialSignupExpired,
 }: SignupTermsScreenProps) {
   const {
     mode,
     provider,
     socialSignupToken,
+    socialSignupExpiresAt,
     displayName,
     email,
     verificationToken,
@@ -56,6 +64,7 @@ export function SignupTermsScreen({
       mode: state.mode,
       provider: state.provider,
       socialSignupToken: state.socialSignupToken,
+      socialSignupExpiresAt: state.socialSignupExpiresAt,
       displayName: state.displayName,
       email: state.email,
       verificationToken: state.verificationToken,
@@ -67,8 +76,32 @@ export function SignupTermsScreen({
   const setAllAgreements = useSignupStore((state) => state.setAllAgreements);
   const setPendingSession = useSignupStore((state) => state.setPendingSession);
   const setPassword = useSignupStore((state) => state.setPassword);
+  const clearSignup = useSignupStore((state) => state.clear);
 
   const signUp = useSignUp();
+
+  const isSocialSignup = mode === 'social' && provider !== null && socialSignupToken !== null;
+
+  /**
+   * 소셜 가입 token이 죽었을 때의 유일한 복구 경로. 이 화면에서 다시 눌러봐야 계속
+   * 같은 `409`라 가입 흐름을 접고 소셜 로그인부터 다시 시킨다. 재인증은 서버에서
+   * 정상 복구로 처리돼(ADR-030) 새 token과 함께 `SIGNUP_REQUIRED`가 다시 온다.
+   */
+  const restartSocialSignup = () => {
+    Alert.alert(
+      '소셜 로그인을 다시 해주세요',
+      '가입 시간이 지나 소셜 인증이 만료됐어요. 다시 로그인하면 이어서 가입할 수 있어요.',
+      [
+        {
+          text: '확인',
+          onPress: () => {
+            clearSignup();
+            onSocialSignupExpired();
+          },
+        },
+      ],
+    );
+  };
 
   const isAllChecked = TERMS.every((term) => agreements[term.code]);
   const canSubmit = hasRequiredAgreements(agreements);
@@ -80,6 +113,12 @@ export function SignupTermsScreen({
       return;
     }
 
+    // 이미 만료된 token으로 제출하면 어차피 409다. 왕복 없이 바로 복구로 보낸다.
+    if (isSocialSignup && hasSocialSignupTokenExpired(socialSignupExpiresAt)) {
+      restartSocialSignup();
+      return;
+    }
+
     const common = {
       email,
       displayName,
@@ -88,7 +127,7 @@ export function SignupTermsScreen({
     };
 
     const params =
-      mode === 'social' && provider !== null && socialSignupToken !== null
+      isSocialSignup && provider !== null && socialSignupToken !== null
         ? { ...common, provider, socialSignupToken }
         : { ...common, password };
 
@@ -99,7 +138,13 @@ export function SignupTermsScreen({
         setPendingSession(session);
         onComplete();
       },
-      onError: (error) => Alert.alert('가입하지 못했어요', normalizeError(error).message),
+      onError: (error) => {
+        if (isSocialSignupTokenInvalid(error)) {
+          restartSocialSignup();
+          return;
+        }
+        Alert.alert('가입하지 못했어요', normalizeError(error).message);
+      },
     });
   };
 

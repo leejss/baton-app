@@ -39,6 +39,15 @@ type SignupState = {
   provider: SocialProvider | null;
   /** 소셜 인증이 발급한 10분 유효·단회 사용 token. 가입 완료 전까지 메모리에만 둔다. */
   socialSignupToken: string | null;
+  /**
+   * 소셜 가입 token의 만료 시각(epoch ms).
+   *
+   * 소셜 가입은 이름·이메일·인증코드·약관 네 단계를 거치는데 token 수명은 10분이라
+   * 중간에 만료되는 경우가 실제로 생긴다. 만료된 token으로 가입을 제출하면 서버가
+   * `409 SOCIAL_SIGNUP_TOKEN_INVALID`를 준다(계약 §12-2). 헛된 왕복을 줄이려고
+   * 제출 직전에 이 값으로 먼저 거른다.
+   */
+  socialSignupExpiresAt: number | null;
   displayName: string;
   email: string;
   /** 인증코드 만료 시각(epoch ms). 카운트다운의 기준. */
@@ -64,6 +73,8 @@ type SignupActions = {
   startSocialSignup: (params: {
     provider: SocialProvider;
     socialSignupToken: string;
+    /** 서버가 준 token 만료 시각(ISO 8601). */
+    expiresAt: string;
     suggestedDisplayName?: string;
     suggestedEmail?: string;
   }) => void;
@@ -94,6 +105,7 @@ const EMPTY: SignupState = {
   mode: 'email',
   provider: null,
   socialSignupToken: null,
+  socialSignupExpiresAt: null,
   displayName: '',
   email: '',
   expiresAt: null,
@@ -109,12 +121,19 @@ export const useSignupStore = create<SignupStore>()((set) => ({
 
   startEmailSignup: () => set({ ...EMPTY, mode: 'email' }),
 
-  startSocialSignup: ({ provider, socialSignupToken, suggestedDisplayName, suggestedEmail }) =>
+  startSocialSignup: ({
+    provider,
+    socialSignupToken,
+    expiresAt,
+    suggestedDisplayName,
+    suggestedEmail,
+  }) =>
     set({
       ...EMPTY,
       mode: 'social',
       provider,
       socialSignupToken,
+      socialSignupExpiresAt: Date.parse(expiresAt),
       displayName: suggestedDisplayName ?? '',
       // 제공자 기본값은 수정 가능한 초기값일 뿐이다. Baton 이메일 인증을 대체하지 않는다.
       email: suggestedEmail ?? '',
@@ -173,6 +192,17 @@ export function getStepProgress(
 export function getNextStep(mode: SignupMode, step: SignupStep): SignupStep | null {
   const steps = SIGNUP_STEPS[mode];
   return steps[steps.indexOf(step) + 1] ?? null;
+}
+
+/**
+ * 소셜 가입 token이 이미 만료됐는지. 만료 시각을 모르면(`null`) 만료로 보지 않는다 —
+ * 서버 판단이 기준이고, 여기서는 확실할 때만 미리 거른다.
+ */
+export function hasSocialSignupTokenExpired(
+  socialSignupExpiresAt: number | null,
+  now: number = Date.now(),
+): boolean {
+  return socialSignupExpiresAt !== null && socialSignupExpiresAt <= now;
 }
 
 /** 필수 약관에 모두 동의했는지. 제출 버튼의 활성 조건. */

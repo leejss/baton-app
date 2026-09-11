@@ -39,6 +39,7 @@ export function useSocialSignIn({ onSignupRequired }: UseSocialSignInParams) {
     | {
         status: 'signupRequired';
         socialSignupToken: string;
+        expiresAt: string;
         suggestedEmail?: string;
         suggestedDisplayName?: string;
       };
@@ -51,6 +52,8 @@ export function useSocialSignIn({ onSignupRequired }: UseSocialSignInParams) {
     startSocialSignup({
       provider,
       socialSignupToken: outcome.socialSignupToken,
+      // 가입 화면들이 token 만료를 알아야 한다. 여기서 흘리면 제출 단계에서만 알게 된다.
+      expiresAt: outcome.expiresAt,
       suggestedDisplayName: outcome.suggestedDisplayName,
       suggestedEmail: outcome.suggestedEmail,
     });

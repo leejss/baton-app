@@ -30,6 +30,18 @@ export function isResendTooSoon(error: unknown): boolean {
 }
 
 /**
+ * 소셜 가입 token이 더 이상 유효하지 않은 경우(`409 SOCIAL_SIGNUP_TOKEN_INVALID`).
+ *
+ * token은 10분·단회 사용이고, 소셜 인증을 다시 하면 이전 token이 **대체**된다.
+ * 즉 만료·소비·대체 어느 쪽이든 화면이 할 일은 같다 — 소셜 로그인을 다시 시키는 것이다.
+ * 서버는 만료 가입 대기 재인증에 `200 SIGNUP_REQUIRED`와 새 token으로 응답하므로
+ * (ADR-030) 다시 로그인하면 가입을 이어갈 수 있다.
+ */
+export function isSocialSignupTokenInvalid(error: unknown): boolean {
+  return hasServerErrorCode(error, 'SOCIAL_SIGNUP_TOKEN_INVALID');
+}
+
+/**
  * 가입용 인증코드 발송·재발송. 시안의 "중복확인" 버튼이 이걸 부른다 —
  * 계약상 이메일 중복은 이 요청의 `409 AUTH_ACCOUNT_ALREADY_EXISTS`로만 알 수 있다.
  */
