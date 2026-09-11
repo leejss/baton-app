@@ -1,7 +1,7 @@
 import { Image } from 'expo-image';
 import { StyleSheet, View, type GestureResponderEvent } from 'react-native';
 
-import type { HandoffCardModel } from '@/features/handoffs/model/handoff';
+import type { HandoffCardModel } from '@/features/handoffs/types';
 import { Pressable, Text } from '@/shared/ui';
 import { KebabMenu } from '@/shared/ui/icons';
 import { SCREEN_PADDING_X, useTheme } from '@/theme';

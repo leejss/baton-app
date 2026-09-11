@@ -1,7 +1,6 @@
 import { z } from 'zod';
 
-// 실제 API는 숫자 ID, 기존 인수인계 로컬 저장소는 문자열 ID를 사용한다.
-const idSchema = z.union([z.number().int().positive(), z.string().min(1)]);
+const idSchema = z.number().int().positive();
 
 export const notificationSchema = z.object({
   id: idSchema,

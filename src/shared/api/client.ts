@@ -1,3 +1,4 @@
+import { API_URL, assertApiConfigured } from '@/shared/config/api';
 import { z, type ZodType } from 'zod';
 
 import { logRequestStart } from '@/shared/api/devNetworkLog';
@@ -13,22 +14,7 @@ import { AppError, normalizeError } from '@/shared/api/errors';
  */
 const TIMEOUT_MS = 10_000;
 
-/**
- * API base URL. **경로까지 포함한 전체 주소**다 — 계약의 `/api/v1`도 이 값에 들어 있다.
- * (예: `https://dev-api.example.com/api/v1`)
- *
- * 경로를 코드에 따로 두지 않는 이유는, 주소가 두 곳으로 갈리면 "어디까지 env에 넣는지"를
- * 매번 헷갈리게 되고 붙였다 빠졌다 하는 사고가 나기 때문이다. 주소는 한 곳에만 있다.
- *
- * 끝 슬래시는 여기서 한 번 떼어낸다 — 각 요청 경로가 `/`로 시작하므로 그대로 두면 `//`가 된다.
- */
-export const API_URL = (process.env.EXPO_PUBLIC_API_URL ?? '').replace(/\/+$/, '');
-
-/**
- * 주소가 비어 있으면 `undefined/auth/login` 같은 요청이 나가 원인을 알기 어려운 실패가 된다.
- * 요청을 보내기 전에 여기서 막고 무엇이 빠졌는지 말해준다.
- */
-const IS_API_URL_SET = API_URL !== '';
+export { API_URL } from '@/shared/config/api';
 
 /** 계약 §1의 공통 응답 래퍼. 본문이 있는 모든 응답이 이 모양이다. */
 const envelopeSchema = z.object({
@@ -219,9 +205,7 @@ async function request(
   body: unknown,
   options: RequestOptions,
 ): Promise<Response> {
-  if (!IS_API_URL_SET) {
-    throw new AppError('unknown', '서버 주소가 설정되지 않았어요.\n(.env 의 EXPO_PUBLIC_API_URL)');
-  }
+  assertApiConfigured();
 
   let response = await fetchOnce(method, path, body, options);
 
@@ -255,7 +239,7 @@ async function requestJson<T>(
 
   const parsed = schema.safeParse(envelope.data);
   if (!parsed.success) {
-    throw new AppError('server', '서버 응답 형식이 예상과 달라요.', {
+    throw new AppError('schema', '서버 응답 형식이 예상과 달라요.', {
       status: response.status,
       cause: parsed.error,
     });

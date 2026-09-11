@@ -1,22 +1,22 @@
+import { QueryBoundary } from '@/shared/ui/QueryBoundary';
+import { QueryRefreshNotice } from '@/shared/ui/QueryRefreshNotice';
 import { useQuery } from '@tanstack/react-query';
 import { Image } from 'expo-image';
 import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
-import type { HomeDataSource } from '@/features/home/api/home.dataSource';
-import { mapHomeScheduleModel } from '@/features/home/api/home.mapper';
+import { mapHomeScheduleModel } from '@/features/home/api/mappers';
 import { homeQueries } from '@/features/home/api/home.queries';
-import { HomeMessageState } from '@/features/home/components/HomeMessageState';
 import { HomeShiftRow } from '@/features/home/components/HomeShiftRow';
 import { WeekDayButton } from '@/features/home/components/WeekDayButton';
-import { formatHomeDateTitle, getHomeWeekDays } from '@/features/home/lib/homeDate';
+import { getHomeWeekDays } from '@/features/home/lib/homeDate';
+import { formatKoreanDate } from '@/shared/lib/formatters';
 import { Text } from '@/shared/ui';
 import { ArrowRightS } from '@/shared/ui/icons';
 import { shadows, spacing, useTheme } from '@/theme';
 
 type WeekScheduleCardProps = {
   currentUserId: number;
-  dataSource: HomeDataSource;
   initialDate: string;
   onCreateHandoff: (userId: number) => void;
   onDetailsPress: (date: string) => void;
@@ -25,7 +25,6 @@ type WeekScheduleCardProps = {
 
 export function WeekScheduleCard({
   currentUserId,
-  dataSource,
   initialDate,
   onCreateHandoff,
   onDetailsPress,
@@ -33,12 +32,12 @@ export function WeekScheduleCard({
 }: WeekScheduleCardProps) {
   const theme = useTheme();
   const [selectedDate, setSelectedDate] = useState(initialDate);
-  const summaryQuery = useQuery(homeQueries.summary(dataSource, storeId, selectedDate));
+  const summaryQuery = useQuery(homeQueries.summary(storeId, selectedDate));
   const model =
     summaryQuery.data === undefined
       ? undefined
       : mapHomeScheduleModel(currentUserId, summaryQuery.data, selectedDate);
-  const title = formatHomeDateTitle(selectedDate);
+  const title = formatKoreanDate(selectedDate);
   const weekDays = getHomeWeekDays(selectedDate);
   const handleDetailsPress = () => onDetailsPress(selectedDate);
   const handleQueryRetry = () => void summaryQuery.refetch();
@@ -72,26 +71,24 @@ export function WeekScheduleCard({
 
         <View style={[styles.divider, { backgroundColor: theme.colors.border }]} />
 
-        {summaryQuery.isError ? (
-          <HomeMessageState
-            compact
-            message="근무 일정을 불러오지 못했습니다. 잠시 후 다시 시도해주세요."
-            isLoading={summaryQuery.isFetching}
+        <QueryBoundary query={summaryQuery}>
+          <QueryRefreshNotice
+            failed={summaryQuery.isError && summaryQuery.data !== undefined}
             onRetry={handleQueryRetry}
           />
-        ) : summaryQuery.isPending || model === undefined ? (
-          <HomeMessageState compact message="근무 일정을 불러오는 중입니다." />
-        ) : model.items.length === 0 ? (
-          <Text color="textSecondary" style={styles.emptyText}>
-            해당 날짜에 등록된 근무 일정이 없습니다.
-          </Text>
-        ) : (
-          <View style={styles.shifts}>
-            {model.items.map((item) => (
-              <HomeShiftRow key={item.id} item={item} onCreateHandoff={onCreateHandoff} />
+          {model &&
+            (model.items.length === 0 ? (
+              <Text color="textSecondary" style={styles.emptyText}>
+                해당 날짜에 등록된 근무 일정이 없습니다.
+              </Text>
+            ) : (
+              <View style={styles.shifts}>
+                {model.items.map((item) => (
+                  <HomeShiftRow key={item.id} item={item} onCreateHandoff={onCreateHandoff} />
+                ))}
+              </View>
             ))}
-          </View>
-        )}
+        </QueryBoundary>
       </View>
     </View>
   );

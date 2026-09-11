@@ -1,10 +1,12 @@
+import { MainContextProvider } from '@/features/stores/hooks/useMainContext';
+import { TEST_CONTEXT } from '@/test/MainTestProvider';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { afterEach, describe, expect, it, jest } from '@jest/globals';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { handoffQueries } from '@/features/handoffs/api/handoff.queries';
-import { INITIAL_MOCK_HANDOFFS } from '@/features/handoffs/api/mockHandoffData';
+import { INITIAL_MOCK_HANDOFFS } from '@/test/fixtures/handoffs';
 import { HandoffDetailScreen } from '@/features/handoffs/screens/HandoffDetailScreen';
 
 const INITIAL_METRICS = {
@@ -22,22 +24,26 @@ describe('HandoffDetailScreen', () => {
     if (handoff === undefined) throw new Error('상세 화면 테스트 데이터가 없습니다.');
 
     const queryClient = new QueryClient({
-      defaultOptions: { queries: { retry: false, staleTime: Infinity, gcTime: Infinity } },
+      defaultOptions: {
+        queries: { retry: false, staleTime: Infinity, gcTime: Infinity },
+      },
     });
-    queryClient.setQueryData(handoffQueries.detail(handoff.id).queryKey, handoff);
+    queryClient.setQueryData(handoffQueries.detail(101, handoff.id).queryKey, handoff);
 
     const onBack = jest.fn();
     const onHome = jest.fn();
     await render(
       <SafeAreaProvider initialMetrics={INITIAL_METRICS}>
         <QueryClientProvider client={queryClient}>
-          <HandoffDetailScreen
-            handoffId={handoff.id}
-            onBack={onBack}
-            onDeleted={jest.fn()}
-            onEdit={jest.fn()}
-            onHome={onHome}
-          />
+          <MainContextProvider value={TEST_CONTEXT}>
+            <HandoffDetailScreen
+              handoffId={String(handoff.id)}
+              onBack={onBack}
+              onDeleted={jest.fn()}
+              onEdit={jest.fn()}
+              onHome={onHome}
+            />
+          </MainContextProvider>
         </QueryClientProvider>
       </SafeAreaProvider>,
     );

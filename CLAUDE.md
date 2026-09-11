@@ -99,6 +99,12 @@ export default function OrderDetailRoute() {
 
 이유: 라우트 구조가 바뀌어도 화면 로직이 안 흔들리고, 화면 단위 테스트가 라우터 없이 가능하다.
 
+### 라우트 맵 사용
+
+- 앱 내부 이동 경로는 `@/shared/lib/routes`의 `ROUTES`를 사용한다. `router`, `Link`, `Redirect`, `goBackOr` 호출부에 경로 문자열을 직접 작성하지 않는다.
+- 정적 경로는 상수, 동적 경로·검색 파라미터는 `{ pathname, params }`를 반환하는 맵 함수로 관리한다. 예: `router.push(ROUTES.handoffs.new.recipient)`, `router.replace(ROUTES.handoffs.detail(handoffId))`.
+- 실제 라우트 정의의 SoT는 `src/app` 파일 구조다. 경로 추가·변경 시 맵도 함께 갱신하고 `satisfies Href`와 typed routes로 검증한다. `push`·`replace` 등 이동 방식은 호출부에서 결정한다.
+
 ---
 
 ## 2. 네이밍

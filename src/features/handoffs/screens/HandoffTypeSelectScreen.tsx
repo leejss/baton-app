@@ -7,8 +7,8 @@ import { HandoffPresetRecipientNext } from '@/features/handoffs/components/Hando
 import {
   hasHandoffDraftChanges,
   useHandoffDraftStore,
-} from '@/features/handoffs/model/handoffDraftStore';
-import { useUnsavedHandoffGuard } from '@/features/handoffs/model/useUnsavedHandoffGuard';
+} from '@/features/handoffs/store/handoffDraftStore';
+import { useUnsavedHandoffGuard } from '@/features/handoffs/hooks/useUnsavedHandoffGuard';
 import { ScreenHeader } from '@/shared/ui/ScreenHeader';
 import { Text } from '@/shared/ui';
 import { SCREEN_PADDING_X, useTheme } from '@/theme';
@@ -25,7 +25,11 @@ const OPTIONS: readonly {
   description: string;
 }[] = [
   { type: 'WORK_TASK', label: '업무 처리', description: '못 끝낸 일, 정산 등' },
-  { type: 'STORE_STATUS', label: '매장 상태', description: '장비 ∙ 기기, 재고 등' },
+  {
+    type: 'STORE_STATUS',
+    label: '매장 상태',
+    description: '장비 ∙ 기기, 재고 등',
+  },
   { type: 'OTHER', label: '기타', description: '고객, 특이사항 등' },
 ];
 const DEFAULT_HANDOFF_TYPE: HandoffTypeDto = 'WORK_TASK';

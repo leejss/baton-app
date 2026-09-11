@@ -3,7 +3,8 @@ import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { MonthPicker } from '@/features/schedules/components/MonthPicker';
-import { monthLabel, shiftMonth } from '@/features/schedules/lib/scheduleDate';
+import { shiftMonth } from '@/features/schedules/lib/scheduleDate';
+import { formatKoreanMonth } from '@/shared/lib/formatters';
 import { Pressable, Text } from '@/shared/ui';
 import { ArrowDownS } from '@/shared/ui/icons';
 
@@ -39,7 +40,7 @@ export function CalendarMonthHeader({
           style={styles.month}
         >
           <Text variant="heading" weight="semibold">
-            {monthLabel(month)}
+            {formatKoreanMonth(month)}
           </Text>
           <ArrowDownS size={20} color="textDisabled" />
         </Pressable>

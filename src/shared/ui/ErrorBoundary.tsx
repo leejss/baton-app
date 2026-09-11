@@ -1,6 +1,6 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react';
 
-import { normalizeError } from '@/shared/api/errors';
+import { normalizeError, isAppError } from '@/shared/api/errors';
 import { logger } from '@/shared/lib/logger';
 
 type ErrorBoundaryProps = {
@@ -27,6 +27,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   }
 
   componentDidCatch(error: unknown, info: ErrorInfo) {
+    if (isAppError(error)) return;
     const appError = normalizeError(error);
     logger.error(`render boundary caught: ${appError.message}`, {
       code: appError.code,
@@ -40,7 +41,10 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
   render() {
     if (this.state.error !== null) {
-      return this.props.fallback({ error: this.state.error, reset: this.reset });
+      return this.props.fallback({
+        error: this.state.error,
+        reset: this.reset,
+      });
     }
 
     return this.props.children;

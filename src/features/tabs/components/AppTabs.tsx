@@ -1,5 +1,6 @@
 import { Tabs, useRouter } from 'expo-router';
 
+import { ROUTES } from '@/shared/lib/routes';
 import { AppTabBar, isAppTabName, type AppTabName } from '@/shared/ui/AppTabBar';
 
 export function AppTabs() {
@@ -36,7 +37,7 @@ export function AppTabs() {
           navigation.emit({ type: 'tabLongPress', target: route.key });
         };
 
-        const handleComposePress = () => router.push('/handoffs/new');
+        const handleComposePress = () => router.push(ROUTES.handoffs.new.index);
 
         return (
           <AppTabBar

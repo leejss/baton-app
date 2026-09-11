@@ -34,6 +34,8 @@ export function HandoffFooterActions({
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={secondaryLabel}
+            disabled={primaryLoading}
+            accessibilityState={{ disabled: primaryLoading }}
             onPress={onSecondaryPress}
             style={({ pressed }) => [
               styles.button,
@@ -50,7 +52,10 @@ export function HandoffFooterActions({
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={primaryLabel}
-          accessibilityState={{ disabled: isPrimaryDisabled, busy: primaryLoading }}
+          accessibilityState={{
+            disabled: isPrimaryDisabled,
+            busy: primaryLoading,
+          }}
           disabled={isPrimaryDisabled}
           onPress={onPrimaryPress}
           style={({ pressed }) => [

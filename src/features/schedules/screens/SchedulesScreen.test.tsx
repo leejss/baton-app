@@ -6,8 +6,8 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react-nativ
 import type { ReactElement } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
-import { createMockScheduleDataSource } from '@/features/schedules/api/mockScheduleDataSource';
-import { SchedulesScreen } from '@/features/schedules/screens/SchedulesScreen';
+import { createMockScheduleDataSource } from '@/test/fixtures/schedules';
+import { SchedulesScreen } from '@/test/ScheduleScreens';
 
 jest.mock('@expo/ui/community/bottom-sheet', () =>
   jest.requireActual('@/shared/ui/__mocks__/expoBottomSheet'),
@@ -117,7 +117,11 @@ describe('근무표 화면의 로컬 조회 경계', () => {
     expect(await screen.findByText('근무표를 불러오지 못했습니다.')).toBeOnTheScreen();
   });
   it('직원에게 편집 진입을 숨기고 빈 날짜의 달력은 유지한다', async () => {
-    const source = createMockScheduleDataSource({ now, role: 'EMPLOYEE', schedules: [] });
+    const source = createMockScheduleDataSource({
+      now,
+      role: 'EMPLOYEE',
+      schedules: [],
+    });
     await mount(<SchedulesScreen source={source} initialDate="2026-09-15" />);
     expect(await screen.findByText('해당 날짜에 등록된 근무 일정이 없습니다.')).toBeOnTheScreen();
     expect(screen.queryByLabelText('근무편집')).not.toBeOnTheScreen();

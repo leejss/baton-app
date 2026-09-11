@@ -1,7 +1,7 @@
 import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { HandoffAttachmentThumbnail } from '@/features/handoffs/components/HandoffAttachmentThumbnail';
-import type { LocalAttachment } from '@/features/handoffs/model/handoff';
+import type { LocalAttachment } from '@/features/handoffs/types';
 import { Pressable, Text } from '@/shared/ui';
 import { Camera } from '@/shared/ui/icons';
 import { spacing, useTheme } from '@/theme';
@@ -11,6 +11,7 @@ type HandoffAttachmentStripProps = {
   isPicking: boolean;
   onAdd: () => void;
   onRemove: (localId: string) => void;
+  onRetry: (localId: string) => void;
 };
 
 export function HandoffAttachmentStrip({
@@ -18,6 +19,7 @@ export function HandoffAttachmentStrip({
   isPicking,
   onAdd,
   onRemove,
+  onRetry,
 }: HandoffAttachmentStripProps) {
   const theme = useTheme();
   const atLimit = attachments.length >= 10;
@@ -58,6 +60,8 @@ export function HandoffAttachmentStrip({
           key={attachment.localId}
           attachment={attachment}
           onRemove={onRemove}
+          onRetry={onRetry}
+          disabled={isPicking}
         />
       ))}
     </ScrollView>

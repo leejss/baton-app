@@ -1,81 +1,56 @@
-import { useQuery } from '@tanstack/react-query';
+import { useMainContext } from '@/features/stores/hooks/useMainContext';
 import { useRouter } from 'expo-router';
 import { ScrollView, StyleSheet, View } from 'react-native';
 
-import type { HomeDataSource } from '@/features/home/api/home.dataSource';
-import { defaultHomeDataSource } from '@/features/home/api/home.dataSourceResolver';
+import { ROUTES } from '@/shared/lib/routes';
 import { HandoffCard } from '@/features/home/components/HandoffCard';
-import { HomeMessageState } from '@/features/home/components/HomeMessageState';
 import { WeekScheduleCard } from '@/features/home/components/WeekScheduleCard';
-import { getTodayInSeoul } from '@/features/home/lib/homeDate';
 import { MainHeader } from '@/features/tabs/components/MainHeader';
-import { mainQueries } from '@/features/tabs/api/main.queries';
+import { getTodayInSeoul } from '@/shared/lib/date';
 import { Text } from '@/shared/ui';
 import { spacing } from '@/theme';
 
 type HomeScreenProps = {
-  dataSource?: HomeDataSource;
   initialDate?: string;
 };
 
-const HOME_ERROR_MESSAGE = '홈 정보를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.';
-
-export function HomeScreen({
-  dataSource = defaultHomeDataSource,
-  initialDate = getTodayInSeoul(),
-}: HomeScreenProps) {
+export function HomeScreen({ initialDate = getTodayInSeoul() }: HomeScreenProps) {
   const router = useRouter();
 
-  const contextQuery = useQuery(mainQueries.context(dataSource));
-
-  const handleContextRetry = () => {
-    void contextQuery.refetch();
-  };
-  const handleHandoffDetailsPress = () => router.navigate('/handoffs?scope=ALL');
+  const context = useMainContext();
+  const handleHandoffDetailsPress = () => router.navigate(ROUTES.handoffs.list('all'));
   const handleScheduleDetailsPress = (selectedDate: string) =>
-    router.navigate({ pathname: '/schedules', params: { selectedDate } });
+    router.navigate(ROUTES.schedules.list(selectedDate));
   const handleCreateHandoff = (recipientId: number) =>
-    router.push({ pathname: '/handoffs/new', params: { recipientId: String(recipientId) } });
+    router.push(ROUTES.handoffs.createForRecipient(String(recipientId)));
 
   return (
     <View style={styles.root}>
-      <MainHeader dataSource={dataSource} />
+      <MainHeader />
       <ScrollView
         contentInsetAdjustmentBehavior="automatic"
-        contentContainerStyle={contextQuery.data ? styles.scrollContent : styles.fullPageState}
+        contentContainerStyle={styles.scrollContent}
       >
-        {contextQuery.isPending ? (
-          <HomeMessageState message="홈 정보를 불러오는 중입니다." />
-        ) : contextQuery.isError ? (
-          <HomeMessageState
-            message={HOME_ERROR_MESSAGE}
-            isLoading={contextQuery.isFetching}
-            onRetry={handleContextRetry}
-          />
-        ) : (
-          <View style={styles.content}>
-            <Text weight="semibold" style={styles.greeting}>
-              {contextQuery.data.profile.displayName}님
-            </Text>
+        <View style={styles.content}>
+          <Text weight="semibold" style={styles.greeting}>
+            {context.profile.displayName}님
+          </Text>
 
-            <View style={styles.cards}>
-              <HandoffCard
-                dataSource={dataSource}
-                date={initialDate}
-                storeId={contextQuery.data.membership.store.id}
-                onDetailsPress={handleHandoffDetailsPress}
-              />
-              <WeekScheduleCard
-                currentUserId={contextQuery.data.profile.id}
-                dataSource={dataSource}
-                initialDate={initialDate}
-                storeId={contextQuery.data.membership.store.id}
-                onCreateHandoff={handleCreateHandoff}
-                onDetailsPress={handleScheduleDetailsPress}
-              />
-            </View>
+          <View style={styles.cards}>
+            <HandoffCard
+              date={initialDate}
+              storeId={context.membership.store.id}
+              onDetailsPress={handleHandoffDetailsPress}
+            />
+            <WeekScheduleCard
+              currentUserId={context.profile.id}
+              initialDate={initialDate}
+              storeId={context.membership.store.id}
+              onCreateHandoff={handleCreateHandoff}
+              onDetailsPress={handleScheduleDetailsPress}
+            />
           </View>
-        )}
+        </View>
       </ScrollView>
     </View>
   );

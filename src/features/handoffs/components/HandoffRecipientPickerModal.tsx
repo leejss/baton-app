@@ -3,14 +3,14 @@ import { Modal, StyleSheet, View } from 'react-native';
 
 import { HandoffFooterActions } from '@/features/handoffs/components/HandoffFooterActions';
 import { HandoffRecipientRow } from '@/features/handoffs/components/HandoffRecipientRow';
-import type { RecipientModel } from '@/features/handoffs/model/handoff';
+import type { RecipientModel } from '@/features/handoffs/types';
 import { EmptyState } from '@/shared/ui';
 import { ScreenHeader } from '@/shared/ui/ScreenHeader';
 import { useTheme } from '@/theme';
 
 type HandoffRecipientPickerModalProps = {
   recipients: RecipientModel[];
-  selectedId: string | null;
+  selectedId: number | null;
   visible: boolean;
   onClose: () => void;
   onConfirm: () => void;
@@ -64,7 +64,7 @@ export function HandoffRecipientPickerModal({
 }
 
 function keyExtractor(item: RecipientModel) {
-  return item.member.userId;
+  return String(item.member.userId);
 }
 
 const styles = StyleSheet.create({

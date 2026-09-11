@@ -1,17 +1,19 @@
+import { normalizeError } from '@/shared/api/errors';
+import { useMainContext } from '@/features/stores/hooks/useMainContext';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRef, useState } from 'react';
 import { Alert, StyleSheet, View } from 'react-native';
 
 import { handoffQueries } from '@/features/handoffs/api/handoff.queries';
-import { mockHandoffRepository } from '@/features/handoffs/api/mockHandoffRepository';
+import { handoffMutations } from '@/features/handoffs/api/handoff.mutations';
 import { DeleteHandoffDialog } from '@/features/handoffs/components/DeleteHandoffDialog';
 import {
   HandoffActionSheet,
   type HandoffActionSheetMethods,
 } from '@/features/handoffs/components/HandoffActionSheet';
 import { HandoffScopeTabs } from '@/features/handoffs/components/HandoffScopeTabs';
-import { HandoffListContent } from '@/features/handoffs/components/handoff-list-content';
-import type { HandoffScope } from '@/features/handoffs/model/handoff';
+import { HandoffListContent } from '@/features/handoffs/components/HandoffListContent';
+import type { HandoffScope } from '@/features/handoffs/types';
 import { Pressable, QueryBoundary, Text } from '@/shared/ui';
 import { MainHeader } from '@/features/tabs/components/MainHeader';
 import { SCREEN_PADDING_X, spacing, useTheme } from '@/theme';
@@ -32,28 +34,29 @@ export function HandoffListScreen({
   onScopeChange,
 }: HandoffListScreenProps) {
   const queryClient = useQueryClient();
+  const context = useMainContext();
   const theme = useTheme();
   const actionSheetRef = useRef<HandoffActionSheetMethods>(null);
   const [managedId, setManagedId] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
-  const deleteMutation = useMutation({
-    mutationFn: mockHandoffRepository.delete,
-    onSuccess: async () => {
-      setDeleteId(null);
-      await queryClient.invalidateQueries({ queryKey: handoffQueries.all() });
-    },
-    onError: (error) => {
-      Alert.alert(
-        '삭제하지 못했어요',
-        error instanceof Error ? error.message : '잠시 후 다시 시도해 주세요.',
-      );
-    },
-  });
+  const deleteMutation = useMutation(handoffMutations(queryClient, context.storeId).remove());
 
   const handleManagePress = (handoffId: string) => {
-    setManagedId(handoffId);
-    actionSheetRef.current?.present();
+    void queryClient
+      .fetchQuery({
+        ...handoffQueries.detail(context.storeId, handoffId),
+        staleTime: 0,
+      })
+      .then((item) => {
+        if (item.sender.userId !== context.userId || item.status !== 'UNCONFIRMED') {
+          Alert.alert('수정·삭제할 수 없는 인수인계입니다.');
+          return;
+        }
+        setManagedId(handoffId);
+        actionSheetRef.current?.present();
+      })
+      .catch((error) => Alert.alert('항목을 확인하지 못했어요', normalizeError(error).message));
   };
   const handleCloseSheet = () => setManagedId(null);
   const handleEdit = () => {
@@ -66,7 +69,14 @@ export function HandoffListScreen({
   };
   const handleCancelDelete = () => setDeleteId(null);
   const handleConfirmDelete = () => {
-    if (deleteId !== null) deleteMutation.mutate(deleteId);
+    if (deleteId !== null && !deleteMutation.isPending)
+      deleteMutation.mutate(deleteId, {
+        onSuccess: () => setDeleteId(null),
+        onError: (error) => {
+          setDeleteId(null);
+          Alert.alert('삭제하지 못했어요', normalizeError(error).message);
+        },
+      });
   };
 
   return (

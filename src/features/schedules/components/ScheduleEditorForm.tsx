@@ -6,8 +6,6 @@ import {
   useKeyboardState,
 } from 'react-native-keyboard-controller';
 
-import { getTodayInSeoul } from '@/features/home/lib/homeDate';
-import type { ScheduleDataSource } from '@/features/schedules/api/schedule.dataSource';
 import { CalendarMonthHeader } from '@/features/schedules/components/CalendarMonthHeader';
 import { EmployeePicker } from '@/features/schedules/components/EmployeePicker';
 import { MonthlyCalendar } from '@/features/schedules/components/MonthlyCalendar';
@@ -17,25 +15,21 @@ import { ScheduleTimeFields } from '@/features/schedules/components/ScheduleTime
 import { ScheduleMessage } from '@/features/schedules/components/ScheduleMessage';
 import { useScheduleClock } from '@/features/schedules/hooks/useScheduleClock';
 import { useScheduleEditor } from '@/features/schedules/hooks/useScheduleEditor';
-import {
-  durationLabel,
-  monthLimits,
-  rangeDates,
-  shiftMonth,
-} from '@/features/schedules/lib/scheduleDate';
-import type { ScheduleContext, ScheduleItem } from '@/features/schedules/model/schedule';
+import { monthLimits, shiftMonth } from '@/features/schedules/lib/scheduleDate';
+import type { ScheduleContext, ScheduleItem } from '@/features/schedules/types';
+import { rangeDates, getTodayInSeoul } from '@/shared/lib/date';
+import { formatTimeRangeDuration } from '@/shared/lib/formatters';
 import { Button, BottomActionBar, Text } from '@/shared/ui';
 import { SCREEN_PADDING_X, spacing, useTheme } from '@/theme';
 
 type ScheduleEditorFormProps = {
-  source: ScheduleDataSource;
   context: ScheduleContext;
   item?: ScheduleItem;
   initialDate?: string;
 };
 
 export function ScheduleEditorForm(props: ScheduleEditorFormProps) {
-  const { source, context, item, initialDate } = props;
+  const { context, item, initialDate } = props;
   const editor = useScheduleEditor(props);
   const { form, values, step, mutation, saveResult } = editor;
   const { colors } = useTheme();
@@ -49,6 +43,9 @@ export function ScheduleEditorForm(props: ScheduleEditorFormProps) {
   const dates = rangeDates(start, end);
   const locked = mutation.isPending || Boolean(saveResult?.created.length);
   const disabled =
+    (saveResult !== undefined &&
+      saveResult.failed.length > 0 &&
+      !saveResult.failures.some((failure) => failure.retryable)) ||
     mutation.isPending ||
     (step === 0
       ? !values.employeeId
@@ -85,7 +82,6 @@ export function ScheduleEditorForm(props: ScheduleEditorFormProps) {
         <View style={[styles.calendar, { backgroundColor: colors.background }]}>
           <CalendarMonthHeader month={month} today={today} onChange={handleMonthChange} />
           <MonthlyCalendar
-            source={source}
             month={month}
             today={today}
             minDate={today}
@@ -144,7 +140,6 @@ export function ScheduleEditorForm(props: ScheduleEditorFormProps) {
         <BottomActionBar>
           <View style={styles.summary}>
             <EmployeePicker
-              source={source}
               storeId={context.storeId}
               selectedId={values.employeeId ?? null}
               onSelect={setEmployee}
@@ -160,7 +155,7 @@ export function ScheduleEditorForm(props: ScheduleEditorFormProps) {
                 </Text>{' '}
                 선택 · 하루{' '}
                 <Text color="accent" weight="semibold">
-                  {durationLabel(values.startTime ?? '', values.endTime ?? '')}
+                  {formatTimeRangeDuration(values.startTime ?? '', values.endTime ?? '')}
                 </Text>{' '}
                 근무
               </Text>

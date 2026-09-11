@@ -1,17 +1,16 @@
+import { markNotificationRead } from '@/features/notifications/api/notification.api';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigation, useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
 
-import type { NotificationDataSource } from '@/features/notifications/api/notification.dataSource';
+import { ROUTES } from '@/shared/lib/routes';
 import { toNotification } from '@/features/notifications/api/mappers';
 import { notificationQueries } from '@/features/notifications/api/notification.queries';
-import { notificationSchema } from '@/features/notifications/api/notification.schema';
-import type { Notification, NotificationScope } from '@/features/notifications/model/notification';
-import { mockScheduleDataSource } from '@/features/schedules/api/mockScheduleDataSource';
+import type { Notification, NotificationScope } from '@/features/notifications/types';
 import { scheduleQueries } from '@/features/schedules/api/schedule.queries';
 import { isAppError, normalizeError } from '@/shared/api/errors';
 
-export function useOpenNotification(source: NotificationDataSource, scope: NotificationScope) {
+export function useOpenNotification(scope: NotificationScope) {
   const router = useRouter();
   const navigation = useNavigation();
   const queryClient = useQueryClient();
@@ -20,13 +19,14 @@ export function useOpenNotification(source: NotificationDataSource, scope: Notif
   const [message, setMessage] = useState<string>();
   const refreshInbox = () =>
     queryClient.invalidateQueries({
-      queryKey: notificationQueries.list(source, scope).queryKey,
+      queryKey: notificationQueries.list(scope).queryKey,
       exact: true,
     });
   const read = useMutation({
+    mutationKey: ['notifications', 'read'],
     mutationFn: async (id: string) => {
       try {
-        const dto = notificationSchema.parse(await source.markRead(scope, id));
+        const dto = await markNotificationRead(id);
         if (String(dto.id) !== id || dto.status !== 'READ')
           throw new Error('읽음 처리가 반영되지 않았어요.');
         return toNotification(dto);
@@ -50,27 +50,22 @@ export function useOpenNotification(source: NotificationDataSource, scope: Notif
         // 이미 읽은 항목도 접근 권한과 원본 삭제 여부를 다시 확인한다. 읽음 API는 멱등이다.
         const updated = await read.mutateAsync(notification.id);
         target = updated.target;
-      } catch (error) {
-        if (isAppError(error) && (error.status === 403 || error.status === 404)) {
-          await refreshInbox();
-          setMessage('삭제되었거나 접근할 수 없는 알림입니다.');
-          return;
-        }
+      } catch {
         // NOTI-03: 일반 읽음 실패는 이동을 막지 않으며 파란 점/개수를 유지한다.
         if (notification.target.kind === 'none')
           setMessage('읽음 처리에 실패했어요. 알림을 다시 선택해주세요.');
       }
       if (!navigation.isFocused()) return;
       if (target.kind === 'handoff') {
-        router.push({ pathname: '/handoffs/[handoffId]', params: { handoffId: target.id } });
+        router.push(ROUTES.handoffs.detail(target.id));
       } else if (target.kind === 'schedule') {
         // 수정 화면이 아닌 해당 날짜의 근무표로 이동한다. 직원도 조회할 수 있다.
         const schedule = await queryClient.fetchQuery({
-          ...scheduleQueries.detail(mockScheduleDataSource, scope.storeId, target.id),
+          ...scheduleQueries.detail(scope.storeId, target.id),
           staleTime: 0,
         });
         if (!navigation.isFocused()) return;
-        router.push({ pathname: '/schedules', params: { selectedDate: schedule.date } });
+        router.push(ROUTES.schedules.list(schedule.date));
       }
     } catch (error) {
       if (isAppError(error) && (error.status === 403 || error.status === 404)) await refreshInbox();
@@ -81,5 +76,10 @@ export function useOpenNotification(source: NotificationDataSource, scope: Notif
     }
   }
 
-  return { open, openingId, message, clearMessage: () => setMessage(undefined) };
+  return {
+    open,
+    openingId,
+    message,
+    clearMessage: () => setMessage(undefined),
+  };
 }

@@ -1,7 +1,8 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 
+import { ROUTES } from '@/shared/lib/routes';
 import { HandoffListScreen } from '@/features/handoffs/screens/HandoffListScreen';
-import { isHandoffScope, type HandoffScope } from '@/features/handoffs/model/handoff';
+import { isHandoffScope, type HandoffScope } from '@/features/handoffs/types';
 
 export default function HandoffsRoute() {
   const router = useRouter();
@@ -11,13 +12,9 @@ export default function HandoffsRoute() {
   return (
     <HandoffListScreen
       scope={scope}
-      onCreate={() => router.push('/(main)/handoffs/new')}
-      onEdit={(handoffId) =>
-        router.push({ pathname: '/(main)/handoffs/[handoffId]/edit', params: { handoffId } })
-      }
-      onOpen={(handoffId) =>
-        router.push({ pathname: '/(main)/handoffs/[handoffId]', params: { handoffId } })
-      }
+      onCreate={() => router.push(ROUTES.handoffs.new.index)}
+      onEdit={(handoffId) => router.push(ROUTES.handoffs.edit(handoffId))}
+      onOpen={(handoffId) => router.push(ROUTES.handoffs.detail(handoffId))}
       onScopeChange={(nextScope) => router.setParams({ scope: nextScope })}
     />
   );

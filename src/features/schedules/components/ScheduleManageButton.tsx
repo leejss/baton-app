@@ -1,31 +1,23 @@
-import { useQuery } from '@tanstack/react-query';
-import { useRouter } from 'expo-router';
+import { useMainContext } from '@/features/stores/hooks/useMainContext';
+import { type Href, useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import type { ScheduleDataSource } from '@/features/schedules/api/schedule.dataSource';
-import { scheduleQueries } from '@/features/schedules/api/schedule.queries';
+import { ROUTES } from '@/shared/lib/routes';
 import { BottomSheet } from '@/shared/ui/BottomSheet';
 import { Pressable, Text } from '@/shared/ui';
 import { Plus, EditFill } from '@/shared/ui/icons';
 import { radius, spacing, useTheme } from '@/theme';
 
-export function ScheduleManageButton({
-  source,
-  date,
-}: {
-  source: ScheduleDataSource;
-  date?: string;
-}) {
-  const query = useQuery(scheduleQueries.context(source));
+export function ScheduleManageButton({ date }: { date?: string }) {
+  const query = useMainContext();
   const [visible, setVisible] = useState(false);
   const pendingNavigation = useRef<(() => void) | null>(null);
   const router = useRouter();
   const { colors } = useTheme();
-  if (!query.data?.canManage) return null;
-  const navigate = (pathname: '/schedules/new' | '/schedules/manage') => {
-    pendingNavigation.current = () =>
-      router.push({ pathname, params: date ? { selectedDate: date } : {} });
+  if (!query.canManage) return null;
+  const navigate = (href: Href) => {
+    pendingNavigation.current = () => router.push(href);
     setVisible(false);
   };
   const handleDismiss = () => {
@@ -52,7 +44,7 @@ export function ScheduleManageButton({
             accessibilityRole="button"
             accessibilityLabel="근무등록"
             style={[styles.option, { borderColor: colors.border }]}
-            onPress={() => navigate('/schedules/new')}
+            onPress={() => navigate(ROUTES.schedules.new(date))}
           >
             <Plus />
             <View style={styles.description}>
@@ -67,7 +59,7 @@ export function ScheduleManageButton({
             accessibilityRole="button"
             accessibilityLabel="근무수정/삭제"
             style={[styles.option, { borderColor: colors.border }]}
-            onPress={() => navigate('/schedules/manage')}
+            onPress={() => navigate(ROUTES.schedules.manage(date))}
           >
             <EditFill />
             <View style={styles.description}>

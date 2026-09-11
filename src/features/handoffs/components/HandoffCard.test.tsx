@@ -2,7 +2,7 @@ import { describe, expect, it, jest } from '@jest/globals';
 import { fireEvent, render, screen } from '@testing-library/react-native';
 
 import { HandoffCard } from '@/features/handoffs/components/HandoffCard';
-import type { HandoffCardModel } from '@/features/handoffs/model/handoff';
+import type { HandoffCardModel } from '@/features/handoffs/types';
 
 const baseItem: HandoffCardModel = {
   id: 'handoff-1',
@@ -43,7 +43,12 @@ describe('HandoffCard', () => {
 
     rerender(
       <HandoffCard
-        item={{ ...baseItem, status: 'CONFIRMED', statusLabel: '확인 완료', canManage: false }}
+        item={{
+          ...baseItem,
+          status: 'CONFIRMED',
+          statusLabel: '확인 완료',
+          canManage: false,
+        }}
         onPress={jest.fn()}
         onManagePress={jest.fn()}
       />,

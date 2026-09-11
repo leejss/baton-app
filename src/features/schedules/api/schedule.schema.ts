@@ -1,22 +1,13 @@
+import { memberSchema } from '@/features/stores/api/store.schema';
 import { z } from 'zod';
 
-import { isCalendarDate } from '@/features/schedules/lib/scheduleDate';
+import { isCalendarDate } from '@/shared/lib/date';
 
 const id = z.number().int().positive();
 const date = z.string().refine(isCalendarDate);
 const startTime = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/);
 const endTime = z.string().regex(/^(([01]\d|2[0-3]):[0-5]\d|24:00)$/);
-export const scheduleMemberSchema = z.object({
-  userId: id,
-  displayName: z.string(),
-  email: z.string().email(),
-  profileImage: z.object({
-    source: z.literal('STATIC'),
-    key: z.enum(['DEFAULT_01', 'DEFAULT_MANAGER', 'DEFAULT_EMPLOYEE']),
-  }),
-  role: z.enum(['MANAGER', 'EMPLOYEE']),
-  status: z.enum(['ACTIVE', 'LEFT']),
-});
+export const scheduleMemberSchema = memberSchema;
 export const scheduleSchema = z.object({
   id,
   employee: scheduleMemberSchema,

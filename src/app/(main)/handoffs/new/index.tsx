@@ -1,5 +1,6 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 
+import { ROUTES } from '@/shared/lib/routes';
 import { HandoffTypeSelectScreen } from '@/features/handoffs/screens/HandoffTypeSelectScreen';
 
 export default function NewHandoffRoute() {
@@ -10,7 +11,7 @@ export default function NewHandoffRoute() {
     <HandoffTypeSelectScreen
       initialRecipientId={recipientId}
       onExit={router.back}
-      onNext={() => router.push('/(main)/handoffs/new/content')}
+      onNext={() => router.push(ROUTES.handoffs.new.content)}
     />
   );
 }

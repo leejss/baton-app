@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import { Pressable, StyleSheet, TextInput, View, type TextInputProps } from 'react-native';
 
 import { Text } from '@/shared/ui/Text';
+import { digitsOnly } from '@/shared/lib/formatters';
 import { radius, typography, useTheme } from '@/theme';
 
 /**
@@ -47,7 +48,7 @@ export function CodeInput({
 
   const handleChangeText = (text: string) => {
     // 숫자만 남기고 자리수만큼 자른다. 붙여넣기로 공백·하이픈이 섞여 와도 안전하다.
-    onChangeText(text.replace(/\D/g, '').slice(0, length));
+    onChangeText(digitsOnly(text, length));
   };
 
   return (

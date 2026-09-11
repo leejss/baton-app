@@ -3,10 +3,10 @@ import { afterEach, describe, expect, it, jest } from '@jest/globals';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
-import { createMockScheduleDataSource } from '@/features/schedules/api/mockScheduleDataSource';
+import { createMockScheduleDataSource } from '@/test/fixtures/schedules';
 import { monthlyScheduleSchema } from '@/features/schedules/api/schedule.schema';
-import { ScheduleActions } from '@/features/schedules/components/ScheduleActions';
-import { MOCK_STORE_MEMBERS } from '@/shared/api/mockMembers';
+import { ScheduleActions } from '@/test/ScheduleScreens';
+import { MOCK_STORE_MEMBERS } from '@/test/fixtures/members';
 
 jest.mock('react-native-keyboard-controller', () =>
   jest.requireActual('react-native-keyboard-controller/jest'),
@@ -51,7 +51,10 @@ afterEach(async () => {
 
 describe('근무 삭제', () => {
   it('삭제 확인 전에는 유지하고 확인 이후 삭제 결과를 월간 조회에 반영한다', async () => {
-    const source = createMockScheduleDataSource({ now: () => now, schedules: [item] });
+    const source = createMockScheduleDataSource({
+      now: () => now,
+      schedules: [item],
+    });
     const remove = jest.spyOn(source, 'remove');
     const onClose = jest.fn();
     await mount(source, onClose);
@@ -67,7 +70,10 @@ describe('근무 삭제', () => {
     expect(onClose).toHaveBeenCalledTimes(1);
   });
   it('삭제 실패 시 선택한 일정과 확인·취소 동작을 유지한다', async () => {
-    const source = createMockScheduleDataSource({ now: () => now, schedules: [item] });
+    const source = createMockScheduleDataSource({
+      now: () => now,
+      schedules: [item],
+    });
     jest.spyOn(source, 'remove').mockRejectedValueOnce(new Error('연결을 확인해주세요.'));
     await mount(source);
     await fireEvent.press(await screen.findByLabelText('삭제'));

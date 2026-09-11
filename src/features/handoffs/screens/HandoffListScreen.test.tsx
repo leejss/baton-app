@@ -3,7 +3,10 @@ import { afterEach, describe, expect, it, jest } from '@jest/globals';
 import { cleanup, render, screen } from '@testing-library/react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
-import { mockHandoffRepository } from '@/features/handoffs/api/mockHandoffRepository';
+import * as api from '@/features/handoffs/api/handoff.api';
+import * as notifications from '@/features/notifications/api/notification.api';
+import { TEST_CONTEXT } from '@/test/MainTestProvider';
+import { MainContextProvider } from '@/features/stores/hooks/useMainContext';
 import { HandoffListScreen } from '@/features/handoffs/screens/HandoffListScreen';
 
 jest.mock('expo-router', () => ({ useRouter: () => ({ push: jest.fn() }) }));
@@ -20,9 +23,10 @@ afterEach(async () => {
 
 describe('HandoffListScreen', () => {
   it('목록 쿼리가 대기 중이어도 헤더와 탭을 유지한다', async () => {
+    jest.spyOn(api, 'fetchHandoffs').mockImplementation(() => new Promise<never>(() => {}));
     jest
-      .spyOn(mockHandoffRepository, 'list')
-      .mockImplementation(() => new Promise<never>(() => {}));
+      .spyOn(notifications, 'fetchNotifications')
+      .mockResolvedValue({ items: [], unreadCount: 0, badgeText: '' });
     const queryClient = new QueryClient({
       defaultOptions: { queries: { retry: false, gcTime: Infinity } },
     });
@@ -30,13 +34,15 @@ describe('HandoffListScreen', () => {
     await render(
       <SafeAreaProvider initialMetrics={INITIAL_METRICS}>
         <QueryClientProvider client={queryClient}>
-          <HandoffListScreen
-            scope="all"
-            onCreate={jest.fn()}
-            onEdit={jest.fn()}
-            onOpen={jest.fn()}
-            onScopeChange={jest.fn()}
-          />
+          <MainContextProvider value={TEST_CONTEXT}>
+            <HandoffListScreen
+              scope="all"
+              onCreate={jest.fn()}
+              onEdit={jest.fn()}
+              onOpen={jest.fn()}
+              onScopeChange={jest.fn()}
+            />
+          </MainContextProvider>
         </QueryClientProvider>
       </SafeAreaProvider>,
     );
