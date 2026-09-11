@@ -16,6 +16,7 @@ import type {
   RecipientModel,
   LocalAttachment,
 } from '@/features/handoffs/types';
+import { formatRelativeSeoulDate, formatSeoulDateTime } from '@/shared/lib/formatters';
 
 const TYPE_LABELS: Record<HandoffTypeDto, string> = {
   WORK_TASK: '업무 처리',
@@ -63,7 +64,7 @@ export function toHandoffCardModel(
     type: item.type,
     typeLabel: getHandoffTypeLabel(item.type),
     title: item.title,
-    dateLabel: formatHandoffDate(item.sentAt, now),
+    dateLabel: formatRelativeSeoulDate(item.sentAt, now),
     status: item.status,
     statusLabel: STATUS_LABELS[item.status],
     senderName: item.sender.displayName,
@@ -83,7 +84,7 @@ export function toHandoffDetailModel(
     typeLabel: getHandoffTypeLabel(handoff.type),
     title: handoff.title,
     body: handoff.body,
-    dateLabel: formatHandoffDate(handoff.sentAt, now),
+    dateLabel: formatRelativeSeoulDate(handoff.sentAt, now),
     recipientLabel: `${handoff.recipient.user.displayName}님께`,
     statusActionLabel: DETAIL_STATUS_ACTION_LABELS[handoff.status],
     attachments: handoff.attachments.map(({ id, downloadUrl }) => ({
@@ -110,7 +111,7 @@ export function toRecipientModels(
       isRecommended: recommendedIds.has(member.userId),
       nextShiftLabel:
         recommendedIds.has(member.userId) && dto.recommendedStartAt
-          ? formatShiftTime(dto.recommendedStartAt)
+          ? formatSeoulDateTime(dto.recommendedStartAt)
           : undefined,
     }))
     .sort(
@@ -155,31 +156,4 @@ export function toLocalAttachments(attachments: AttachmentDto[]): LocalAttachmen
     uploadStatus: 'complete',
     isLinked: true,
   }));
-}
-
-function formatHandoffDate(sentAt: string, now: Date): string {
-  const date = new Date(sentAt);
-  const isToday =
-    date.toLocaleDateString('en-CA', { timeZone: 'Asia/Seoul' }) ===
-    now.toLocaleDateString('en-CA', { timeZone: 'Asia/Seoul' });
-
-  if (isToday) return '오늘';
-
-  return new Intl.DateTimeFormat('ko-KR', {
-    timeZone: 'Asia/Seoul',
-    year: date.getFullYear() === now.getFullYear() ? undefined : 'numeric',
-    month: 'long',
-    day: 'numeric',
-  }).format(date);
-}
-
-function formatShiftTime(value: string): string {
-  return new Intl.DateTimeFormat('ko-KR', {
-    timeZone: 'Asia/Seoul',
-    month: 'numeric',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,
-  }).format(new Date(value));
 }
