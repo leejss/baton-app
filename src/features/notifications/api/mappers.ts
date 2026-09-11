@@ -5,6 +5,7 @@ import {
   type NotificationKind,
   type NotificationTarget,
 } from '@/features/notifications/types';
+import { formatNotificationTime } from '@/shared/lib/formatters';
 
 const KINDS: Record<NotificationDto['type'], NotificationKind> = {
   UPDATE_ANNOUNCEMENT: 'announcement',
@@ -18,22 +19,9 @@ const HEADINGS: Record<NotificationKind, string> = {
   handoffConfirmed: '인수인계 확인',
   schedule: '근무 일정 알림',
 };
-const dateFormatter = new Intl.DateTimeFormat('en-CA', {
-  timeZone: 'Asia/Seoul',
-  year: 'numeric',
-  month: '2-digit',
-  day: '2-digit',
-  hour: '2-digit',
-  minute: '2-digit',
-  hourCycle: 'h23',
-});
-
 export function toNotification(dto: NotificationDto): Notification {
   const kind = KINDS[dto.type];
   const createdAt = Date.parse(dto.createdAt);
-  const parts = Object.fromEntries(
-    dateFormatter.formatToParts(createdAt).map(({ type, value }) => [type, value]),
-  );
   let target: NotificationTarget = { kind: 'none' };
   if ((kind === 'handoffReceived' || kind === 'handoffConfirmed') && dto.handoverId != null) {
     target = { kind: 'handoff', id: String(dto.handoverId) };
@@ -50,7 +38,7 @@ export function toNotification(dto: NotificationDto): Notification {
       createdAt + NOTIFICATION_RETENTION_MS,
       dto.expiresAt ? Date.parse(dto.expiresAt) : Infinity,
     ),
-    timeLabel: `${parts.year}.${parts.month}.${parts.day}. ${parts.hour}:${parts.minute}`,
+    timeLabel: formatNotificationTime(createdAt),
     isUnread: dto.status === 'UNREAD',
     target,
   };
