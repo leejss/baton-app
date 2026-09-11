@@ -6,10 +6,10 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react-nativ
 import type { ReactElement } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
-import { createMockScheduleDataSource } from '@/features/schedules/api/mockScheduleDataSource';
+import { createMockScheduleDataSource } from '@/test/fixtures/schedules';
 import { monthlyScheduleSchema } from '@/features/schedules/api/schedule.schema';
-import { ScheduleEditorScreen } from '@/features/schedules/screens/ScheduleEditorScreen';
-import { MOCK_STORE_MEMBERS } from '@/shared/api/mockMembers';
+import { ScheduleEditorScreen } from '@/test/ScheduleScreens';
+import { MOCK_STORE_MEMBERS } from '@/test/fixtures/members';
 
 jest.mock('@expo/ui/community/bottom-sheet', () =>
   jest.requireActual('@/shared/ui/__mocks__/expoBottomSheet'),
@@ -26,10 +26,16 @@ jest.mock('@shopify/flash-list', () => ({
 }));
 const mockDismissTo = jest.fn();
 jest.mock('expo-router', () => ({
-  useRouter: () => ({ dismissTo: mockDismissTo, back: jest.fn(), canGoBack: () => true }),
+  useRouter: () => ({
+    dismissTo: mockDismissTo,
+    back: jest.fn(),
+    canGoBack: () => true,
+  }),
   useNavigation: () => ({ dispatch: jest.fn() }),
 }));
-jest.mock('expo-router/react-navigation', () => ({ usePreventRemove: jest.fn() }));
+jest.mock('expo-router/react-navigation', () => ({
+  usePreventRemove: jest.fn(),
+}));
 
 // 달력과 시작 시각 검증은 고정한 서울 날짜로 검사하고 비동기 조회 타이머는 실제로 실행한다.
 beforeAll(() => {
@@ -111,7 +117,10 @@ describe('관리자 근무 등록·수정', () => {
     });
   });
   it('부분 저장 뒤 폼에서 재시도해도 실패한 날짜만 저장한다', async () => {
-    const source = createMockScheduleDataSource({ schedules: [], failDatesOnce: ['2026-09-16'] });
+    const source = createMockScheduleDataSource({
+      schedules: [],
+      failDatesOnce: ['2026-09-16'],
+    });
     const create = jest.spyOn(source, 'create');
     await mount(<ScheduleEditorScreen source={source} initialDate="2026-09-15" />);
     await fireEvent.press(await screen.findByLabelText('이서연, seoyeon@baton.app'));
@@ -160,10 +169,17 @@ describe('관리자 근무 등록·수정', () => {
     expect(await screen.findByText('근무 수정 완료!')).toBeOnTheScreen();
     const items = monthlyScheduleSchema.parse(await source.month(101, '2026-09')).schedules;
     expect(items).toHaveLength(1);
-    expect(items[0]).toMatchObject({ id: 12, workDate: '2026-09-16', endTime: '14:00' });
+    expect(items[0]).toMatchObject({
+      id: 12,
+      workDate: '2026-09-16',
+      endTime: '14:00',
+    });
   });
   it('직원 목록 조회가 실패해도 검색 입력과 닫기를 유지한다', async () => {
-    const source = createMockScheduleDataSource({ schedules: [], failMembers: true });
+    const source = createMockScheduleDataSource({
+      schedules: [],
+      failMembers: true,
+    });
     await mount(<ScheduleEditorScreen source={source} />);
     expect(await screen.findByText('직원 목록을 불러오지 못했습니다.')).toBeOnTheScreen();
     expect(screen.getByLabelText('직원 이름 검색')).toBeOnTheScreen();

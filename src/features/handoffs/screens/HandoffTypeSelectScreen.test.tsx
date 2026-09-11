@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, jest } from '@jest/globals';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
-import { useHandoffDraftStore } from '@/features/handoffs/model/handoffDraftStore';
+import { useHandoffDraftStore } from '@/features/handoffs/store/handoffDraftStore';
 import { HandoffTypeSelectScreen } from '@/features/handoffs/screens/HandoffTypeSelectScreen';
 
 jest.mock('expo-router', () => ({

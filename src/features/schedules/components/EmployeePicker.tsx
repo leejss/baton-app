@@ -3,18 +3,16 @@ import { useQuery } from '@tanstack/react-query';
 import { useRef, useState } from 'react';
 import { StyleSheet, View, useWindowDimensions } from 'react-native';
 
-import type { ScheduleDataSource } from '@/features/schedules/api/schedule.dataSource';
 import { scheduleQueries } from '@/features/schedules/api/schedule.queries';
 import { EmployeeRow } from '@/features/schedules/components/EmployeeRow';
 import { ScheduleMessage } from '@/features/schedules/components/ScheduleMessage';
 import { BottomSheet } from '@/shared/ui/BottomSheet';
-import type { ScheduleMember } from '@/features/schedules/model/schedule';
+import type { ScheduleMember } from '@/features/schedules/types';
 import { Button, Pressable, Text, TextField } from '@/shared/ui';
 import { Search, NavUserLine } from '@/shared/ui/icons';
 import { spacing } from '@/theme';
 
 type EmployeePickerProps = {
-  source: ScheduleDataSource;
   storeId: number;
   selectedId: number | null;
   onSelect: (id: number) => void;
@@ -25,7 +23,6 @@ type EmployeePickerProps = {
 const keyExtractor = (member: ScheduleMember) => String(member.id);
 
 export function EmployeePicker({
-  source,
   storeId,
   selectedId,
   onSelect,
@@ -37,7 +34,7 @@ export function EmployeePicker({
   const [search, setSearch] = useState('');
   const pendingDone = useRef<(() => void) | null>(null);
   const { height } = useWindowDimensions();
-  const query = useQuery(scheduleQueries.members(source, storeId));
+  const query = useQuery(scheduleQueries.members(storeId));
   const selected = query.data?.find((member) => member.id === selectedId);
   const candidates = (query.data ?? []).filter(
     (member) => member.isActive && member.name.includes(search.trim()),

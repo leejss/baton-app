@@ -1,32 +1,21 @@
+import { memberSchema } from '@/features/stores/api/store.schema';
 import { z } from 'zod';
 
 export const handoffTypeSchema = z.enum(['WORK_TASK', 'STORE_STATUS', 'OTHER']);
 export const handoffStatusSchema = z.enum(['UNCONFIRMED', 'CONFIRMED', 'TERMINATED']);
 export const handoffScopeSchema = z.enum(['ALL', 'RECEIVED', 'SENT']);
 
-const profileImageSchema = z.object({
-  source: z.literal('STATIC'),
-  key: z.enum(['DEFAULT_01', 'DEFAULT_MANAGER', 'DEFAULT_EMPLOYEE']),
-});
-
-export const memberSchema = z.object({
-  userId: z.string().min(1),
-  email: z.string().email(),
-  displayName: z.string().min(1),
-  profileImage: profileImageSchema,
-  role: z.enum(['MANAGER', 'EMPLOYEE']),
-  status: z.enum(['ACTIVE', 'LEFT']),
-});
+export { memberSchema } from '@/features/stores/api/store.schema';
 
 const handoffRecipientSchema = z.object({
   user: memberSchema,
   status: z.enum(['ACTIVE', 'PARTICIPATION_ENDED']),
-  confirmedAt: z.string().datetime().nullish(),
-  participationEndedAt: z.string().datetime().nullish(),
+  confirmedAt: z.iso.datetime({ offset: true }).nullish(),
+  participationEndedAt: z.iso.datetime({ offset: true }).nullish(),
 });
 
 export const attachmentSchema = z.object({
-  id: z.string().min(1),
+  id: z.number().int().positive(),
   purpose: z.literal('HANDOVER'),
   contentType: z.enum(['image/jpeg', 'image/png', 'image/webp']),
   sizeBytes: z
@@ -36,17 +25,17 @@ export const attachmentSchema = z.object({
     .max(5 * 1024 * 1024),
   status: z.enum(['PENDING', 'VERIFIED', 'LINKED', 'DELETED']),
   downloadUrl: z.string().url().nullish(),
-  downloadUrlExpiresAt: z.string().datetime().nullish(),
+  downloadUrlExpiresAt: z.iso.datetime({ offset: true }).nullish(),
 });
 
 export const handoffListItemSchema = z.object({
-  id: z.string().min(1),
+  id: z.number().int().positive(),
   type: handoffTypeSchema,
   title: z.string().max(20),
   sender: memberSchema,
   recipient: handoffRecipientSchema,
   status: handoffStatusSchema,
-  sentAt: z.string().datetime(),
+  sentAt: z.iso.datetime({ offset: true }),
 });
 
 export const handoffPageSchema = z.object({
@@ -64,15 +53,17 @@ export const handoffCreateRequestSchema = z.object({
   type: handoffTypeSchema,
   title: z.string().trim().min(1).max(20),
   body: z.string().trim().min(1).max(200),
-  recipientId: z.string().min(1),
-  attachmentIds: z.array(z.string().min(1)).max(10).optional(),
+  recipientId: z.number().int().positive(),
+  attachmentIds: z.array(z.number().int().positive()).max(10).optional(),
 });
 
-export const handoffUpdateRequestSchema = handoffCreateRequestSchema.omit({ type: true });
+export const handoffUpdateRequestSchema = handoffCreateRequestSchema.omit({
+  type: true,
+});
 
 export const recipientRecommendationSchema = z.object({
   recommended: memberSchema.nullish(),
-  recommendedStartAt: z.string().datetime().nullish(),
+  recommendedStartAt: z.iso.datetime({ offset: true }).nullish(),
   candidates: z.array(memberSchema),
 });
 

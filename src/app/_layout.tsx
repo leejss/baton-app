@@ -1,4 +1,4 @@
-import { QueryClientProvider } from '@tanstack/react-query';
+import { SessionQueryProvider } from '@/shared/providers/SessionQueryProvider';
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
@@ -8,14 +8,11 @@ import { KeyboardProvider } from 'react-native-keyboard-controller';
 
 import { ForcedLogoutModal } from '@/features/auth/components/ForcedLogoutModal';
 import { useAuthStore } from '@/features/auth/store/authStore';
-import { createQueryClient } from '@/shared/api/queryClient';
 import { logger } from '@/shared/lib/logger';
 import { ErrorState } from '@/shared/ui/ErrorState';
 import { SplashOverlay } from '@/shared/ui/SplashOverlay';
 
 SplashScreen.preventAutoHideAsync();
-
-const queryClient = createQueryClient();
 
 /** Expo Router가 라우트 트리에서 발생한 렌더 에러를 잡을 때 쓰는 컴포넌트. */
 export function ErrorBoundary({ error, retry }: { error: Error; retry: () => Promise<void> }) {
@@ -48,7 +45,7 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={styles.root}>
       <KeyboardProvider>
-        <QueryClientProvider client={queryClient}>
+        <SessionQueryProvider>
           <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
             <Stack screenOptions={{ headerShown: false }}>
               <Stack.Screen name="index" />
@@ -61,7 +58,7 @@ export default function RootLayout() {
             {/* 어느 화면에 있든 위에 떠야 해서 라우트 트리 바깥에 둔다. */}
             <ForcedLogoutModal />
           </ThemeProvider>
-        </QueryClientProvider>
+        </SessionQueryProvider>
       </KeyboardProvider>
     </GestureHandlerRootView>
   );

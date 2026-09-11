@@ -2,9 +2,7 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 
-import { getTodayInSeoul } from '@/features/home/lib/homeDate';
-import type { ScheduleDataSource } from '@/features/schedules/api/schedule.dataSource';
-import { mockScheduleDataSource } from '@/features/schedules/api/mockScheduleDataSource';
+import { ROUTES } from '@/shared/lib/routes';
 import { CalendarMonthHeader } from '@/features/schedules/components/CalendarMonthHeader';
 import { DaySchedules } from '@/features/schedules/components/DaySchedules';
 import { MonthlyCalendar } from '@/features/schedules/components/MonthlyCalendar';
@@ -19,20 +17,16 @@ import {
   normalizeSelectedDate,
   shiftMonth,
 } from '@/features/schedules/lib/scheduleDate';
+import { getTodayInSeoul } from '@/shared/lib/date';
 import { SCREEN_PADDING_X, spacing, useTheme } from '@/theme';
 
 type SchedulesScreenProps = {
   initialDate?: string;
   isManaging?: boolean;
-  source?: ScheduleDataSource;
 };
 
 /** 스크린은 클라이언트 선택 상태와 배치만 담당한다. 쿼리는 소비 컴포넌트 안에 있다. */
-export function SchedulesScreen({
-  initialDate,
-  isManaging = false,
-  source = mockScheduleDataSource,
-}: SchedulesScreenProps) {
+export function SchedulesScreen({ initialDate, isManaging = false }: SchedulesScreenProps) {
   const now = useScheduleClock();
   const today = getTodayInSeoul(now);
   const [selectedDate, setSelectedDate] = useState(() => normalizeSelectedDate(initialDate, today));
@@ -53,7 +47,7 @@ export function SchedulesScreen({
     setMonth(value);
     setSelectedDate(undefined);
   };
-  const handleBack = () => (router.canGoBack() ? router.back() : router.navigate('/home'));
+  const handleBack = () => (router.canGoBack() ? router.back() : router.navigate(ROUTES.home));
   return (
     <View style={[styles.root, { backgroundColor: colors.surfaceSunken }]}>
       {isManaging ? (
@@ -67,10 +61,9 @@ export function SchedulesScreen({
             month={month}
             today={today}
             onChange={handleMonthChange}
-            trailing={!isManaging && <ScheduleManageButton source={source} date={selectedDate} />}
+            trailing={!isManaging && <ScheduleManageButton date={selectedDate} />}
           />
           <MonthlyCalendar
-            source={source}
             month={month}
             today={today}
             selectedDate={selectedDate}
@@ -85,7 +78,6 @@ export function SchedulesScreen({
           <View style={styles.list}>
             <DaySchedules
               key={selectedDate}
-              source={source}
               date={selectedDate}
               now={now}
               isManaging={isManaging}
@@ -97,7 +89,6 @@ export function SchedulesScreen({
       {selectedId !== undefined && (
         <ScheduleActions
           key={selectedId}
-          source={source}
           id={selectedId}
           now={now}
           onClose={() => setSelectedId(undefined)}

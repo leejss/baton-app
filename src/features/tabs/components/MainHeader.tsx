@@ -1,15 +1,12 @@
+import { useMainContext } from '@/features/stores/hooks/useMainContext';
 import { useQuery } from '@tanstack/react-query';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import type { HomeDataSource } from '@/features/home/api/home.dataSource';
-import { mockHomeDataSource } from '@/features/home/api/home.mockDataSource';
-import type { NotificationDataSource } from '@/features/notifications/api/notification.dataSource';
-import { mockNotificationDataSource } from '@/features/notifications/api/mockNotificationDataSource';
+import { ROUTES } from '@/shared/lib/routes';
 import { notificationQueries } from '@/features/notifications/api/notification.queries';
-import { mainQueries } from '@/features/tabs/api/main.queries';
 import { Pressable } from '@/shared/ui/Pressable';
 import { Text } from '@/shared/ui/Text';
 import { ArrowLeftS, NavNotification } from '@/shared/ui/icons';
@@ -17,35 +14,26 @@ import { radius, SCREEN_PADDING_X, spacing, useTheme } from '@/theme';
 
 type MainHeaderProps = {
   title?: string;
-  dataSource?: HomeDataSource;
-  notificationSource?: NotificationDataSource;
   onBack?: () => void;
 };
 
 /** 제목이 없는 홈만 워드마크를 표시하며, 모든 메인 화면이 같은 조회를 사용한다. */
-export function MainHeader({
-  title,
-  dataSource = mockHomeDataSource,
-  notificationSource = mockNotificationDataSource,
-  onBack,
-}: MainHeaderProps) {
+export function MainHeader({ title, onBack }: MainHeaderProps) {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const theme = useTheme();
-  const context = useQuery(mainQueries.context(dataSource));
-  const storeId = context.data?.membership.store.id;
-  const notifications = useQuery({
-    ...notificationQueries.list(notificationSource, {
-      storeId: storeId ?? 0,
-      userId: context.data?.profile.id ?? 0,
+  const context = useMainContext();
+  const notifications = useQuery(
+    notificationQueries.list({
+      storeId: context.storeId,
+      userId: context.userId,
     }),
-    enabled: storeId !== undefined && context.data !== undefined,
-  });
-  const membership = context.data?.membership;
+  );
+  const membership = context.membership;
   const storeLabel = membership && `${membership.store.storeName} ${membership.store.branchName}`;
   const roleLabel = membership?.role === 'MANAGER' ? '관리자' : '직원';
   const count = notifications.data?.unreadCount ?? 0;
-  const badgeText = count > 99 ? '99+' : String(count);
+  const badgeText = notifications.data?.badgeText ?? '';
 
   return (
     <View
@@ -110,22 +98,21 @@ export function MainHeader({
                 {roleLabel}
               </Text>
             </View>
-          ) : context.isError ? (
+          ) : null}
+          {notifications.isError && (
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel="매장 정보 다시 조회"
-              onPress={() => void context.refetch()}
+              accessibilityLabel="알림 다시 조회"
+              onPress={() => void notifications.refetch()}
               style={styles.retry}
             >
-              <Text variant="caption">다시 시도</Text>
+              <Text variant="caption">알림 재조회</Text>
             </Pressable>
-          ) : (
-            <Text variant="caption">매장 정보 조회 중</Text>
           )}
           <Pressable
             accessibilityLabel={count > 0 ? `알림, 읽지 않은 알림 ${badgeText}개` : '알림'}
             accessibilityRole="button"
-            onPress={() => router.navigate('/notifications')}
+            onPress={() => router.navigate(ROUTES.notifications)}
             style={({ pressed }) => [styles.notificationButton, pressed && styles.pressed]}
           >
             <NavNotification color="navigationForeground" />
@@ -169,7 +156,12 @@ const styles = StyleSheet.create({
   },
   title: { flexShrink: 0 },
   titleGroup: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  backButton: { width: 24, minHeight: 28, alignItems: 'center', justifyContent: 'center' },
+  backButton: {
+    width: 24,
+    minHeight: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   trailing: {
     minWidth: 0,
     flexShrink: 1,

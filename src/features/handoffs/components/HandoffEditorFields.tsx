@@ -5,6 +5,7 @@ import { radius, spacing, typography, useTheme } from '@/theme';
 
 type HandoffEditorFieldsProps = {
   body: string;
+  disabled?: boolean;
   bodyError?: string;
   title: string;
   titleError?: string;
@@ -16,6 +17,7 @@ type HandoffEditorFieldsProps = {
 
 export function HandoffEditorFields({
   body,
+  disabled = false,
   bodyError,
   title,
   titleError,
@@ -39,6 +41,8 @@ export function HandoffEditorFields({
         ]}
       >
         <TextInput
+          editable={!disabled}
+          accessibilityState={{ disabled }}
           accessibilityLabel="인수인계 제목"
           maxLength={20}
           onBlur={onBlurTitle}
@@ -50,6 +54,8 @@ export function HandoffEditorFields({
         />
         <View style={[styles.divider, { backgroundColor: theme.colors.surfaceSunken }]} />
         <TextInput
+          editable={!disabled}
+          accessibilityState={{ disabled }}
           accessibilityLabel="인수인계 내용"
           maxLength={200}
           multiline

@@ -1,6 +1,6 @@
 import { StyleSheet, View } from 'react-native';
 
-import type { ScheduleItem } from '@/features/schedules/model/schedule';
+import type { ScheduleItem } from '@/features/schedules/types';
 import { Pressable, Text } from '@/shared/ui';
 import { SendFill, NavUserLine } from '@/shared/ui/icons';
 import { radius, spacing, useTheme } from '@/theme';

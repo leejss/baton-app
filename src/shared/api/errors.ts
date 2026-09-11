@@ -8,7 +8,14 @@
  * 화면이 "비밀번호가 틀렸다"와 "인터넷이 끊겼다"를 같은 자리에서 다르게 안내해야 해서
  * 둘을 한 필드에 섞지 않는다.
  */
-export type AppErrorCode = 'network' | 'timeout' | 'canceled' | 'server' | 'unknown';
+export type AppErrorCode =
+  | 'network'
+  | 'timeout'
+  | 'canceled'
+  | 'server'
+  | 'unknown'
+  | 'configuration'
+  | 'schema';
 
 /**
  * 계약에 정의된 오류 코드. 화면 분기에 실제로 쓰는 것만 좁혀 둔다.
@@ -79,7 +86,7 @@ export function normalizeError(error: unknown): AppError {
     return error;
   }
 
-  if (error instanceof DOMException && error.name === 'AbortError') {
+  if (error instanceof Error && error.name === 'AbortError') {
     return new AppError('canceled', '요청이 취소됐어요.', { cause: error });
   }
 
@@ -91,7 +98,9 @@ export function normalizeError(error: unknown): AppError {
 
   if (error instanceof TypeError) {
     // fetch는 네트워크 실패를 TypeError로 던진다.
-    return new AppError('network', '네트워크에 연결할 수 없어요.', { cause: error });
+    return new AppError('network', '네트워크에 연결할 수 없어요.', {
+      cause: error,
+    });
   }
 
   if (error instanceof Error) {

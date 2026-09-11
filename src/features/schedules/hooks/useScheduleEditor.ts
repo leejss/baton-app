@@ -1,3 +1,4 @@
+import { updateSchedule } from '@/features/schedules/api/schedule.api';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigation, useRouter } from 'expo-router';
 import { usePreventRemove } from 'expo-router/react-navigation';
@@ -5,24 +6,24 @@ import { useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { Keyboard } from 'react-native';
 
-import type { ScheduleDataSource } from '@/features/schedules/api/schedule.dataSource';
+import { ROUTES } from '@/shared/lib/routes';
 import {
   getDuplicateCounts,
+  refreshScheduleConflict,
   invalidateScheduleViews,
   saveScheduleDates,
 } from '@/features/schedules/api/schedule.mutations';
-import { scheduleSchema } from '@/features/schedules/api/schedule.schema';
-import { hasStarted, rangeDates } from '@/features/schedules/lib/scheduleDate';
 import type {
   ScheduleContext,
   ScheduleFormValues,
   ScheduleItem,
   ScheduleSaveResult,
-} from '@/features/schedules/model/schedule';
-import { scheduleFormSchema } from '@/features/schedules/model/schedulePolicy';
+} from '@/features/schedules/types';
+import { scheduleFormSchema } from '@/features/schedules/lib/schedulePolicy';
+import { rangeDates } from '@/shared/lib/date';
+import { hasStarted } from '@/shared/lib/time';
 
 type EditorOptions = {
-  source: ScheduleDataSource;
   context: ScheduleContext;
   initialDate?: string;
   item?: ScheduleItem;
@@ -31,7 +32,7 @@ const isField = (field: PropertyKey | undefined): field is keyof ScheduleFormVal
   typeof field === 'string' &&
   ['employeeId', 'startDate', 'endDate', 'startTime', 'endTime'].includes(field);
 
-export function useScheduleEditor({ source, context, initialDate, item }: EditorOptions) {
+export function useScheduleEditor({ context, initialDate, item }: EditorOptions) {
   const form = useForm<ScheduleFormValues>({
     defaultValues: {
       employeeId: item?.member.id ?? null,
@@ -50,35 +51,52 @@ export function useScheduleEditor({ source, context, initialDate, item }: Editor
   const router = useRouter();
   const navigation = useNavigation();
   const mutation = useMutation({
+    mutationKey: ['schedules', item ? 'update' : 'create'],
     mutationFn: async (acceptDuplicates: boolean) => {
       const input = scheduleFormSchema.parse(form.getValues());
       if (item) {
-        scheduleSchema.parse(
-          await source.update(context.storeId, item.id, {
-            employeeId: input.employeeId,
-            workDate: input.startDate,
-            startTime: input.startTime,
-            endTime: input.endTime,
-          }),
-        );
-        return { created: [input.startDate], duplicates: [], failed: [] };
+        await updateSchedule(context.storeId, item.id, {
+          employeeId: input.employeeId,
+          workDate: input.startDate,
+          startTime: input.startTime,
+          endTime: input.endTime,
+        });
+        return {
+          created: [input.startDate],
+          duplicates: [],
+          failed: [],
+          failures: [],
+        };
       }
       return saveScheduleDates(
-        source,
         context.storeId,
         input,
         acceptDuplicates,
-        saveResult?.failed.length ? saveResult.failed : undefined,
+        saveResult?.failed.length
+          ? saveResult.failures
+              .filter((failure) => failure.retryable)
+              .map((failure) => failure.date)
+          : undefined,
       );
     },
+    onError: (error) => refreshScheduleConflict(client, context.storeId, error),
     onSuccess: async (result) => {
       setSaveResult((previous) => ({
         created: [...new Set([...(previous?.created ?? []), ...result.created])],
         duplicates: [...new Set([...(previous?.duplicates ?? []), ...result.duplicates])],
-        failed: result.failed,
+        failed: [
+          ...(previous?.failures
+            .filter((failure) => !failure.retryable)
+            .map((failure) => failure.date) ?? []),
+          ...result.failed,
+        ],
+        failures: [
+          ...(previous?.failures.filter((failure) => !failure.retryable) ?? []),
+          ...result.failures,
+        ],
       }));
       setShowResult(true);
-      await invalidateScheduleViews(client);
+      await invalidateScheduleViews(client, context.storeId);
     },
   });
   const complete = saveResult !== undefined && saveResult.failed.length === 0;
@@ -109,6 +127,7 @@ export function useScheduleEditor({ source, context, initialDate, item }: Editor
     return true;
   };
   const handleNext = () => {
+    if (mutation.isPending) return;
     if (step === 0 && !form.getValues('employeeId')) return;
     if (
       step === 1 &&
@@ -117,14 +136,12 @@ export function useScheduleEditor({ source, context, initialDate, item }: Editor
       return;
     if (step >= 2 && !validate()) return;
     Keyboard.dismiss();
-    if (step === 3) mutation.mutate(Boolean(saveResult?.failed.length));
-    else setStep(step + 1);
+    if (step === 3) {
+      if (saveResult && !saveResult.failures.some((failure) => failure.retryable)) return;
+      mutation.mutate(Boolean(saveResult?.failed.length));
+    } else setStep(step + 1);
   };
-  const handleFinish = () =>
-    router.dismissTo({
-      pathname: '/schedules',
-      params: { selectedDate: form.getValues('startDate') },
-    });
+  const handleFinish = () => router.dismissTo(ROUTES.schedules.list(form.getValues('startDate')));
   const clearFailedAttempt = () => {
     if (!saveResult?.created.length) setSaveResult(undefined);
     form.clearErrors();

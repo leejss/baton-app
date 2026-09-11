@@ -1,6 +1,6 @@
 import { StyleSheet, View } from 'react-native';
 
-import type { HandoffScope } from '@/features/handoffs/model/handoff';
+import type { HandoffScope } from '@/features/handoffs/types';
 import { Pressable, Text } from '@/shared/ui';
 import { spacing, useTheme } from '@/theme';
 

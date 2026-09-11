@@ -1,25 +1,19 @@
 import { useRouter } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 
-import { getTodayInSeoul } from '@/features/home/lib/homeDate';
-import type { ScheduleDataSource } from '@/features/schedules/api/schedule.dataSource';
-import { mockScheduleDataSource } from '@/features/schedules/api/mockScheduleDataSource';
+import { ROUTES } from '@/shared/lib/routes';
 import { ScheduleEditorLoader } from '@/features/schedules/components/ScheduleEditorLoader';
 import { ScreenHeader } from '@/shared/ui/ScreenHeader';
 import { normalizeSelectedDate } from '@/features/schedules/lib/scheduleDate';
+import { getTodayInSeoul } from '@/shared/lib/date';
 import { useTheme } from '@/theme';
 
 type ScheduleEditorScreenProps = {
   scheduleId?: string;
   initialDate?: string;
-  source?: ScheduleDataSource;
 };
 
-export function ScheduleEditorScreen({
-  scheduleId,
-  initialDate,
-  source = mockScheduleDataSource,
-}: ScheduleEditorScreenProps) {
+export function ScheduleEditorScreen({ scheduleId, initialDate }: ScheduleEditorScreenProps) {
   const router = useRouter();
   const { colors } = useTheme();
   const parsedId = Number(scheduleId);
@@ -34,10 +28,9 @@ export function ScheduleEditorScreen({
       <ScreenHeader
         title={scheduleId ? '근무수정' : '근무등록'}
         titleAlign="left"
-        onBack={() => (router.canGoBack() ? router.back() : router.replace('/schedules'))}
+        onBack={() => (router.canGoBack() ? router.back() : router.replace(ROUTES.schedules.index))}
       />
       <ScheduleEditorLoader
-        source={source}
         id={id}
         initialDate={normalizeSelectedDate(initialDate, getTodayInSeoul())}
       />

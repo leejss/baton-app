@@ -1,46 +1,39 @@
-import { queryOptions } from '@tanstack/react-query';
-
+import { queryOptions, infiniteQueryOptions } from '@tanstack/react-query';
 import {
-  toHandoffCardModel,
-  toHandoffScopeDto,
-  toRecipientModels,
-} from '@/features/handoffs/api/handoff.mappers';
-import {
-  CURRENT_USER_ID,
-  MOCK_NEXT_SHIFT_BY_USER_ID,
-} from '@/features/handoffs/api/mockHandoffData';
-import { mockHandoffRepository } from '@/features/handoffs/api/mockHandoffRepository';
-import type { HandoffScope } from '@/features/handoffs/model/handoff';
-
+  fetchHandoffs,
+  fetchHandoff,
+  fetchRecommendation,
+} from '@/features/handoffs/api/handoff.api';
+import { toHandoffScopeDto, toRecipientModels } from '@/features/handoffs/api/mappers';
+import { storeQueries } from '@/features/stores/api/store.queries';
+import type { HandoffScope } from '@/features/handoffs/types';
 export const handoffQueries = {
   all: () => ['handoffs'] as const,
-
-  list: (scope: HandoffScope) =>
-    queryOptions({
-      queryKey: [...handoffQueries.all(), 'list', scope] as const,
-      queryFn: async ({ signal }) => {
-        const page = await mockHandoffRepository.list(toHandoffScopeDto(scope), signal);
-        return {
-          ...page,
-          items: page.items.map((item) =>
-            toHandoffCardModel(item, CURRENT_USER_ID, new Date(), scope),
-          ),
-        };
-      },
+  store: (storeId: number) => ['handoffs', storeId] as const,
+  lists: (storeId: number) => [...handoffQueries.store(storeId), 'list'] as const,
+  list: (storeId: number, userId: number, scope: HandoffScope) =>
+    infiniteQueryOptions({
+      queryKey: [...handoffQueries.lists(storeId), userId, scope],
+      initialPageParam: undefined as string | undefined,
+      queryFn: ({ signal, pageParam }) =>
+        fetchHandoffs(storeId, toHandoffScopeDto(scope), pageParam, signal),
+      getNextPageParam: (page) => (page.hasNext ? (page.nextCursor ?? undefined) : undefined),
     }),
-
-  detail: (handoffId: string) =>
+  detail: (storeId: number, handoffId: string | number) =>
     queryOptions({
-      queryKey: [...handoffQueries.all(), 'detail', handoffId] as const,
-      queryFn: ({ signal }) => mockHandoffRepository.detail(handoffId, signal),
+      queryKey: [...handoffQueries.store(storeId), 'detail', String(handoffId)],
+      queryFn: ({ signal }) => fetchHandoff(handoffId, signal),
     }),
-
-  recipients: () =>
+  recipientsKey: (storeId: number) => [...handoffQueries.store(storeId), 'recipients'] as const,
+  recipients: (storeId: number, userId: number) =>
     queryOptions({
-      queryKey: [...handoffQueries.all(), 'recipients'] as const,
-      queryFn: async ({ signal }) => {
-        const dto = await mockHandoffRepository.recipients(signal);
-        return toRecipientModels(dto, MOCK_NEXT_SHIFT_BY_USER_ID);
+      queryKey: [...handoffQueries.recipientsKey(storeId), userId],
+      queryFn: async ({ signal, client }) => {
+        const [recommendation, members] = await Promise.all([
+          fetchRecommendation(storeId, signal),
+          client.fetchQuery(storeQueries.members(storeId)),
+        ]);
+        return toRecipientModels(recommendation, members, userId);
       },
     }),
 };

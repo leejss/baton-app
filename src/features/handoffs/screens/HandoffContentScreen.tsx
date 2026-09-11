@@ -1,12 +1,15 @@
+import { normalizeError } from '@/shared/api/errors';
+import { useAttachmentUploads } from '@/features/handoffs/hooks/useAttachmentUploads';
+import { useMainContext } from '@/features/stores/hooks/useMainContext';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useController, useForm } from 'react-hook-form';
 import { Alert, ScrollView, StyleSheet, View } from 'react-native';
 import { useShallow } from 'zustand/react/shallow';
 
-import { toCreateRequest } from '@/features/handoffs/api/handoff.mappers';
+import { toCreateRequest } from '@/features/handoffs/api/mappers';
 import { handoffQueries } from '@/features/handoffs/api/handoff.queries';
-import { mockHandoffRepository } from '@/features/handoffs/api/mockHandoffRepository';
+import { handoffMutations } from '@/features/handoffs/api/handoff.mutations';
 import { HandoffAttachmentStrip } from '@/features/handoffs/components/HandoffAttachmentStrip';
 import { HandoffEditorFields } from '@/features/handoffs/components/HandoffEditorFields';
 import { HandoffFooterActions } from '@/features/handoffs/components/HandoffFooterActions';
@@ -14,11 +17,11 @@ import { HandoffRecipientCard } from '@/features/handoffs/components/HandoffReci
 import {
   handoffContentFormSchema,
   type HandoffContentFormValues,
-} from '@/features/handoffs/model/handoffForm';
-import { useHandoffDraftStore } from '@/features/handoffs/model/handoffDraftStore';
-import { useHandoffImagePicker } from '@/features/handoffs/model/useHandoffImagePicker';
+} from '@/features/handoffs/lib/handoffForm';
+import { useHandoffDraftStore } from '@/features/handoffs/store/handoffDraftStore';
+import { useHandoffImagePicker } from '@/features/handoffs/hooks/useHandoffImagePicker';
 import { ScreenHeader } from '@/shared/ui/ScreenHeader';
-import { Text } from '@/shared/ui';
+import { Button, Text } from '@/shared/ui';
 import { SCREEN_PADDING_X, useTheme } from '@/theme';
 
 type HandoffContentScreenProps = {
@@ -33,6 +36,7 @@ export function HandoffContentScreen({
   onSent,
 }: HandoffContentScreenProps) {
   const queryClient = useQueryClient();
+  const context = useMainContext();
   const theme = useTheme();
   const {
     type,
@@ -43,6 +47,7 @@ export function HandoffContentScreen({
     setContent,
     addAttachments,
     removeAttachment,
+    updateAttachment,
     reset,
   } = useHandoffDraftStore(
     useShallow((state) => ({
@@ -54,6 +59,7 @@ export function HandoffContentScreen({
       setContent: state.setContent,
       addAttachments: state.addAttachments,
       removeAttachment: state.removeAttachment,
+      updateAttachment: state.updateAttachment,
       reset: state.reset,
     })),
   );
@@ -65,31 +71,26 @@ export function HandoffContentScreen({
   });
   const titleController = useController({ control, name: 'title' });
   const bodyController = useController({ control, name: 'body' });
+  const uploads = useAttachmentUploads({
+    attachments,
+    onAdd: addAttachments,
+    onUpdate: updateAttachment,
+    onRemove: removeAttachment,
+  });
   const { addImages, isPickingImages } = useHandoffImagePicker({
     attachmentCount: attachments.length,
-    onSelected: addAttachments,
+    onSelected: uploads.add,
   });
-  const recipientsQuery = useQuery(handoffQueries.recipients());
+  const recipientsQuery = useQuery(handoffQueries.recipients(context.storeId, context.userId));
   // 추천값은 화면 기본 선택으로만 사용하고, 사용자가 고른 값만 작성 상태에 저장한다.
   const effectiveRecipient =
-    recipient ?? recipientsQuery.data?.find((item) => item.isRecommended) ?? null;
+    (recipient
+      ? recipientsQuery.data?.find((item) => item.member.userId === recipient.member.userId)
+      : recipientsQuery.data?.filter((item) => item.isRecommended).length === 1
+        ? recipientsQuery.data.find((item) => item.isRecommended)
+        : null) ?? null;
 
-  const createMutation = useMutation({
-    mutationFn: mockHandoffRepository.create,
-    onSuccess: async (created) => {
-      // 전송 직후 상세 화면이 추가 요청을 기다리지 않고 생성 응답을 바로 사용한다.
-      queryClient.setQueryData(handoffQueries.detail(created.id).queryKey, created);
-      await queryClient.invalidateQueries({ queryKey: [...handoffQueries.all(), 'list'] });
-      reset();
-      onSent(created.id);
-    },
-    onError: (error) => {
-      Alert.alert(
-        '전송하지 못했어요',
-        error instanceof Error ? error.message : '잠시 후 다시 시도해 주세요.',
-      );
-    },
-  });
+  const createMutation = useMutation(handoffMutations(queryClient, context.storeId).create());
 
   const handleTitleChange = (value: string) => {
     titleController.field.onChange(value);
@@ -101,6 +102,7 @@ export function HandoffContentScreen({
   };
 
   const submit = handleSubmit((values) => {
+    if (createMutation.isPending || !uploads.isReady || isPickingImages) return;
     if (type === null || effectiveRecipient === null) {
       Alert.alert('전송할 수 없어요', '인수인계 유형과 받는 사람을 확인해 주세요.');
       return;
@@ -108,13 +110,29 @@ export function HandoffContentScreen({
 
     setContent(values.title, values.body);
     createMutation.mutate(
-      toCreateRequest({ type, ...values, recipient: effectiveRecipient, attachments }),
+      toCreateRequest({
+        type,
+        ...values,
+        recipient: effectiveRecipient,
+        attachments,
+      }),
+      {
+        onSuccess: (created) => {
+          reset();
+          onSent(String(created.id));
+        },
+        onError: (error) => Alert.alert('전송하지 못했어요', normalizeError(error).message),
+      },
     );
   });
 
   return (
     <View style={[styles.root, { backgroundColor: theme.colors.background }]}>
-      <ScreenHeader onBack={onBack} />
+      <ScreenHeader
+        onBack={() => {
+          if (!createMutation.isPending) onBack();
+        }}
+      />
       <ScrollView
         automaticallyAdjustKeyboardInsets
         contentInsetAdjustmentBehavior="automatic"
@@ -123,12 +141,19 @@ export function HandoffContentScreen({
         style={styles.scroll}
       >
         <View style={styles.content}>
+          {recipientsQuery.isError && (
+            <>
+              <Text color="dangerText">수신자 목록을 불러오지 못했습니다.</Text>
+              <Button label="수신자 다시 조회" onPress={() => void recipientsQuery.refetch()} />
+            </>
+          )}
           <View style={styles.mainSection}>
             <Text variant="subheading" weight="semibold" style={styles.heading}>
               어떤 내용을 전달해야하나요?
             </Text>
 
             <HandoffEditorFields
+              disabled={createMutation.isPending}
               title={titleController.field.value}
               body={bodyController.field.value}
               titleError={titleController.fieldState.error?.message}
@@ -141,9 +166,10 @@ export function HandoffContentScreen({
 
             <HandoffAttachmentStrip
               attachments={attachments}
-              isPicking={isPickingImages}
+              isPicking={isPickingImages || createMutation.isPending}
               onAdd={addImages}
-              onRemove={removeAttachment}
+              onRemove={uploads.remove}
+              onRetry={uploads.retry}
             />
           </View>
 
@@ -154,7 +180,9 @@ export function HandoffContentScreen({
             <HandoffRecipientCard
               recipient={effectiveRecipient?.member ?? null}
               isRecommended={effectiveRecipient?.isRecommended}
-              onPress={onRecipientPress}
+              onPress={() => {
+                if (!createMutation.isPending) onRecipientPress();
+              }}
             />
           </View>
         </View>
@@ -162,7 +190,9 @@ export function HandoffContentScreen({
       <HandoffFooterActions
         secondaryLabel="이전"
         primaryLabel="이대로 보내기"
-        primaryDisabled={effectiveRecipient === null || type === null}
+        primaryDisabled={
+          !uploads.isReady || isPickingImages || effectiveRecipient === null || type === null
+        }
         primaryLoading={createMutation.isPending}
         primaryTone="accent"
         onPrimaryPress={() => void submit()}

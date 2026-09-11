@@ -1,5 +1,6 @@
 import { Redirect, router } from 'expo-router';
 
+import { ROUTES } from '@/shared/lib/routes';
 import { goBackOr } from '@/shared/lib/navigation';
 
 import { PasswordResetCodeScreen } from '@/features/auth/screens/PasswordResetCodeScreen';
@@ -10,15 +11,15 @@ export default function PasswordResetCodeRoute() {
 
   // 딥링크로 중간 단계에 바로 들어온 경우. 보낼 코드가 없으니 처음부터 시작한다.
   if (email === null) {
-    return <Redirect href="/reset-password" />;
+    return <Redirect href={ROUTES.resetPassword.index} />;
   }
 
   return (
     <PasswordResetCodeScreen
-      onBack={() => goBackOr('/reset-password')}
-      onBackToSignIn={() => router.navigate('/login')}
-      onChangeEmail={() => goBackOr('/reset-password')}
-      onVerified={() => router.push('/reset-password/new-password')}
+      onBack={() => goBackOr(ROUTES.resetPassword.index)}
+      onBackToSignIn={() => router.navigate(ROUTES.auth.login)}
+      onChangeEmail={() => goBackOr(ROUTES.resetPassword.index)}
+      onVerified={() => router.push(ROUTES.resetPassword.newPassword)}
     />
   );
 }

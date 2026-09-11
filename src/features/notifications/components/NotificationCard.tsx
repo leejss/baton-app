@@ -1,7 +1,7 @@
 import { Image } from 'expo-image';
 import { StyleSheet, View } from 'react-native';
 
-import type { Notification } from '@/features/notifications/model/notification';
+import type { Notification } from '@/features/notifications/types';
 import { Pressable, Text } from '@/shared/ui';
 import { spacing, useTheme } from '@/theme';
 
@@ -88,6 +88,10 @@ const styles = StyleSheet.create({
   icon: { width: CARD.iconSize, height: CARD.iconSize },
   content: { flex: 1, minWidth: 0, gap: CARD.textGap },
   dotSlot: { width: CARD.dotSize, height: CARD.dotSize },
-  dot: { width: CARD.dotSize, height: CARD.dotSize, borderRadius: CARD.dotSize / 2 },
+  dot: {
+    width: CARD.dotSize,
+    height: CARD.dotSize,
+    borderRadius: CARD.dotSize / 2,
+  },
   pressed: { opacity: 0.7 },
 });

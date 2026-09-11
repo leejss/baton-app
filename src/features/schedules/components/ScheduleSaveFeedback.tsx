@@ -1,4 +1,4 @@
-import type { ScheduleSaveResult } from '@/features/schedules/model/schedule';
+import type { ScheduleSaveResult } from '@/features/schedules/types';
 import { ScheduleOverlay } from '@/features/schedules/components/ScheduleOverlay';
 import { Button, Text } from '@/shared/ui';
 
@@ -36,6 +36,7 @@ export function ScheduleSaveFeedback({
     );
   if (!result) return null;
   const failed = result.failed.length;
+  const retryable = result.failures.filter((failure) => failure.retryable).length;
   return (
     <ScheduleOverlay
       visible
@@ -47,13 +48,19 @@ export function ScheduleSaveFeedback({
     >
       <Text variant="bodySmall" accessibilityLiveRegion="polite">
         {failed
-          ? `${result.created.length}건을 등록했습니다. 등록하지 못한 ${failed}건을 다시 시도해주세요.`
+          ? `${result.created.length}건을 등록했습니다. 등록하지 못한 ${failed}건 중 ${retryable}건을 다시 시도할 수 있습니다.`
           : editing
             ? '근무가 성공적으로 수정됐어요.'
             : `${result.created.length}건의 근무가 등록됐어요.`}
         {result.duplicates.length > 0 ? `\n중복 ${result.duplicates.length}건은 제외했습니다.` : ''}
       </Text>
-      {failed > 0 && <Button label="실패한 날짜만 재시도" onPress={onRetry} isLoading={busy} />}
+      {retryable > 0 && <Button label="실패한 날짜만 재시도" onPress={onRetry} isLoading={busy} />}
+      {failed > retryable && (
+        <Text variant="bodySmall">
+          시작 시각 경과 등 입력 변경이 필요한 날짜는 새 근무로 등록해주세요. 성공한 일정은
+          유지됩니다.
+        </Text>
+      )}
       <Button
         label={failed ? '입력 내용으로 돌아가기' : '확인'}
         onPress={failed ? onCancel : onFinish}

@@ -1,7 +1,8 @@
 import { ScrollView, StyleSheet } from 'react-native';
 
 import { BottomSheet } from '@/shared/ui/BottomSheet';
-import { monthLabel, monthLimits, shiftMonth } from '@/features/schedules/lib/scheduleDate';
+import { monthLimits, shiftMonth } from '@/features/schedules/lib/scheduleDate';
+import { formatKoreanMonth } from '@/shared/lib/formatters';
 import { Pressable, Text } from '@/shared/ui';
 import { radius, spacing, useTheme } from '@/theme';
 
@@ -29,7 +30,7 @@ export function MonthPicker({ visible, month, today, onSelect, onClose }: MonthP
           <Pressable
             key={value}
             accessibilityRole="button"
-            accessibilityLabel={monthLabel(value)}
+            accessibilityLabel={formatKoreanMonth(value)}
             accessibilityState={{ selected: month === value }}
             onPress={() => {
               onSelect(value);
@@ -37,7 +38,9 @@ export function MonthPicker({ visible, month, today, onSelect, onClose }: MonthP
             }}
             style={[styles.item, month === value && { backgroundColor: colors.accentSubtle }]}
           >
-            <Text weight={month === value ? 'semibold' : 'regular'}>{monthLabel(value)}</Text>
+            <Text weight={month === value ? 'semibold' : 'regular'}>
+              {formatKoreanMonth(value)}
+            </Text>
           </Pressable>
         ))}
       </ScrollView>

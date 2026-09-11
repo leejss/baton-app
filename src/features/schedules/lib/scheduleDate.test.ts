@@ -1,11 +1,11 @@
 import { describe, expect, it } from '@jest/globals';
 
+import { isCalendarDate } from '@/shared/lib/date';
+import { formatTimeRangeDuration } from '@/shared/lib/formatters';
+import { hasStarted } from '@/shared/lib/time';
 import {
   calendarDates,
   contiguousRanges,
-  durationLabel,
-  hasStarted,
-  isCalendarDate,
   monthDates,
   monthLimits,
   normalizeSelectedDate,
@@ -30,7 +30,7 @@ describe('일정 날짜 계산', () => {
   it('서울 기준 시작 시각과 종료 24:00을 계산한다', () => {
     expect(hasStarted('2026-09-08', '00:00', new Date('2026-09-07T15:00:00Z'))).toBe(true);
     expect(hasStarted('2026-09-08', '00:00', new Date('2026-09-07T14:59:59Z'))).toBe(false);
-    expect(durationLabel('22:30', '24:00')).toBe('1시간 30분');
+    expect(formatTimeRangeDuration('22:30', '24:00')).toBe('1시간 30분');
   });
   it('조회 범위와 홈에서 넘어온 날짜를 검증한다', () => {
     expect(monthLimits('2026-09-07')).toEqual({ min: '2025-09', max: '2026-12' });

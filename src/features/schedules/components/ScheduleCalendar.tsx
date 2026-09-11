@@ -6,7 +6,7 @@ import { scheduleOnRN } from 'react-native-worklets';
 
 import { CalendarDay } from '@/features/schedules/components/CalendarDay';
 import { calendarDates } from '@/features/schedules/lib/scheduleDate';
-import type { DateRange } from '@/features/schedules/model/schedule';
+import type { DateRange } from '@/features/schedules/types';
 import { Text } from '@/shared/ui';
 
 type ScheduleCalendarProps = {

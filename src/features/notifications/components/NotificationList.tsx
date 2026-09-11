@@ -1,30 +1,28 @@
+import { useMainContext } from '@/features/stores/hooks/useMainContext';
 import { FlashList, type ListRenderItemInfo } from '@shopify/flash-list';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import type { NotificationDataSource } from '@/features/notifications/api/notification.dataSource';
 import { notificationQueries } from '@/features/notifications/api/notification.queries';
 import { NotificationCard } from '@/features/notifications/components/NotificationCard';
 import { useOpenNotification } from '@/features/notifications/hooks/useOpenNotification';
-import type { Notification } from '@/features/notifications/model/notification';
-import { mainQueries } from '@/features/tabs/api/main.queries';
+import type { Notification } from '@/features/notifications/types';
 import { EmptyState, Snackbar, Text } from '@/shared/ui';
 import { SCREEN_PADDING_X, spacing } from '@/theme';
 
-type NotificationListProps = { source: NotificationDataSource };
-
 const keyExtractor = (notification: Notification) => notification.id;
 
-export function NotificationList({ source }: NotificationListProps) {
-  const { data: context } = useSuspenseQuery(mainQueries.context());
-  const scope = { storeId: context.membership.store.id, userId: context.profile.id };
-  const { data, refetch, isRefetchError } = useSuspenseQuery(
-    notificationQueries.list(source, scope),
-  );
+export function NotificationList() {
+  const context = useMainContext();
+  const scope = {
+    storeId: context.membership.store.id,
+    userId: context.profile.id,
+  };
+  const { data, refetch, isRefetchError } = useSuspenseQuery(notificationQueries.list(scope));
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const { open, openingId, message, clearMessage } = useOpenNotification(source, scope);
+  const { open, openingId, message, clearMessage } = useOpenNotification(scope);
 
   // useFocusEffect는 콜백 참조가 달라지면 다시 실행하므로 안정된 참조가 필요하다.
   useFocusEffect(
@@ -88,6 +86,10 @@ const styles = StyleSheet.create({
     paddingTop: spacing.md,
     paddingBottom: spacing.xl,
   },
-  footer: { paddingTop: spacing.md, paddingBottom: spacing.sm, textAlign: 'center' },
+  footer: {
+    paddingTop: spacing.md,
+    paddingBottom: spacing.sm,
+    textAlign: 'center',
+  },
   feedback: { paddingHorizontal: SCREEN_PADDING_X, paddingBottom: spacing.md },
 });

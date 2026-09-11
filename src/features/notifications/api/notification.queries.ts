@@ -1,26 +1,19 @@
 import { queryOptions } from '@tanstack/react-query';
-
-import type { NotificationDataSource } from '@/features/notifications/api/notification.dataSource';
+import { fetchNotifications } from '@/features/notifications/api/notification.api';
 import { toNotification } from '@/features/notifications/api/mappers';
-import { notificationListSchema } from '@/features/notifications/api/notification.schema';
-import {
-  toNotificationInbox,
-  type NotificationScope,
-} from '@/features/notifications/model/notification';
-import { normalizeError } from '@/shared/api/errors';
-
+import type { NotificationScope } from '@/features/notifications/types';
 export const notificationQueries = {
-  list: (source: NotificationDataSource, scope: NotificationScope) =>
+  all: () => ['notifications'] as const,
+  store: (storeId: number) => ['notifications', storeId] as const,
+  list: (scope: NotificationScope) =>
     queryOptions({
-      queryKey: ['notifications', source.key, scope.storeId, scope.userId] as const,
-      staleTime: 30_000,
+      queryKey: [...notificationQueries.store(scope.storeId), scope.userId],
       queryFn: async ({ signal }) => {
-        try {
-          const dto = notificationListSchema.parse(await source.list(scope, signal));
-          return toNotificationInbox(dto.items.map(toNotification));
-        } catch (error) {
-          throw normalizeError(error);
-        }
+        const data = await fetchNotifications(scope.storeId, signal);
+        return {
+          ...data,
+          items: data.items.map((item) => toNotification(item)),
+        };
       },
     }),
 };

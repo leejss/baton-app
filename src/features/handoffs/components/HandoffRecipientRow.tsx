@@ -1,7 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 
 import { HandoffAvatar } from '@/features/handoffs/components/HandoffAvatar';
-import type { RecipientModel } from '@/features/handoffs/model/handoff';
+import type { RecipientModel } from '@/features/handoffs/types';
 import { Pressable, Text } from '@/shared/ui';
 import { Check } from '@/shared/ui/icons';
 import { spacing, useTheme } from '@/theme';
