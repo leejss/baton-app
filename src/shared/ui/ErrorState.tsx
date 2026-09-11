@@ -1,16 +1,17 @@
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from "react-native";
 
-import { normalizeError } from '@/shared/api/errors';
-import { Button } from '@/shared/ui/Button';
-import { Text, textStyles } from '@/shared/ui/Text';
-import { spacing } from '@/theme';
+import { normalizeError } from "@/shared/api/errors";
+import { Button } from "@/shared/ui/Button";
+import { Text, textStyles } from "@/shared/ui/Text";
+import { spacing } from "@/theme";
 
 type ErrorStateProps = {
   error: unknown;
   onRetry?: () => void;
+  onBack?: () => void;
 };
 
-export function ErrorState({ error, onRetry }: ErrorStateProps) {
+export function ErrorState({ error, onRetry, onBack }: ErrorStateProps) {
   const appError = normalizeError(error);
 
   return (
@@ -21,7 +22,10 @@ export function ErrorState({ error, onRetry }: ErrorStateProps) {
       <Text color="textSecondary" style={textStyles.center}>
         {appError.message}
       </Text>
-      {onRetry !== undefined && <Button label="다시 시도" variant="secondary" onPress={onRetry} />}
+      {onBack && <Button label="이전 화면으로" onPress={onBack} />}
+      {onRetry !== undefined && (
+        <Button label="다시 시도" variant="secondary" onPress={onRetry} />
+      )}
     </View>
   );
 }
@@ -29,8 +33,8 @@ export function ErrorState({ error, onRetry }: ErrorStateProps) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     padding: spacing.lg,
     gap: spacing.md,
   },

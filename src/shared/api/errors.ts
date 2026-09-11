@@ -8,29 +8,36 @@
  * 화면이 "비밀번호가 틀렸다"와 "인터넷이 끊겼다"를 같은 자리에서 다르게 안내해야 해서
  * 둘을 한 필드에 섞지 않는다.
  */
-export type AppErrorCode = 'network' | 'timeout' | 'canceled' | 'server' | 'unknown';
+export type AppErrorCode =
+  | "network"
+  | "timeout"
+  | "canceled"
+  | "server"
+  | "unknown"
+  | "configuration"
+  | "schema";
 
 /**
  * 계약에 정의된 오류 코드. 화면 분기에 실제로 쓰는 것만 좁혀 둔다.
  * 목록 전체는 wiki `wiki/api-spec.md` §11에 있다.
  */
 export type ServerErrorCode =
-  | 'VALIDATION_ERROR'
-  | 'UNAUTHORIZED'
-  | 'FORBIDDEN'
-  | 'NOT_FOUND'
-  | 'CONFLICT'
-  | 'SERVICE_UNAVAILABLE'
-  | 'AUTH_INVALID_CREDENTIALS'
-  | 'AUTH_LOGIN_TEMPORARILY_LOCKED'
-  | 'AUTH_ACCOUNT_ALREADY_EXISTS'
-  | 'AUTH_ACCOUNT_NOT_FOUND'
-  | 'SOCIAL_AUTHENTICATION_FAILED'
-  | 'SOCIAL_SIGNUP_TOKEN_INVALID'
-  | 'SAME_AS_CURRENT_PASSWORD'
-  | 'EMAIL_VERIFICATION_RESEND_TOO_SOON';
+  | "VALIDATION_ERROR"
+  | "UNAUTHORIZED"
+  | "FORBIDDEN"
+  | "NOT_FOUND"
+  | "CONFLICT"
+  | "SERVICE_UNAVAILABLE"
+  | "AUTH_INVALID_CREDENTIALS"
+  | "AUTH_LOGIN_TEMPORARILY_LOCKED"
+  | "AUTH_ACCOUNT_ALREADY_EXISTS"
+  | "AUTH_ACCOUNT_NOT_FOUND"
+  | "SOCIAL_AUTHENTICATION_FAILED"
+  | "SOCIAL_SIGNUP_TOKEN_INVALID"
+  | "SAME_AS_CURRENT_PASSWORD"
+  | "EMAIL_VERIFICATION_RESEND_TOO_SOON";
 
-const FALLBACK_MESSAGE = '알 수 없는 문제가 발생했어요.';
+const FALLBACK_MESSAGE = "알 수 없는 문제가 발생했어요.";
 
 type AppErrorOptions = {
   cause?: unknown;
@@ -52,7 +59,7 @@ export class AppError extends Error {
 
   constructor(code: AppErrorCode, message: string, options?: AppErrorOptions) {
     super(message, { cause: options?.cause });
-    this.name = 'AppError';
+    this.name = "AppError";
     this.details = options?.details;
     this.code = code;
     this.errorCode = options?.errorCode ?? null;
@@ -66,7 +73,10 @@ export function isAppError(value: unknown): value is AppError {
 }
 
 /** 서버가 특정 계약 오류를 돌려줬는지. 화면 분기의 기본 수단이다. */
-export function hasServerErrorCode(value: unknown, code: ServerErrorCode): boolean {
+export function hasServerErrorCode(
+  value: unknown,
+  code: ServerErrorCode,
+): boolean {
   return isAppError(value) && value.errorCode === code;
 }
 
@@ -79,24 +89,30 @@ export function normalizeError(error: unknown): AppError {
     return error;
   }
 
-  if (error instanceof DOMException && error.name === 'AbortError') {
-    return new AppError('canceled', '요청이 취소됐어요.', { cause: error });
+  if (error instanceof Error && error.name === "AbortError") {
+    return new AppError("canceled", "요청이 취소됐어요.", { cause: error });
   }
 
-  if (error instanceof Error && error.name === 'TimeoutError') {
-    return new AppError('timeout', '응답이 너무 늦어요. 잠시 후 다시 시도해주세요.', {
-      cause: error,
-    });
+  if (error instanceof Error && error.name === "TimeoutError") {
+    return new AppError(
+      "timeout",
+      "응답이 너무 늦어요. 잠시 후 다시 시도해주세요.",
+      {
+        cause: error,
+      },
+    );
   }
 
   if (error instanceof TypeError) {
     // fetch는 네트워크 실패를 TypeError로 던진다.
-    return new AppError('network', '네트워크에 연결할 수 없어요.', { cause: error });
+    return new AppError("network", "네트워크에 연결할 수 없어요.", {
+      cause: error,
+    });
   }
 
   if (error instanceof Error) {
-    return new AppError('unknown', error.message, { cause: error });
+    return new AppError("unknown", error.message, { cause: error });
   }
 
-  return new AppError('unknown', FALLBACK_MESSAGE, { cause: error });
+  return new AppError("unknown", FALLBACK_MESSAGE, { cause: error });
 }
