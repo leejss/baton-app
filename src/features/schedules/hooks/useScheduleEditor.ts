@@ -2,7 +2,7 @@ import { updateSchedule } from '@/features/schedules/api/schedule.api';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigation, useRouter } from 'expo-router';
 import { usePreventRemove } from 'expo-router/react-navigation';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { Keyboard } from 'react-native';
 
@@ -50,6 +50,7 @@ export function useScheduleEditor({ context, initialDate, item }: EditorOptions)
   const client = useQueryClient();
   const router = useRouter();
   const navigation = useNavigation();
+  const saving = useRef(false);
   const mutation = useMutation({
     mutationKey: ['schedules', item ? 'update' : 'create'],
     mutationFn: async (acceptDuplicates: boolean) => {
@@ -80,6 +81,9 @@ export function useScheduleEditor({ context, initialDate, item }: EditorOptions)
       );
     },
     onError: (error) => refreshScheduleConflict(client, context.storeId, error),
+    onSettled: () => {
+      saving.current = false;
+    },
     onSuccess: async (result) => {
       setSaveResult((previous) => ({
         created: [...new Set([...(previous?.created ?? []), ...result.created])],
@@ -115,19 +119,33 @@ export function useScheduleEditor({ context, initialDate, item }: EditorOptions)
         if (isField(issue.path[0])) form.setError(issue.path[0], { message: issue.message });
       return false;
     }
-    const dates = saveResult?.failed.length
-      ? saveResult.failed
-      : rangeDates(input.startDate, input.endDate);
-    if (dates.some((date) => hasStarted(date, input.startTime, new Date()))) {
+    // 등록은 시작 시각이 지난 날짜만 서버에서 실패 처리하고 나머지를 저장한다.
+    if (
+      item &&
+      (hasStarted(item.date, item.startTime, new Date()) ||
+        hasStarted(input.startDate, input.startTime, new Date()))
+    ) {
       form.setError('root', {
-        message: '이미 시작된 근무는 등록할 수 없습니다. 날짜와 시간을 변경해주세요.',
+        message: '이미 시작된 근무는 수정할 수 없습니다. 날짜와 시간을 확인해주세요.',
       });
       return false;
     }
     return true;
   };
+  const handleSave = (acceptDuplicates = Boolean(saveResult?.failed.length)) => {
+    if (saving.current || mutation.isPending) return;
+    if (saveResult && !saveResult.failures.some((failure) => failure.retryable)) return;
+    if (!validate()) return;
+    Keyboard.dismiss();
+    saving.current = true;
+    mutation.mutate(acceptDuplicates);
+  };
   const handleNext = () => {
     if (mutation.isPending) return;
+    if (step === 3) {
+      handleSave();
+      return;
+    }
     if (step === 0 && !form.getValues('employeeId')) return;
     if (
       step === 1 &&
@@ -136,10 +154,7 @@ export function useScheduleEditor({ context, initialDate, item }: EditorOptions)
       return;
     if (step >= 2 && !validate()) return;
     Keyboard.dismiss();
-    if (step === 3) {
-      if (saveResult && !saveResult.failures.some((failure) => failure.retryable)) return;
-      mutation.mutate(Boolean(saveResult?.failed.length));
-    } else setStep(step + 1);
+    setStep(step + 1);
   };
   const handleFinish = () => router.dismissTo(ROUTES.schedules.list(form.getValues('startDate')));
   const clearFailedAttempt = () => {
@@ -167,6 +182,7 @@ export function useScheduleEditor({ context, initialDate, item }: EditorOptions)
     setRange,
     clearFailedAttempt,
     handleNext,
+    handleSave,
     handleFinish,
     duplicates: getDuplicateCounts(mutation.error),
   };

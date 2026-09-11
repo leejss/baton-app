@@ -195,8 +195,8 @@ export function ScheduleEditorForm(props: ScheduleEditorFormProps) {
         editing={Boolean(item)}
         busy={mutation.isPending}
         duplicates={editor.duplicates}
-        onRetry={() => mutation.mutate(true)}
-        onAcceptDuplicates={() => mutation.mutate(true)}
+        onRetry={() => editor.handleSave()}
+        onAcceptDuplicates={() => editor.handleSave(true)}
         onCancel={() => {
           mutation.reset();
           editor.setShowResult(false);

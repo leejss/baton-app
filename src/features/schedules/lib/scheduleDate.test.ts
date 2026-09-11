@@ -9,6 +9,7 @@ import {
   monthDates,
   monthLimits,
   normalizeSelectedDate,
+  normalizeRegistrationDate,
   shiftMonth,
 } from '@/features/schedules/lib/scheduleDate';
 
@@ -37,6 +38,16 @@ describe('일정 날짜 계산', () => {
     expect(normalizeSelectedDate('2027-01-01', '2026-09-07')).toBeUndefined();
     expect(normalizeSelectedDate('2026-09-31', '2026-09-07')).toBeUndefined();
     expect(normalizeSelectedDate('2026-12-31', '2026-09-07')).toBe('2026-12-31');
+  });
+  it('등록 초기 날짜는 오늘부터 세 달 뒤 월말까지만 유지한다', () => {
+    const today = '2026-09-07';
+    for (const date of ['2026-09-07', '2026-12-31'])
+      expect(normalizeRegistrationDate(date, today)).toBe(date);
+    for (const date of [undefined, '', '2026-09-06', '2026-09-31', '2027-01-01'])
+      expect(normalizeRegistrationDate(date, today)).toBeUndefined();
+    expect(normalizeSelectedDate('2026-09-06', today)).toBe('2026-09-06');
+    expect(normalizeRegistrationDate('2027-02-28', '2026-11-30')).toBe('2027-02-28');
+    expect(normalizeRegistrationDate('2027-03-01', '2026-11-30')).toBeUndefined();
   });
   it('띄엄띄엄 실패한 날짜만 범위로 묶어 성공 날짜의 재전송을 막는다', () => {
     expect(
