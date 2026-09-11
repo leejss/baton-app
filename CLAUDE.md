@@ -1,7 +1,7 @@
 # CLAUDE.md — React Native (Expo) 프로젝트 코드 컨벤션
 
-> 이 문서는 이 저장소에서 코드를 작성/수정할 때 **반드시 따라야 하는 규칙**이다.
-> 규칙과 충돌하는 기존 코드를 발견하면 임의로 대규모 리팩터링하지 말고, 건드리는 범위 안에서만 규칙에 맞춘다.
+> 이 문서는 이 저장소에서 코드를 작성/수정할 때 우선 적용하는 가이드다.
+> 기존 코드와 충돌하면 임의로 대규모 리팩터링하지 말고, 변경 범위와 실제 프로젝트 설정을 기준으로 판단한다.
 
 ---
 
@@ -21,8 +21,17 @@
 | 애니메이션 | **Reanimated 4** + Gesture Handler | 60fps 필요한 건 전부 워크릿으로 |
 | 폼 | **react-hook-form + zod** | |
 | 저장소 | **react-native-mmkv** (동기) / **expo-secure-store** (민감정보) | AsyncStorage 신규 사용 금지 |
-| 테스트 | *(현재 없음 — §11 참고)* | 재도입 시 Jest + @testing-library/react-native |
-| 린트/포맷 | ESLint (`eslint-config-expo`) + Prettier | |
+| 테스트 | **Jest (`jest-expo`) + @testing-library/react-native** | |
+| 린트/포맷 | Biome (포맷 전용) + ESLint (`eslint-config-expo`) | |
+
+### 린트 / 포맷 명령
+
+이 저장소의 포맷과 정적 분석은 `package.json`의 scripts를 따른다.
+
+- 포맷 적용/검사: `npm run format` / `npm run format:check` (Biome)
+- 린트 검사: `npm run lint` (Expo ESLint 설정)
+- 타입 검사: `npm run typecheck` (TypeScript)
+- Prettier는 포맷 기준으로 사용하지 않는다.
 
 ---
 
@@ -75,7 +84,7 @@ src/
 
 ### 라우트 파일 규칙
 
-`src/app/**` 의 파일은 **10~20줄을 넘기지 않는다.** 화면 구현을 그대로 import 해서 내보내는 얇은 어댑터 역할만 한다.
+`src/app/**` 의 파일은 화면 구현을 연결하는 얇은 라우트 어댑터로 유지한다. 라우트 파라미터·네비게이션·Provider 등 라우트에 필요한 최소 로직은 허용하며, 화면 구현과 비즈니스 로직은 `src/features`에 둔다.
 
 ```tsx
 // src/app/(tabs)/orders/[orderId].tsx
@@ -107,7 +116,7 @@ export default function OrderDetailRoute() {
 | zustand store | `use*Store` | `useCartStore` |
 | 쿼리 옵션 | `*Queries` 객체 | `orderQueries.detail(id)` |
 
-- 폴더는 항상 **복수형** (`features/orders`, `shared/hooks`).
+- 도메인 폴더는 복수형을 우선한다 (`features/orders`, `shared/hooks`). `api`, `model`, `store`처럼 역할을 나타내는 내부 폴더는 의미에 맞는 이름을 사용한다.
 - 배럴 파일(`index.ts`)은 `shared/ui`, `theme` 같은 공개 API에만 만든다. feature 내부에는 만들지 않는다 (번들 사이즈·순환참조 이슈).
 
 ---
@@ -152,7 +161,7 @@ const styles = StyleSheet.create({
 4. **정적 스타일은 `StyleSheet.create`**, 테마 의존 값만 인라인 배열로 합성한다. 렌더 함수 안에서 객체 리터럴 스타일을 새로 만들지 않는다.
 5. 한 파일에 컴포넌트 하나. 200줄 넘으면 분리 신호로 본다.
 6. 컴포넌트 안에서 직접 `fetch` 하지 않는다. 항상 훅(`useQuery`) 경유.
-7. `Text`, `Button`, `Pressable` 등은 **`shared/ui`의 래퍼를 쓴다.** RN 원시 컴포넌트 직접 사용은 `shared/ui` 내부에서만.
+7. `Text`, `Button`, `Pressable` 등 공통 UI 요소는 **`shared/ui`의 래퍼를 우선 사용한다.** 래퍼 내부나 레이아웃에 필요한 RN 원시 컴포넌트는 직접 사용할 수 있다.
 
 **파일 내부 순서**
 
@@ -199,7 +208,7 @@ export const darkColors: typeof lightColors = { /* ... */ };
 **규칙**
 
 - 컴포넌트에서 `palette`를 직접 import 하지 않는다. 항상 `useTheme().colors`(시맨틱)만 쓴다.
-- 색상 리터럴(`'#fff'`, `'rgba(...)'`)을 컴포넌트에 쓰지 않는다. ESLint로 막는다.
+- 색상 리터럴(`'#fff'`, `'rgba(...)'`)을 컴포넌트에 쓰지 않는다. 자동화되지 않은 규칙은 코드 리뷰에서 확인한다.
 - 여백은 `spacing` 스케일만 사용. `padding: 13` 같은 값 금지.
 - 레이아웃 간격은 `margin`보다 **`gap`** 을 우선한다.
 - 다크모드는 `useColorScheme()` 기반으로 `useTheme()`이 처리한다. 컴포넌트가 개별 분기하지 않는다.
@@ -236,8 +245,6 @@ Figma MCP와 Dev Mode는 항상 **원시 CSS**를 준다 — `#2563EB`, `padding
 2. 답이 오기 전까지 그 부분은 구현하지 않고 남겨둔다.
 
 이유: 토큰 밖 값을 한 번 통과시키면 다음 사람이 그걸 선례로 또 넣는다. 팔레트가 두 벌이 되는 건 대개 이 한 줄에서 시작한다.
-
-실제 예 — `Action Button`의 pressed `#535353`와 disabled 전경 `#8D8D8D`는 팔레트에 없고, padding `10/12/14/20`·radius `8`은 `spacing`·`radius` 스케일로 표현할 수 없다. 그래서 버튼은 구현하지 않고 대기 중이다.
 
 **원본 우선순위**: `src/theme/*`는 Figma primitives 섹션을 옮긴 것이다. 값이 Tailwind 같은 익숙한 팔레트와 달라도 **Figma가 맞다.** 익숙한 값으로 "고치지" 않는다.
 
@@ -351,14 +358,14 @@ export const orderQueries = {
 
 ## 7. 성능 규칙
 
-1. **React Compiler를 켠다** (`app.json`의 `experiments.reactCompiler: true`). 켠 뒤에는 `useMemo`/`useCallback`/`memo`를 **기본적으로 쓰지 않는다.** 컴파일러가 처리 못 하는 게 측정으로 확인된 경우에만 수동 메모이제이션을 추가하고, 이유를 주석으로 남긴다.
+1. **React Compiler를 사용한다** (`app.config.ts`의 `experiments.reactCompiler: true`). 켠 뒤에는 `useMemo`/`useCallback`/`memo`를 **기본적으로 쓰지 않는다.** 컴파일러가 처리 못 하는 게 측정으로 확인된 경우에만 수동 메모이제이션을 추가하고, 이유를 주석으로 남긴다.
 2. 리스트는 **FlashList v2**. `keyExtractor` 필수, 아이템 컴포넌트는 별도 파일로 분리.
 3. 인라인 함수/객체를 리스트 아이템 props로 내려보내지 않는다.
 4. 이미지: `expo-image` + `contentFit`, 원격 이미지는 명시적 `placeholder`, 리스트 썸네일은 `recyclingKey` 지정.
 5. 애니메이션은 Reanimated 워크릿. `Animated`(RN 기본)의 `useNativeDriver: false` 금지.
 6. 무거운 화면은 `React.lazy` + Suspense로 분할하고, 탭 진입 시점에 프리페치한다.
 7. 앱 시작 시 루트 레이아웃에서 동기 I/O를 하지 않는다. 폰트·스토어 초기화는 스플래시 유지하며 병렬로.
-8. `console.log`는 프로덕션 빌드에 남기지 않는다 (babel plugin으로 제거).
+8. `console.log` 등 디버그 로그는 프로덕션 코드에 남기지 않는다. 필요한 로그는 개발 환경에서만 동작하는 로거를 사용한다.
 
 ---
 
@@ -386,11 +393,10 @@ export const orderQueries = {
 ## 10. TypeScript
 
 ```jsonc
-// tsconfig.json 필수 항목
+// tsconfig.json 기본 항목
 {
   "compilerOptions": {
     "strict": true,
-    "noUncheckedIndexedAccess": true,
     "paths": { "@/*": ["./src/*"] }
   }
 }
@@ -405,14 +411,13 @@ export const orderQueries = {
 
 ## 11. 테스트
 
-> **현재 이 저장소에 자동화 테스트가 없다.** 실제 백엔드에 붙이면서 Jest 스위트와
-> 개발용 목을 걷어냈다. 아래는 테스트를 다시 들일 때 따를 기준이다.
+테스트는 Jest(`jest-expo`)와 `@testing-library/react-native`를 사용한다.
 
 - 단위: 순수 로직(`lib`, `mappers`, store 액션)은 Jest로 100% 가깝게.
 - 컴포넌트: `@testing-library/react-native`. **구현이 아니라 사용자 관점**으로 쿼리한다 (`getByRole`, `getByLabelText`). `testID`는 E2E 용도로만.
-- 네트워크는 MSW로 목킹. `jest.mock('axios')` 같은 방식 지양.
-- E2E: Maestro. 핵심 플로우(가입/로그인/결제) 최소 3개는 유지.
-- PR 전 필수: `npx tsc --noEmit && npx eslint .`
+- 네트워크는 테스트 경계에서 격리하고, 기존 테스트 더블 패턴을 우선 따른다.
+- E2E를 추가할 때는 가입·로그인 등 핵심 사용자 플로우를 우선한다.
+- PR 전 필수: `npm run format:check && npm run lint && npm run typecheck`
 
 ---
 
@@ -427,7 +432,7 @@ export const orderQueries = {
 
 ## 13. 릴리즈
 
-- 버전: `app.config.ts`의 `version`(사용자용) + `runtimeVersion` 정책(`appVersion` 또는 `fingerprint`).
+- 버전: `app.config.ts`의 `version`(사용자용). OTA를 도입할 때는 호환되는 `runtimeVersion` 정책을 함께 설정한다.
 - **OTA(EAS Update)로 배포 가능한 것**: JS/이미지/스타일 변경.
 - **스토어 빌드가 필요한 것**: 네이티브 의존성 추가·업데이트, 권한 문구 변경, SDK 업그레이드, app.config 네이티브 필드 변경.
 - 채널: `development` → `preview` → `production`. production 배포 전 preview에서 실기기 검증.
