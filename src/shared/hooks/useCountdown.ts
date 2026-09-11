@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { AppState } from 'react-native';
 
+import { formatDuration } from '@/shared/lib/formatters';
+
 /**
  * 만료 시각까지 남은 시간을 1초마다 갱신한다.
  *
@@ -17,15 +19,6 @@ export type Countdown = {
 };
 
 const TICK_MS = 1_000;
-
-/** 올림해서 보여준다 — 조금이라도 남았는데 00:00으로 보이면 안 된다. */
-export function formatDuration(remainingMs: number): string {
-  const totalSeconds = Math.ceil(Math.max(0, remainingMs) / 1000);
-  const minutes = Math.floor(totalSeconds / 60);
-  const seconds = totalSeconds % 60;
-
-  return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-}
 
 function remainingFor(deadline: number | null): number {
   return deadline === null ? 0 : Math.max(0, deadline - Date.now());
