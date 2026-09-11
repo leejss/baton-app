@@ -1,14 +1,10 @@
 import type { ScheduleDataSource } from '@/test/fixtures/scheduleSource';
 import type { ScheduleDto, ScheduleMemberDto } from '@/features/schedules/api/schedule.schema';
-import { getTodayInSeoul } from '@/features/home/lib/homeDate';
-import {
-  hasStarted,
-  monthDates,
-  monthLimits,
-  rangeDates,
-} from '@/features/schedules/lib/scheduleDate';
+import { monthDates, monthLimits } from '@/features/schedules/lib/scheduleDate';
 import { overlaps, scheduleFormSchema } from '@/features/schedules/lib/schedulePolicy';
 import { AppError } from '@/shared/api/errors';
+import { getTodayInSeoul, rangeDates } from '@/shared/lib/date';
+import { hasStarted } from '@/shared/lib/time';
 import { MOCK_STORE_MEMBERS } from '@/test/fixtures/members';
 
 type MockOptions = {

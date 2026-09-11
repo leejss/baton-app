@@ -10,10 +10,11 @@ import { homeQueries } from '@/features/home/api/home.queries';
 import { toSaveResult } from '@/features/schedules/api/mappers';
 import { duplicateCountsSchema } from '@/features/schedules/api/schedule.schema';
 import { scheduleQueries } from '@/features/schedules/api/schedule.queries';
-import { contiguousRanges, rangeDates } from '@/features/schedules/lib/scheduleDate';
+import { contiguousRanges } from '@/features/schedules/lib/scheduleDate';
 import type { ScheduleFormValues, ScheduleSaveResult } from '@/features/schedules/types';
 import { scheduleFormSchema } from '@/features/schedules/lib/schedulePolicy';
 import { isAppError } from '@/shared/api/errors';
+import { rangeDates } from '@/shared/lib/date';
 
 export function getDuplicateCounts(error: unknown) {
   if (!isAppError(error) || error.errorCode !== 'SCHEDULE_DUPLICATES_REQUIRE_CONFIRMATION')

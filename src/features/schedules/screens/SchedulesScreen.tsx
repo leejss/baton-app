@@ -2,7 +2,6 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 
-import { getTodayInSeoul } from '@/features/home/lib/homeDate';
 import { CalendarMonthHeader } from '@/features/schedules/components/CalendarMonthHeader';
 import { DaySchedules } from '@/features/schedules/components/DaySchedules';
 import { MonthlyCalendar } from '@/features/schedules/components/MonthlyCalendar';
@@ -17,6 +16,7 @@ import {
   normalizeSelectedDate,
   shiftMonth,
 } from '@/features/schedules/lib/scheduleDate';
+import { getTodayInSeoul } from '@/shared/lib/date';
 import { SCREEN_PADDING_X, spacing, useTheme } from '@/theme';
 
 type SchedulesScreenProps = {

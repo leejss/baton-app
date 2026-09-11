@@ -1,7 +1,7 @@
 import { memberSchema } from '@/features/stores/api/store.schema';
 import { z } from 'zod';
 
-import { isCalendarDate } from '@/features/schedules/lib/scheduleDate';
+import { isCalendarDate } from '@/shared/lib/date';
 
 const id = z.number().int().positive();
 const date = z.string().refine(isCalendarDate);

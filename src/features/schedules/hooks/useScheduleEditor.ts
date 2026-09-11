@@ -12,7 +12,6 @@ import {
   invalidateScheduleViews,
   saveScheduleDates,
 } from '@/features/schedules/api/schedule.mutations';
-import { hasStarted, rangeDates } from '@/features/schedules/lib/scheduleDate';
 import type {
   ScheduleContext,
   ScheduleFormValues,
@@ -20,6 +19,8 @@ import type {
   ScheduleSaveResult,
 } from '@/features/schedules/types';
 import { scheduleFormSchema } from '@/features/schedules/lib/schedulePolicy';
+import { rangeDates } from '@/shared/lib/date';
+import { hasStarted } from '@/shared/lib/time';
 
 type EditorOptions = {
   context: ScheduleContext;

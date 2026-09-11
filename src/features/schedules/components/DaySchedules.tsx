@@ -10,9 +10,9 @@ import { StyleSheet, View, useWindowDimensions } from 'react-native';
 import { scheduleQueries } from '@/features/schedules/api/schedule.queries';
 import { ScheduleMessage } from '@/features/schedules/components/ScheduleMessage';
 import { ScheduleWorkerRow } from '@/features/schedules/components/ScheduleWorkerRow';
-import { dateLabel } from '@/features/schedules/lib/scheduleDate';
 import type { ScheduleItem } from '@/features/schedules/types';
 import { canEditSchedule, daySchedules } from '@/features/schedules/lib/schedulePolicy';
+import { formatKoreanDate } from '@/shared/lib/formatters';
 import { Pressable, Text } from '@/shared/ui';
 import { spacing, useTheme } from '@/theme';
 
@@ -59,7 +59,7 @@ export function DaySchedules({ date, now, isManaging = false, onSelect }: DaySch
     <View style={[styles.card, { backgroundColor: colors.background }]}>
       <QueryRefreshNotice failed={query.isError} onRetry={retry} />
       <Text variant="title" weight="bold">
-        {dateLabel(date)}{' '}
+        {formatKoreanDate(date)}{' '}
         <Text variant="title" weight="bold" color="accent">
           총 {model.workerCount}명
         </Text>

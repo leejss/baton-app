@@ -8,9 +8,9 @@ import { invalidateScheduleViews } from '@/features/schedules/api/schedule.mutat
 import { scheduleQueries } from '@/features/schedules/api/schedule.queries';
 import { ScheduleMessage } from '@/features/schedules/components/ScheduleMessage';
 import { ScheduleOverlay } from '@/features/schedules/components/ScheduleOverlay';
-import { dateLabel } from '@/features/schedules/lib/scheduleDate';
 import { canEditSchedule } from '@/features/schedules/lib/schedulePolicy';
 import { isAppError } from '@/shared/api/errors';
+import { formatKoreanDate } from '@/shared/lib/formatters';
 import { Button, Text } from '@/shared/ui';
 
 type ScheduleActionsProps = {
@@ -91,7 +91,7 @@ export function ScheduleActions({ id, now, onClose }: ScheduleActionsProps) {
       ) : (
         <>
           <Text variant="bodySmall" color="textSecondary">
-            근무일　{dateLabel(item.date)}
+            근무일　{formatKoreanDate(item.date)}
             {'\n'}근무시간　{item.startTime} - {item.endTime}
           </Text>
           {mutation.isError && (

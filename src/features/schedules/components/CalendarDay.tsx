@@ -1,6 +1,6 @@
 import { StyleSheet, View } from 'react-native';
 
-import { dateLabel } from '@/features/schedules/lib/scheduleDate';
+import { formatKoreanDate } from '@/shared/lib/formatters';
 import { Pressable, Text } from '@/shared/ui';
 import { radius, useTheme } from '@/theme';
 
@@ -31,7 +31,7 @@ export function CalendarDay({
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={`${dateLabel(date)}, 근무 ${count}건${today ? ', 오늘' : ''}`}
+      accessibilityLabel={`${formatKoreanDate(date)}, 근무 ${count}건${today ? ', 오늘' : ''}`}
       accessibilityState={{ selected, disabled }}
       disabled={disabled}
       onPress={() => onSelect(date)}

@@ -1,7 +1,8 @@
 import { z } from 'zod';
 
-import { hasStarted, isCalendarDate, timeMinutes } from '@/features/schedules/lib/scheduleDate';
 import type { ScheduleItem } from '@/features/schedules/types';
+import { isCalendarDate } from '@/shared/lib/date';
+import { hasStarted, timeMinutes } from '@/shared/lib/time';
 
 export const scheduleFormSchema = z
   .object({

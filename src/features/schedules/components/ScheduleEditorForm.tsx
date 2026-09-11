@@ -6,7 +6,6 @@ import {
   useKeyboardState,
 } from 'react-native-keyboard-controller';
 
-import { getTodayInSeoul } from '@/features/home/lib/homeDate';
 import { CalendarMonthHeader } from '@/features/schedules/components/CalendarMonthHeader';
 import { EmployeePicker } from '@/features/schedules/components/EmployeePicker';
 import { MonthlyCalendar } from '@/features/schedules/components/MonthlyCalendar';
@@ -16,13 +15,10 @@ import { ScheduleTimeFields } from '@/features/schedules/components/ScheduleTime
 import { ScheduleMessage } from '@/features/schedules/components/ScheduleMessage';
 import { useScheduleClock } from '@/features/schedules/hooks/useScheduleClock';
 import { useScheduleEditor } from '@/features/schedules/hooks/useScheduleEditor';
-import {
-  durationLabel,
-  monthLimits,
-  rangeDates,
-  shiftMonth,
-} from '@/features/schedules/lib/scheduleDate';
+import { monthLimits, shiftMonth } from '@/features/schedules/lib/scheduleDate';
 import type { ScheduleContext, ScheduleItem } from '@/features/schedules/types';
+import { rangeDates, getTodayInSeoul } from '@/shared/lib/date';
+import { formatTimeRangeDuration } from '@/shared/lib/formatters';
 import { Button, BottomActionBar, Text } from '@/shared/ui';
 import { SCREEN_PADDING_X, spacing, useTheme } from '@/theme';
 
@@ -159,7 +155,7 @@ export function ScheduleEditorForm(props: ScheduleEditorFormProps) {
                 </Text>{' '}
                 선택 · 하루{' '}
                 <Text color="accent" weight="semibold">
-                  {durationLabel(values.startTime ?? '', values.endTime ?? '')}
+                  {formatTimeRangeDuration(values.startTime ?? '', values.endTime ?? '')}
                 </Text>{' '}
                 근무
               </Text>

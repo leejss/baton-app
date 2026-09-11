@@ -1,10 +1,10 @@
 import { useRouter } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 
-import { getTodayInSeoul } from '@/features/home/lib/homeDate';
 import { ScheduleEditorLoader } from '@/features/schedules/components/ScheduleEditorLoader';
 import { ScreenHeader } from '@/shared/ui/ScreenHeader';
 import { normalizeSelectedDate } from '@/features/schedules/lib/scheduleDate';
+import { getTodayInSeoul } from '@/shared/lib/date';
 import { useTheme } from '@/theme';
 
 type ScheduleEditorScreenProps = {
