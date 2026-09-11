@@ -3,7 +3,7 @@ export type ScheduleMember = {
   id: number;
   name: string;
   email: string;
-  role: 'MANAGER' | 'EMPLOYEE';
+  role: "MANAGER" | "EMPLOYEE";
   isActive: boolean;
 };
 
@@ -35,4 +35,5 @@ export type ScheduleSaveResult = {
   created: string[];
   duplicates: string[];
   failed: string[];
+  failures: { date: string; errorCode: string; retryable: boolean }[];
 };

@@ -1,20 +1,18 @@
-import { FlashList, type ListRenderItemInfo } from '@shopify/flash-list';
-import { useQuery } from '@tanstack/react-query';
-import { useRef, useState } from 'react';
-import { StyleSheet, View, useWindowDimensions } from 'react-native';
+import { FlashList, type ListRenderItemInfo } from "@shopify/flash-list";
+import { useQuery } from "@tanstack/react-query";
+import { useRef, useState } from "react";
+import { StyleSheet, View, useWindowDimensions } from "react-native";
 
-import type { ScheduleDataSource } from '@/features/schedules/api/schedule.dataSource';
-import { scheduleQueries } from '@/features/schedules/api/schedule.queries';
-import { EmployeeRow } from '@/features/schedules/components/EmployeeRow';
-import { ScheduleMessage } from '@/features/schedules/components/ScheduleMessage';
-import { BottomSheet } from '@/shared/ui/BottomSheet';
-import type { ScheduleMember } from '@/features/schedules/model/schedule';
-import { Button, Pressable, Text, TextField } from '@/shared/ui';
-import { Search, NavUserLine } from '@/shared/ui/icons';
-import { spacing } from '@/theme';
+import { scheduleQueries } from "@/features/schedules/api/schedule.queries";
+import { EmployeeRow } from "@/features/schedules/components/EmployeeRow";
+import { ScheduleMessage } from "@/features/schedules/components/ScheduleMessage";
+import { BottomSheet } from "@/shared/ui/BottomSheet";
+import type { ScheduleMember } from "@/features/schedules/types";
+import { Button, Pressable, Text, TextField } from "@/shared/ui";
+import { Search, NavUserLine } from "@/shared/ui/icons";
+import { spacing } from "@/theme";
 
 type EmployeePickerProps = {
-  source: ScheduleDataSource;
   storeId: number;
   selectedId: number | null;
   onSelect: (id: number) => void;
@@ -25,7 +23,6 @@ type EmployeePickerProps = {
 const keyExtractor = (member: ScheduleMember) => String(member.id);
 
 export function EmployeePicker({
-  source,
   storeId,
   selectedId,
   onSelect,
@@ -34,16 +31,20 @@ export function EmployeePicker({
   disabled = false,
 }: EmployeePickerProps) {
   const [open, setOpen] = useState(initiallyOpen);
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState("");
   const pendingDone = useRef<(() => void) | null>(null);
   const { height } = useWindowDimensions();
-  const query = useQuery(scheduleQueries.members(source, storeId));
+  const query = useQuery(scheduleQueries.members(storeId));
   const selected = query.data?.find((member) => member.id === selectedId);
   const candidates = (query.data ?? []).filter(
     (member) => member.isActive && member.name.includes(search.trim()),
   );
   const renderItem = ({ item }: ListRenderItemInfo<ScheduleMember>) => (
-    <EmployeeRow member={item} selected={item.id === selectedId} onSelect={onSelect} />
+    <EmployeeRow
+      member={item}
+      selected={item.id === selectedId}
+      onSelect={onSelect}
+    />
   );
   const handleDismiss = () => {
     const next = pendingDone.current;
@@ -57,14 +58,16 @@ export function EmployeePicker({
         accessibilityRole="button"
         accessibilityLabel="근무자 선택"
         accessibilityValue={{
-          text: selected ? `${selected.name}, ${selected.email}` : '선택되지 않음',
+          text: selected
+            ? `${selected.name}, ${selected.email}`
+            : "선택되지 않음",
         }}
         disabled={disabled}
         onPress={() => setOpen(true)}
         style={styles.field}
       >
         {selected && <NavUserLine size={24} color="textTertiary" />}
-        <Text weight="semibold">{selected?.name ?? '근무자 선택'}</Text>
+        <Text weight="semibold">{selected?.name ?? "근무자 선택"}</Text>
       </Pressable>
       <BottomSheet visible={open} title="근무자 선택" onDismiss={handleDismiss}>
         <Text variant="bodySmall" color="textTertiary">
@@ -114,9 +117,9 @@ const styles = StyleSheet.create({
   // Figma의 하단 직원 표시를 재선택 버튼으로 사용하며 터치 영역은 최소 44px로 확보한다.
   field: {
     minHeight: 44,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     paddingHorizontal: spacing.sm,
     gap: spacing.xs,
   },

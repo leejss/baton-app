@@ -1,29 +1,20 @@
-import { z } from 'zod';
+import { memberSchema } from "@/features/stores/api/store.schema";
+import { z } from "zod";
 
-import { isCalendarDate } from '@/features/schedules/lib/scheduleDate';
+import { isCalendarDate } from "@/features/schedules/lib/scheduleDate";
 
 const id = z.number().int().positive();
 const date = z.string().refine(isCalendarDate);
 const startTime = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/);
 const endTime = z.string().regex(/^(([01]\d|2[0-3]):[0-5]\d|24:00)$/);
-export const scheduleMemberSchema = z.object({
-  userId: id,
-  displayName: z.string(),
-  email: z.string().email(),
-  profileImage: z.object({
-    source: z.literal('STATIC'),
-    key: z.enum(['DEFAULT_01', 'DEFAULT_MANAGER', 'DEFAULT_EMPLOYEE']),
-  }),
-  role: z.enum(['MANAGER', 'EMPLOYEE']),
-  status: z.enum(['ACTIVE', 'LEFT']),
-});
+export const scheduleMemberSchema = memberSchema;
 export const scheduleSchema = z.object({
   id,
   employee: scheduleMemberSchema,
   workDate: date,
   startTime,
   endTime,
-  status: z.literal('ACTIVE'),
+  status: z.literal("ACTIVE"),
 });
 export const monthlyScheduleSchema = z.object({
   monthStart: date,
@@ -45,7 +36,7 @@ export const scheduleBatchSchema = z.object({
   results: z.array(
     z.object({
       workDate: date,
-      status: z.enum(['CREATED', 'DUPLICATE', 'FAILED']),
+      status: z.enum(["CREATED", "DUPLICATE", "FAILED"]),
       schedule: scheduleSchema.nullish(),
       errorCode: z.string().nullish(),
     }),

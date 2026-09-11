@@ -1,12 +1,14 @@
-import type { DateRange } from '@/features/schedules/model/schedule';
+import type { DateRange } from "@/features/schedules/types";
 
 const DAY_MS = 86_400_000;
-const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토'];
+const WEEKDAYS = ["일", "월", "화", "수", "목", "금", "토"];
 
 export function isCalendarDate(value: string): boolean {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
   const date = new Date(`${value}T00:00:00Z`);
-  return !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === value;
+  return (
+    !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === value
+  );
 }
 
 export function addDays(value: string, days: number): string {
@@ -24,7 +26,8 @@ export function shiftMonth(month: string, amount: number): string {
 export function monthDates(month: string): string[] {
   const end = `${shiftMonth(month, 1)}-01`;
   const result: string[] = [];
-  for (let date = `${month}-01`; date < end; date = addDays(date, 1)) result.push(date);
+  for (let date = `${month}-01`; date < end; date = addDays(date, 1))
+    result.push(date);
   return result;
 }
 
@@ -32,7 +35,9 @@ export function calendarDates(month: string): string[] {
   const first = `${month}-01`;
   const offset = (new Date(`${first}T00:00:00Z`).getUTCDay() + 6) % 7;
   const count = Math.ceil((monthDates(month).length + offset) / 7) * 7;
-  return Array.from({ length: count }, (_, index) => addDays(first, index - offset));
+  return Array.from({ length: count }, (_, index) =>
+    addDays(first, index - offset),
+  );
 }
 
 export function dateLabel(date: string): string {
@@ -56,13 +61,16 @@ export function normalizeSelectedDate(
 ): string | undefined {
   if (!value || !isCalendarDate(value)) return undefined;
   const { min, max } = monthLimits(today);
-  return value.slice(0, 7) >= min && value.slice(0, 7) <= max ? value : undefined;
+  return value.slice(0, 7) >= min && value.slice(0, 7) <= max
+    ? value
+    : undefined;
 }
 
 export function rangeDates(start: string, end: string): string[] {
   if (!isCalendarDate(start) || !isCalendarDate(end) || end < start) return [];
   const result: string[] = [];
-  for (let date = start; date <= end; date = addDays(date, 1)) result.push(date);
+  for (let date = start; date <= end; date = addDays(date, 1))
+    result.push(date);
   return result;
 }
 
@@ -78,7 +86,7 @@ export function contiguousRanges(dates: string[]): DateRange[] {
 }
 
 export function timeMinutes(value: string): number {
-  const [hour, minute] = value.split(':').map(Number);
+  const [hour, minute] = value.split(":").map(Number);
   return (hour ?? 0) * 60 + (minute ?? 0);
 }
 
@@ -88,5 +96,5 @@ export function hasStarted(date: string, time: string, now: Date): boolean {
 
 export function durationLabel(start: string, end: string): string {
   const minutes = timeMinutes(end) - timeMinutes(start);
-  return `${Math.floor(minutes / 60)}시간${minutes % 60 ? ` ${minutes % 60}분` : ''}`;
+  return `${Math.floor(minutes / 60)}시간${minutes % 60 ? ` ${minutes % 60}분` : ""}`;
 }
