@@ -1,5 +1,6 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 
+import { ROUTES } from '@/shared/lib/routes';
 import { HandoffDetailScreen } from '@/features/handoffs/screens/HandoffDetailScreen';
 
 export default function HandoffDetailRoute() {
@@ -11,29 +12,16 @@ export default function HandoffDetailRoute() {
       router.back();
       return;
     }
-    router.replace({
-      pathname: '/(main)/(tabs)/handoffs',
-      params: { scope: 'all' },
-    });
+    router.replace(ROUTES.handoffs.list('all'));
   };
 
   return (
     <HandoffDetailScreen
       handoffId={handoffId}
       onBack={handleBack}
-      onDeleted={() =>
-        router.replace({
-          pathname: '/(main)/(tabs)/handoffs',
-          params: { scope: 'sent' },
-        })
-      }
-      onEdit={() =>
-        router.push({
-          pathname: '/(main)/handoffs/[handoffId]/edit',
-          params: { handoffId },
-        })
-      }
-      onHome={() => router.navigate('/(main)/(tabs)/home')}
+      onDeleted={() => router.replace(ROUTES.handoffs.list('sent'))}
+      onEdit={() => router.push(ROUTES.handoffs.edit(handoffId))}
+      onHome={() => router.navigate(ROUTES.home)}
     />
   );
 }

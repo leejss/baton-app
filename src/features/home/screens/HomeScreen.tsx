@@ -2,6 +2,7 @@ import { useMainContext } from '@/features/stores/hooks/useMainContext';
 import { useRouter } from 'expo-router';
 import { ScrollView, StyleSheet, View } from 'react-native';
 
+import { ROUTES } from '@/shared/lib/routes';
 import { HandoffCard } from '@/features/home/components/HandoffCard';
 import { WeekScheduleCard } from '@/features/home/components/WeekScheduleCard';
 import { MainHeader } from '@/features/tabs/components/MainHeader';
@@ -17,14 +18,11 @@ export function HomeScreen({ initialDate = getTodayInSeoul() }: HomeScreenProps)
   const router = useRouter();
 
   const context = useMainContext();
-  const handleHandoffDetailsPress = () => router.navigate('/handoffs?scope=ALL');
+  const handleHandoffDetailsPress = () => router.navigate(ROUTES.handoffs.list('all'));
   const handleScheduleDetailsPress = (selectedDate: string) =>
-    router.navigate({ pathname: '/schedules', params: { selectedDate } });
+    router.navigate(ROUTES.schedules.list(selectedDate));
   const handleCreateHandoff = (recipientId: number) =>
-    router.push({
-      pathname: '/handoffs/new',
-      params: { recipientId: String(recipientId) },
-    });
+    router.push(ROUTES.handoffs.createForRecipient(String(recipientId)));
 
   return (
     <View style={styles.root}>

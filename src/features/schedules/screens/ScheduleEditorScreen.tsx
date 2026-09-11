@@ -1,6 +1,7 @@
 import { useRouter } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 
+import { ROUTES } from '@/shared/lib/routes';
 import { ScheduleEditorLoader } from '@/features/schedules/components/ScheduleEditorLoader';
 import { ScreenHeader } from '@/shared/ui/ScreenHeader';
 import { normalizeSelectedDate } from '@/features/schedules/lib/scheduleDate';
@@ -27,7 +28,7 @@ export function ScheduleEditorScreen({ scheduleId, initialDate }: ScheduleEditor
       <ScreenHeader
         title={scheduleId ? '근무수정' : '근무등록'}
         titleAlign="left"
-        onBack={() => (router.canGoBack() ? router.back() : router.replace('/schedules'))}
+        onBack={() => (router.canGoBack() ? router.back() : router.replace(ROUTES.schedules.index))}
       />
       <ScheduleEditorLoader
         id={id}

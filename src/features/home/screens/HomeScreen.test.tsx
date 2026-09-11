@@ -64,5 +64,5 @@ it('홈 조회만으로 인수인계를 확인 처리하지 않는다', async ()
   expect(await screen.findByText(INITIAL_MOCK_HANDOFFS[1].title)).toBeOnTheScreen();
   expect(confirm).not.toHaveBeenCalled();
   await fireEvent.press(screen.getByLabelText('전체 인수인계 자세히 보기'));
-  expect(mockNavigate).toHaveBeenCalledWith('/handoffs?scope=ALL');
+  expect(mockNavigate).toHaveBeenCalledWith({ pathname: '/handoffs', params: { scope: 'all' } });
 });

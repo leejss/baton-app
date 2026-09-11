@@ -1,5 +1,6 @@
 import { Redirect, Stack } from 'expo-router';
 
+import { ROUTES } from '@/shared/lib/routes';
 import { useAuthStore } from '@/features/auth/store/authStore';
 
 /**
@@ -20,7 +21,7 @@ export default function AuthLayout() {
      *   membership 있음 → /home
      *   membership 없음 → /(store) 참여·생성 선택
      */
-    return <Redirect href="/home" />;
+    return <Redirect href={ROUTES.home} />;
   }
 
   return <Stack screenOptions={{ headerShown: false }} />;

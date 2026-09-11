@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { Keyboard } from 'react-native';
 
+import { ROUTES } from '@/shared/lib/routes';
 import {
   getDuplicateCounts,
   refreshScheduleConflict,
@@ -140,11 +141,7 @@ export function useScheduleEditor({ context, initialDate, item }: EditorOptions)
       mutation.mutate(Boolean(saveResult?.failed.length));
     } else setStep(step + 1);
   };
-  const handleFinish = () =>
-    router.dismissTo({
-      pathname: '/schedules',
-      params: { selectedDate: form.getValues('startDate') },
-    });
+  const handleFinish = () => router.dismissTo(ROUTES.schedules.list(form.getValues('startDate')));
   const clearFailedAttempt = () => {
     if (!saveResult?.created.length) setSaveResult(undefined);
     form.clearErrors();

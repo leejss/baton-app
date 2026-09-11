@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 
+import { ROUTES } from '@/shared/lib/routes';
 import { invalidateScheduleViews } from '@/features/schedules/api/schedule.mutations';
 import { scheduleQueries } from '@/features/schedules/api/schedule.queries';
 import { ScheduleMessage } from '@/features/schedules/components/ScheduleMessage';
@@ -129,10 +130,7 @@ export function ScheduleActions({ id, now, onClose }: ScheduleActionsProps) {
                 disabled={!canEdit}
                 onPress={() => {
                   onClose();
-                  router.push({
-                    pathname: '/schedules/[scheduleId]/edit',
-                    params: { scheduleId: String(id) },
-                  });
+                  router.push(ROUTES.schedules.edit(String(id)));
                 }}
               />
               <Button

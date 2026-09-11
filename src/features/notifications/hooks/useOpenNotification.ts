@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigation, useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
 
+import { ROUTES } from '@/shared/lib/routes';
 import { toNotification } from '@/features/notifications/api/mappers';
 import { notificationQueries } from '@/features/notifications/api/notification.queries';
 import type { Notification, NotificationScope } from '@/features/notifications/types';
@@ -56,10 +57,7 @@ export function useOpenNotification(scope: NotificationScope) {
       }
       if (!navigation.isFocused()) return;
       if (target.kind === 'handoff') {
-        router.push({
-          pathname: '/handoffs/[handoffId]',
-          params: { handoffId: target.id },
-        });
+        router.push(ROUTES.handoffs.detail(target.id));
       } else if (target.kind === 'schedule') {
         // 수정 화면이 아닌 해당 날짜의 근무표로 이동한다. 직원도 조회할 수 있다.
         const schedule = await queryClient.fetchQuery({
@@ -67,10 +65,7 @@ export function useOpenNotification(scope: NotificationScope) {
           staleTime: 0,
         });
         if (!navigation.isFocused()) return;
-        router.push({
-          pathname: '/schedules',
-          params: { selectedDate: schedule.date },
-        });
+        router.push(ROUTES.schedules.list(schedule.date));
       }
     } catch (error) {
       if (isAppError(error) && (error.status === 403 || error.status === 404)) await refreshInbox();

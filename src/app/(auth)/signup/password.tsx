@@ -1,5 +1,6 @@
 import { router } from 'expo-router';
 
+import { ROUTES } from '@/shared/lib/routes';
 import { goBackOr } from '@/shared/lib/navigation';
 
 import { SignupPasswordScreen } from '@/features/auth/screens/SignupPasswordScreen';
@@ -7,8 +8,8 @@ import { SignupPasswordScreen } from '@/features/auth/screens/SignupPasswordScre
 export default function SignupPasswordRoute() {
   return (
     <SignupPasswordScreen
-      onBack={() => goBackOr('/signup/code')}
-      onNext={() => router.push('/signup/terms')}
+      onBack={() => goBackOr(ROUTES.signup.code)}
+      onNext={() => router.push(ROUTES.signup.terms)}
     />
   );
 }

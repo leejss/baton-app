@@ -1,6 +1,7 @@
 import { useSuspenseQueries } from '@tanstack/react-query';
 import { Redirect } from 'expo-router';
 import type { ReactNode } from 'react';
+import { ROUTES } from '@/shared/lib/routes';
 import { accountQueries } from '@/features/auth/api/account.queries';
 import { storeQueries } from '@/features/stores/api/store.queries';
 import { MainContextProvider } from '@/features/stores/hooks/useMainContext';
@@ -10,7 +11,7 @@ export function ActiveStoreGate({ children }: { children: ReactNode }) {
   });
   const membership = store.data.membership;
   if (!membership || membership.status !== 'ACTIVE' || membership.store.status !== 'ACTIVE')
-    return <Redirect href="/store" />;
+    return <Redirect href={ROUTES.store} />;
   return (
     <MainContextProvider
       value={{

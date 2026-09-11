@@ -7,6 +7,7 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet, View, useWindowDimensions } from 'react-native';
 
+import { ROUTES } from '@/shared/lib/routes';
 import { scheduleQueries } from '@/features/schedules/api/schedule.queries';
 import { ScheduleMessage } from '@/features/schedules/components/ScheduleMessage';
 import { ScheduleWorkerRow } from '@/features/schedules/components/ScheduleWorkerRow';
@@ -39,11 +40,7 @@ export function DaySchedules({ date, now, isManaging = false, onSelect }: DaySch
     return <ScheduleMessage message="관리자만 근무 일정을 편집할 수 있습니다." />;
   const model = daySchedules(query.data, date, context.userId);
   const items = expanded || isManaging ? model.all : model.preview;
-  const handleHandoff = (id: number) =>
-    router.push({
-      pathname: '/handoffs/new',
-      params: { recipientId: String(id) },
-    });
+  const handleHandoff = (id: number) => router.push(ROUTES.handoffs.createForRecipient(String(id)));
   const renderItem = ({ item }: ListRenderItemInfo<ScheduleItem>) => (
     <ScheduleWorkerRow
       item={item}

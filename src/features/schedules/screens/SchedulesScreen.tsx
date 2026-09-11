@@ -2,6 +2,7 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 
+import { ROUTES } from '@/shared/lib/routes';
 import { CalendarMonthHeader } from '@/features/schedules/components/CalendarMonthHeader';
 import { DaySchedules } from '@/features/schedules/components/DaySchedules';
 import { MonthlyCalendar } from '@/features/schedules/components/MonthlyCalendar';
@@ -46,7 +47,7 @@ export function SchedulesScreen({ initialDate, isManaging = false }: SchedulesSc
     setMonth(value);
     setSelectedDate(undefined);
   };
-  const handleBack = () => (router.canGoBack() ? router.back() : router.navigate('/home'));
+  const handleBack = () => (router.canGoBack() ? router.back() : router.navigate(ROUTES.home));
   return (
     <View style={[styles.root, { backgroundColor: colors.surfaceSunken }]}>
       {isManaging ? (

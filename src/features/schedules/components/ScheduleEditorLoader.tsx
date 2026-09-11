@@ -2,6 +2,7 @@ import { useMainContext } from '@/features/stores/hooks/useMainContext';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 
+import { ROUTES } from '@/shared/lib/routes';
 import { scheduleQueries } from '@/features/schedules/api/schedule.queries';
 import { ScheduleEditorForm } from '@/features/schedules/components/ScheduleEditorForm';
 import { ScheduleMessage } from '@/features/schedules/components/ScheduleMessage';
@@ -25,7 +26,10 @@ export function ScheduleEditorLoader({ id, initialDate }: ScheduleEditorLoaderPr
       return (
         <>
           <ScheduleMessage message="삭제되었거나 수정할 수 없는 근무 일정입니다." />
-          <Button label="근무표로 돌아가기" onPress={() => router.dismissTo('/schedules')} />
+          <Button
+            label="근무표로 돌아가기"
+            onPress={() => router.dismissTo(ROUTES.schedules.index)}
+          />
         </>
       );
     if (detail.isError && !detail.data)

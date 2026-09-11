@@ -1,5 +1,6 @@
 import { router } from 'expo-router';
 
+import { ROUTES } from '@/shared/lib/routes';
 import { Modal, MODAL_ICON_SIZE } from '@/shared/ui';
 import { AlertCircleFill } from '@/shared/ui/icons';
 
@@ -21,7 +22,7 @@ export function ForcedLogoutModal() {
 
   /** 사유는 남겨둔다. 로그인 화면이 이걸 보고 스낵바(시안 01-2)를 띄운다. */
   const goToSignIn = () => {
-    router.replace('/login');
+    router.replace(ROUTES.auth.login);
   };
 
   return (

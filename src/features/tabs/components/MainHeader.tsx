@@ -5,6 +5,7 @@ import { useRouter } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { ROUTES } from '@/shared/lib/routes';
 import { notificationQueries } from '@/features/notifications/api/notification.queries';
 import { Pressable } from '@/shared/ui/Pressable';
 import { Text } from '@/shared/ui/Text';
@@ -111,7 +112,7 @@ export function MainHeader({ title, onBack }: MainHeaderProps) {
           <Pressable
             accessibilityLabel={count > 0 ? `알림, 읽지 않은 알림 ${badgeText}개` : '알림'}
             accessibilityRole="button"
-            onPress={() => router.navigate('/notifications')}
+            onPress={() => router.navigate(ROUTES.notifications)}
             style={({ pressed }) => [styles.notificationButton, pressed && styles.pressed]}
           >
             <NavNotification color="navigationForeground" />

@@ -1,5 +1,6 @@
 import { Redirect, Stack } from 'expo-router';
 
+import { ROUTES } from '@/shared/lib/routes';
 import { ActiveStoreGate } from '@/features/stores/components/ActiveStoreGate';
 import { QueryBoundary } from '@/shared/ui/QueryBoundary';
 
@@ -19,7 +20,7 @@ export default function MainLayout() {
   }
 
   if (status === 'signedOut') {
-    return <Redirect href="/start" />;
+    return <Redirect href={ROUTES.auth.start} />;
   }
 
   return (
