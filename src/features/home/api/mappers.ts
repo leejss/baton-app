@@ -1,9 +1,15 @@
-import type { HomeSummaryResponseDto } from '@/features/home/api/home.schema';
-import { formatHomeDateTitle, getHomeWeekDays } from '@/features/home/lib/homeDate';
-import type { HomeHandoffSectionModel, HomeScheduleModel } from '@/features/home/types';
+import type { HomeSummary } from "@/features/home/api/home.schema";
+import {
+  formatHomeDateTitle,
+  getHomeWeekDays,
+} from "@/features/home/lib/homeDate";
+import type {
+  HomeHandoffSectionModel,
+  HomeScheduleModel,
+} from "@/features/home/types";
 
 export function mapHomeHandoffSectionModel(
-  summary: HomeSummaryResponseDto['data'],
+  summary: HomeSummary,
 ): HomeHandoffSectionModel {
   return {
     totalCount: summary.receivedHandoverCount,
@@ -12,14 +18,14 @@ export function mapHomeHandoffSectionModel(
       id: handoff.id,
       title: handoff.title,
       status: handoff.status,
-      canConfirm: handoff.status === 'UNCONFIRMED',
+      canConfirm: handoff.status === "UNCONFIRMED",
     })),
   };
 }
 
 export function mapHomeScheduleModel(
   currentUserId: number,
-  summary: HomeSummaryResponseDto['data'],
+  summary: HomeSummary,
   selectedDate: string = summary.date,
 ): HomeScheduleModel {
   return {
@@ -35,7 +41,8 @@ export function mapHomeScheduleModel(
       startTime: schedule.startTime,
       endTime: schedule.endTime,
       canCreateHandoff:
-        schedule.employee.userId !== currentUserId && schedule.employee.status === 'ACTIVE',
+        schedule.employee.userId !== currentUserId &&
+        schedule.employee.status === "ACTIVE",
     })),
   };
 }
