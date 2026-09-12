@@ -4,7 +4,8 @@ import { useMainContext } from '@/features/stores/hooks/useMainContext';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useController, useForm } from 'react-hook-form';
-import { Alert, ScrollView, StyleSheet, View } from 'react-native';
+import { Alert, StyleSheet, View } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { useShallow } from 'zustand/react/shallow';
 
 import { toCreateRequest } from '@/features/handoffs/api/mappers';
@@ -22,7 +23,7 @@ import { useHandoffDraftStore } from '@/features/handoffs/store/handoffDraftStor
 import { useHandoffImagePicker } from '@/features/handoffs/hooks/useHandoffImagePicker';
 import { ScreenHeader } from '@/shared/ui/ScreenHeader';
 import { Button, Text } from '@/shared/ui';
-import { SCREEN_PADDING_X, useTheme } from '@/theme';
+import { SCREEN_PADDING_X, spacing, useTheme } from '@/theme';
 
 type HandoffContentScreenProps = {
   onBack: () => void;
@@ -133,8 +134,8 @@ export function HandoffContentScreen({
           if (!createMutation.isPending) onBack();
         }}
       />
-      <ScrollView
-        automaticallyAdjustKeyboardInsets
+      <KeyboardAwareScrollView
+        bottomOffset={spacing.md}
         contentInsetAdjustmentBehavior="automatic"
         contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
@@ -186,7 +187,7 @@ export function HandoffContentScreen({
             />
           </View>
         </View>
-      </ScrollView>
+      </KeyboardAwareScrollView>
       <HandoffFooterActions
         secondaryLabel="이전"
         primaryLabel="이대로 보내기"

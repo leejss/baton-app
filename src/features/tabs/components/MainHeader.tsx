@@ -152,10 +152,8 @@ const styles = StyleSheet.create({
   },
   inner: {
     width: '100%',
-    maxWidth: 393,
     minHeight: 62,
     paddingHorizontal: SCREEN_PADDING_X,
-    alignSelf: 'center',
     flexDirection: 'row',
     alignItems: 'flex-start',
     justifyContent: 'space-between',
