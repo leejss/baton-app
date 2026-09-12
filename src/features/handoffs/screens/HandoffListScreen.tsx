@@ -81,7 +81,7 @@ export function HandoffListScreen({
 
   return (
     <View style={[styles.root, { backgroundColor: theme.colors.surfaceSunken }]}>
-      <MainHeader title="인수인계" />
+      <MainHeader title="인수인계" backgroundColor={theme.colors.surfaceSunken} />
 
       <View style={styles.toolbar}>
         <HandoffScopeTabs value={scope} onChange={onScopeChange} />
