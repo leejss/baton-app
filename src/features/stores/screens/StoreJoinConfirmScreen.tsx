@@ -1,7 +1,16 @@
+import { useState } from 'react';
 import { Alert, ScrollView, StyleSheet, View } from 'react-native';
 
 import { normalizeError } from '@/shared/api/errors';
-import { BottomActionBar, Box, Button, ScreenHeader, StepProgressBar, Text } from '@/shared/ui';
+import {
+  BottomActionBar,
+  Box,
+  Button,
+  Modal,
+  ScreenHeader,
+  StepProgressBar,
+  Text,
+} from '@/shared/ui';
 import { AlertCircleLine } from '@/shared/ui/icons';
 import { SCREEN_PADDING_X, spacing } from '@/theme';
 
@@ -77,6 +86,12 @@ export function StoreJoinConfirmScreen({
   onInvitationExpired,
 }: StoreJoinConfirmScreenProps) {
   const join = useJoinStore();
+  /**
+   * "이미 소속된 매장" 안내. 시안은 이 팝업을 코드 입력 화면(`943:111954`)에 그려뒀지만,
+   * 계약상 소속 충돌은 **미리보기가 아니라 참여 확정**에서만 내려온다
+   * (`/stores/join/preview`에는 409가 없다). 그래서 같은 팝업을 이 화면에도 둔다.
+   */
+  const [isAlreadyJoinedVisible, setIsAlreadyJoinedVisible] = useState(false);
 
   const confirm = () => {
     join.mutate(
@@ -91,10 +106,7 @@ export function StoreJoinConfirmScreen({
             return;
           }
           if (isAlreadyJoined(error)) {
-            Alert.alert(
-              '이미 소속된 매장이 있어요',
-              '현재 다른 매장에 소속되어 있어 참여할 수 없어요.',
-            );
+            setIsAlreadyJoinedVisible(true);
             return;
           }
           Alert.alert('매장에 참여하지 못했어요', normalizeError(error).message);
@@ -135,6 +147,15 @@ export function StoreJoinConfirmScreen({
       <BottomActionBar>
         <Button label="다음" color="black" isLoading={join.isPending} onPress={confirm} />
       </BottomActionBar>
+
+      <Modal
+        isVisible={isAlreadyJoinedVisible}
+        variant="text"
+        title="이미 소속된 매장이 있어요"
+        description={'현재 다른 매장에 소속되어 있어\n새 매장에 참여할 수 없어요.'}
+        confirmLabel="확인"
+        onConfirm={() => setIsAlreadyJoinedVisible(false)}
+      />
     </Box>
   );
 }
