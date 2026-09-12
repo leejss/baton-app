@@ -128,13 +128,15 @@ export function StoreJoinCodeScreen({ onBack, onPreviewed }: StoreJoinCodeScreen
         </View>
       </View>
 
-      {hasError && (
-        <View style={styles.snackbar}>
-          <Snackbar title={RETRY_MESSAGE} />
-        </View>
-      )}
-
-      <BottomActionBar>
+      <BottomActionBar
+        above={
+          hasError ? (
+            <View style={styles.snackbar}>
+              <Snackbar title={RETRY_MESSAGE} />
+            </View>
+          ) : undefined
+        }
+      >
         <Button
           label="다음"
           color="black"
