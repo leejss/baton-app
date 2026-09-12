@@ -46,6 +46,11 @@ export type SignupLayoutProps = {
   action: ReactNode;
   /** 하단 바 위에 겹쳐 뜨는 토스트. 본문을 밀지 않는다. */
   toast?: ReactNode;
+  /**
+   * 헤더·제목 **뒤에** 까는 장식 레이어(완료 화면의 콘페티). 레이어는 safe-area 안쪽을
+   * 가득 채우므로 위치는 넣는 쪽이 절대 좌표로 정한다. 시안 y=44가 이 레이어의 0이다.
+   */
+  backdrop?: ReactNode;
 };
 
 export function SignupLayout({
@@ -58,11 +63,18 @@ export function SignupLayout({
   bodyTop = SPEC.bodyTop,
   action,
   toast,
+  backdrop,
 }: SignupLayoutProps) {
   const insets = useSafeAreaInsets();
 
   return (
     <Box background="background" style={[styles.root, { paddingTop: insets.top }]}>
+      {backdrop !== undefined && (
+        <View style={styles.backdrop} pointerEvents="none">
+          {backdrop}
+        </View>
+      )}
+
       <AuthHeader onBack={onBack} />
 
       {progress !== undefined && (
@@ -109,6 +121,15 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     paddingHorizontal: SCREEN_PADDING_X,
     paddingBottom: SPEC.bodyBottom,
+  },
+  /** 본문보다 먼저 그려져 뒤에 깔린다. */
+  backdrop: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    overflow: 'hidden',
   },
   toast: {
     position: 'absolute',

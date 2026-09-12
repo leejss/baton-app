@@ -1,7 +1,8 @@
+import { Image } from 'expo-image';
 import { StyleSheet } from 'react-native';
 
 import { logger } from '@/shared/lib/logger';
-import { Box, Button } from '@/shared/ui';
+import { Button } from '@/shared/ui';
 
 import { PasswordResetLayout } from '@/features/auth/components/PasswordResetLayout';
 
@@ -12,10 +13,11 @@ export type PasswordResetDoneScreenProps = {
 };
 
 const SPEC = {
-  /** 제목 묶음 하단(236) → 일러스트 상단(263). 레이아웃 기본값 40을 덮는다. */
-  illustrationTop: 27,
-  illustrationWidth: 287,
-  illustrationHeight: 227,
+  /** 제목 묶음 하단(236) → 일러스트 상단(320). 레이아웃 기본값 40을 덮는다. */
+  illustrationTop: 84,
+  /** 일러스트(`1306:18352`)는 x=73, 247×233 — 화면 가운데 정렬이다. */
+  illustrationWidth: 247,
+  illustrationHeight: 233,
 } as const;
 
 /** 아직 연결할 화면·API가 없는 동작. 조용히 삼키지 않고 로그로 남긴다. */
@@ -41,12 +43,13 @@ export function PasswordResetDoneScreen({
   );
 }
 
-/** 시안에서 아직 회색 사각형인 자리. 일러스트가 나오면 이 컴포넌트만 교체한다. */
+/** 장식용 일러스트. 제목이 같은 뜻을 이미 전달하므로 접근성 트리에서 감춘다. */
 function Illustration() {
   return (
-    <Box
-      background="placeholder"
+    <Image
       style={styles.illustration}
+      source={require('@/assets/images/auth/password-reset-done.png')}
+      contentFit="contain"
       accessibilityElementsHidden
       importantForAccessibility="no"
     />

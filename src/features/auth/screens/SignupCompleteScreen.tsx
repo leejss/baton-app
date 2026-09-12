@@ -1,8 +1,9 @@
 import { useState } from 'react';
+import { Image } from 'expo-image';
 import { Alert, StyleSheet } from 'react-native';
 
 import { normalizeError } from '@/shared/api/errors';
-import { Box, Button } from '@/shared/ui';
+import { Button } from '@/shared/ui';
 
 import { SignupLayout } from '@/features/auth/components/SignupLayout';
 import { useAuthStore } from '@/features/auth/store/authStore';
@@ -23,10 +24,18 @@ export type SignupCompleteScreenProps = {
 };
 
 const SPEC = {
-  /** 제목 묶음 하단(236) → 일러스트 상단(263). 레이아웃 기본값 40을 덮는다. */
-  illustrationTop: 27,
-  illustrationWidth: 287,
-  illustrationHeight: 227,
+  /** 제목 묶음 하단(236) → 일러스트 상단(280). 레이아웃 기본값 40을 덮는다. */
+  illustrationTop: 44,
+  /** 일러스트(`1306:18353`)는 x=37, 319×352 — 화면 가운데 정렬이다. */
+  illustrationWidth: 319,
+  illustrationHeight: 352,
+  /**
+   * 콘페티(`1306:18354`)는 x=-30, y=44, 454×272. 상태 바 바로 아래에서 시작해
+   * 좌우로 흘러넘치므로 `backdrop` 레이어(0 = 시안 y=44)에 절대 좌표로 얹는다.
+   */
+  confettiLeft: -30,
+  confettiWidth: 454,
+  confettiHeight: 272,
 } as const;
 
 export function SignupCompleteScreen({ onStarted }: SignupCompleteScreenProps) {
@@ -62,18 +71,33 @@ export function SignupCompleteScreen({ onStarted }: SignupCompleteScreenProps) {
       action={
         <Button variant="accent" label="시작하기" isLoading={isStarting} onPress={handleStart} />
       }
+      backdrop={<Confetti />}
     >
       <Illustration />
     </SignupLayout>
   );
 }
 
-/** 시안에서 아직 회색 사각형인 자리. 일러스트가 나오면 이 컴포넌트만 교체한다. */
+/** 장식용 일러스트. 제목이 같은 뜻을 이미 전달하므로 접근성 트리에서 감춘다. */
 function Illustration() {
   return (
-    <Box
-      background="placeholder"
+    <Image
       style={styles.illustration}
+      source={require('@/assets/images/auth/signup-complete.png')}
+      contentFit="contain"
+      accessibilityElementsHidden
+      importantForAccessibility="no"
+    />
+  );
+}
+
+/** 헤더·제목 뒤에 깔리는 색종이. */
+function Confetti() {
+  return (
+    <Image
+      style={styles.confetti}
+      source={require('@/assets/images/auth/signup-complete-confetti.png')}
+      contentFit="contain"
       accessibilityElementsHidden
       importantForAccessibility="no"
     />
@@ -85,5 +109,12 @@ const styles = StyleSheet.create({
     width: SPEC.illustrationWidth,
     height: SPEC.illustrationHeight,
     alignSelf: 'center',
+  },
+  confetti: {
+    position: 'absolute',
+    top: 0,
+    left: SPEC.confettiLeft,
+    width: SPEC.confettiWidth,
+    height: SPEC.confettiHeight,
   },
 });

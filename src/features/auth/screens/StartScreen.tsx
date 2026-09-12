@@ -25,10 +25,15 @@ const SPEC = {
   wordmarkAspectRatio: 153 / 42,
   /** 워드마크 하단(166) → 태그라인 상단(178). */
   taglineTop: 12,
-  /** 태그라인 하단(206) → 일러스트 상단(254). */
+  /**
+   * 일러스트(`1307:19931`)는 워드마크·태그라인 **뒤에** 깔리는 장식 레이어다.
+   * 시안에서 x=-60, y=154, 582×386 — 화면(393)보다 넓어 좌우로 흘러넘친다.
+   * y는 헤더 하단(106) 기준 48이다.
+   */
   illustrationTop: 48,
-  illustrationWidth: 302,
-  illustrationHeight: 254,
+  illustrationLeft: -60,
+  illustrationWidth: 582,
+  illustrationHeight: 386,
   /** 카카오·Apple 버튼 사이. */
   socialGap: 10,
   /** 소셜 묶음 ↔ 구분선 ↔ 이메일 버튼 사이. */
@@ -81,63 +86,68 @@ export function StartScreen({
       <AuthHeader />
 
       <View style={styles.content}>
-        <Image
-          style={styles.wordmark}
-          source={require('@/assets/images/logo-baton-dark.png')}
-          contentFit="contain"
-          accessibilityLabel="baton"
-        />
-        <Text
-          variant="body"
-          weight="medium"
-          color="textSecondary"
-          style={[textStyles.center, styles.tagline]}
-        >
-          근무자는 바뀌어도 업무는 끊기지 않게
-        </Text>
-
+        {/* 좌우로 흘러넘쳐야 해서 가로 패딩이 없는 바깥 상자에 둔다. 본문보다 먼저 그려 뒤에 깔린다. */}
         <Illustration />
 
-        {/* 시안(852)에서 48이 남는 자리. 화면이 길어지면 여기서 흡수한다. */}
-        <View style={styles.spacer} />
-
-        <View style={styles.actions}>
-          <View style={styles.socialGroup}>
-            <StartButton
-              provider="kakao"
-              label="카카오로 시작하기"
-              onPress={handleKakaoPress}
-              isLoading={social.isKakaoPending}
-            />
-            {social.canUseApple ? (
-              <StartButton
-                provider="apple"
-                label="Apple로 시작하기"
-                onPress={handleApplePress}
-                isLoading={social.isApplePending}
-                disabled={social.isKakaoPending}
-              />
-            ) : null}
-          </View>
-          <OrDivider label="또는" />
-          <StartButton
-            provider="email"
-            label="이메일로 시작하기"
-            onPress={onStartWithEmail}
-            disabled={social.isPending}
+        <View style={styles.body}>
+          <Image
+            style={styles.wordmark}
+            source={require('@/assets/images/logo-baton-dark.png')}
+            contentFit="contain"
+            accessibilityLabel="baton"
           />
+          <Text
+            variant="body"
+            weight="medium"
+            color="textSecondary"
+            style={[textStyles.center, styles.tagline]}
+          >
+            근무자는 바뀌어도 업무는 끊기지 않게
+          </Text>
+
+          {/* 시안(852)에서 48이 남는 자리. 화면이 길어지면 여기서 흡수한다. */}
+          <View style={styles.spacer} />
+
+          <View style={styles.actions}>
+            <View style={styles.socialGroup}>
+              <StartButton
+                provider="kakao"
+                label="카카오로 시작하기"
+                onPress={handleKakaoPress}
+                isLoading={social.isKakaoPending}
+              />
+              {social.canUseApple ? (
+                <StartButton
+                  provider="apple"
+                  label="Apple로 시작하기"
+                  onPress={handleApplePress}
+                  isLoading={social.isApplePending}
+                  disabled={social.isKakaoPending}
+                />
+              ) : null}
+            </View>
+            <OrDivider label="또는" />
+            <StartButton
+              provider="email"
+              label="이메일로 시작하기"
+              onPress={onStartWithEmail}
+              disabled={social.isPending}
+            />
+          </View>
         </View>
       </View>
     </Box>
   );
 }
 
-/** 시안에서 아직 회색 사각형인 자리. 일러스트가 나오면 이 컴포넌트만 교체한다. */
+/** 배경 장식. 본문 위로 터치를 가로채지 않게 `pointerEvents`를 끈다. */
 function Illustration() {
   return (
-    <Box
-      background="placeholder"
+    <Image
       style={styles.illustration}
+      source={require('@/assets/images/auth/start-illustration.png')}
+      contentFit="contain"
+      pointerEvents="none"
       accessibilityElementsHidden
       importantForAccessibility="no"
     />
@@ -146,8 +156,9 @@ function Illustration() {
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
-  /** 헤더는 자체 여백을 쓰므로 좌우 패딩은 헤더 아래 본문에만 준다. */
-  content: {
+  /** 일러스트가 화면 밖으로 나가야 해서 가로 패딩은 한 겹 안쪽(`body`)에만 준다. */
+  content: { flex: 1 },
+  body: {
     flex: 1,
     paddingHorizontal: SCREEN_PADDING_X,
   },
@@ -159,10 +170,11 @@ const styles = StyleSheet.create({
   },
   tagline: { marginTop: SPEC.taglineTop },
   illustration: {
+    position: 'absolute',
+    top: SPEC.illustrationTop,
+    left: SPEC.illustrationLeft,
     width: SPEC.illustrationWidth,
     height: SPEC.illustrationHeight,
-    marginTop: SPEC.illustrationTop,
-    alignSelf: 'center',
   },
   spacer: { flex: 1 },
   actions: { gap: SPEC.actionGap },
