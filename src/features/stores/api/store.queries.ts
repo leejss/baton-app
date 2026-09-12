@@ -1,5 +1,10 @@
 import { queryOptions } from '@tanstack/react-query';
-import { fetchInvitationCode, fetchMembers, fetchMyStore } from '@/features/stores/api/store.api';
+import {
+  fetchInvitationCode,
+  fetchMembers,
+  fetchMyStore,
+  searchMembers,
+} from '@/features/stores/api/store.api';
 
 export const storeQueries = {
   all: () => ['stores'] as const,
@@ -12,6 +17,13 @@ export const storeQueries = {
     queryOptions({
       queryKey: ['stores', storeId, 'members'] as const,
       queryFn: ({ signal }) => fetchMembers(storeId, signal),
+      enabled: storeId > 0,
+    }),
+  searchMembers: (storeId: number, query: string) =>
+    queryOptions({
+      queryKey: [...storeQueries.members(storeId).queryKey, query] as const,
+      queryFn: ({ signal }) =>
+        query.length >= 2 ? searchMembers(storeId, query, signal) : fetchMembers(storeId, signal),
       enabled: storeId > 0,
     }),
   /**

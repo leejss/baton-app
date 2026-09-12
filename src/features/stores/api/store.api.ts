@@ -1,4 +1,4 @@
-import { get, post } from '@/shared/api/client';
+import { del, get, post, postVoid } from '@/shared/api/client';
 import {
   invitationCodeSchema,
   memberSchema,
@@ -14,6 +14,17 @@ import {
 export const fetchMyStore = (signal?: AbortSignal) => get('/stores/me', myStoreSchema, { signal });
 export const fetchMembers = (storeId: number, signal?: AbortSignal) =>
   get(`/stores/${storeId}/members`, memberSchema.array(), { signal });
+
+export const searchMembers = (storeId: number, query: string, signal?: AbortSignal) =>
+  get(`/stores/${storeId}/members?query=${encodeURIComponent(query)}`, memberSchema.array(), {
+    signal,
+  });
+
+export const leaveStore = (storeId: number) => del(`/stores/${storeId}/members/me`);
+export const deactivateStore = (storeId: number) =>
+  postVoid(`/stores/${storeId}/deactivate`, undefined);
+export const transferManager = (storeId: number, userId: number) =>
+  postVoid(`/stores/${storeId}/manager-transfer`, { userId });
 
 /**
  * 매장 생성(STORE-07). 생성자는 관리자가 되고 **최초 초대 코드가 함께 발급**된다.
