@@ -1,4 +1,5 @@
 import { setStringAsync } from 'expo-clipboard';
+import { Image } from 'expo-image';
 import { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 
@@ -146,12 +147,13 @@ export function StoreCreatedScreen({
   );
 }
 
-/** 시안에서 아직 회색 사각형인 자리. 일러스트가 나오면 이 컴포넌트만 교체한다. */
+/** 시안 `1306:18370`의 일러스트. 장식이라 스크린리더에서 숨긴다. */
 function Illustration() {
   return (
-    <Box
-      background="placeholder"
+    <Image
+      source={require('@/assets/images/stores/store-created.png')}
       style={styles.illustration}
+      contentFit="contain"
       accessibilityElementsHidden
       importantForAccessibility="no"
     />

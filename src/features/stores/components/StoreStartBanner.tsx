@@ -1,6 +1,7 @@
+import type { ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { Box, Pressable, Text } from '@/shared/ui';
+import { Pressable, Text } from '@/shared/ui';
 import { useTheme, type ThemeColorName } from '@/theme';
 
 /**
@@ -13,6 +14,8 @@ export type StoreStartBannerTone = 'solid' | 'soft';
 
 export type StoreStartBannerProps = {
   tone: StoreStartBannerTone;
+  /** 99×99 자리에 들어가는 일러스트. */
+  illustration: ReactNode;
   title: string;
   /** 두 줄로 끊어 쓴다. 줄바꿈은 호출부가 `\n`으로 넣는다. */
   description: string;
@@ -43,7 +46,13 @@ const TONES: Record<StoreStartBannerTone, { background: ThemeColorName; text: Th
   soft: { background: 'accentSoft', text: 'accentText' },
 };
 
-export function StoreStartBanner({ tone, title, description, onPress }: StoreStartBannerProps) {
+export function StoreStartBanner({
+  tone,
+  illustration,
+  title,
+  description,
+  onPress,
+}: StoreStartBannerProps) {
   const { colors } = useTheme();
   const skin = TONES[tone];
 
@@ -55,12 +64,13 @@ export function StoreStartBanner({ tone, title, description, onPress }: StoreSta
       style={[styles.card, { backgroundColor: colors[skin.background] }]}
     >
       <View style={styles.content}>
-        <Box
-          background="placeholder"
+        <View
           style={styles.illustration}
           accessibilityElementsHidden
           importantForAccessibility="no"
-        />
+        >
+          {illustration}
+        </View>
 
         <View style={styles.text}>
           <Text variant="title" weight="bold" color={skin.text} style={styles.center}>
@@ -96,6 +106,8 @@ const styles = StyleSheet.create({
   illustration: {
     width: SPEC.illustrationSize,
     height: SPEC.illustrationSize,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   text: {
     marginTop: SPEC.textTop,

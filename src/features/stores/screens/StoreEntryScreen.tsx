@@ -4,6 +4,8 @@ import { Box, ScreenHeader, Text } from '@/shared/ui';
 import { SCREEN_PADDING_X } from '@/theme';
 
 import { StoreStartBanner } from '@/features/stores/components/StoreStartBanner';
+import { StoreManagerIllustration } from '@/features/stores/components/illustrations/StoreManagerIllustration';
+import { StoreWorkerIllustration } from '@/features/stores/components/illustrations/StoreWorkerIllustration';
 
 /**
  * 매장 참여·생성 선택(STORE-01의 출력). Figma "(추가) 진입 선택 화면" — `943:111980`.
@@ -27,6 +29,8 @@ const SPEC = {
   bannerGap: 12,
   /** 제목 ↔ 설명. */
   headlineGap: 12,
+  /** 배너 안 일러스트 자리(99×99). */
+  illustrationSize: 99,
 } as const;
 
 export function StoreEntryScreen({ onBack, onJoin, onCreate }: StoreEntryScreenProps) {
@@ -48,12 +52,14 @@ export function StoreEntryScreen({ onBack, onJoin, onCreate }: StoreEntryScreenP
         <View style={styles.banners}>
           <StoreStartBanner
             tone="soft"
+            illustration={<StoreManagerIllustration size={SPEC.illustrationSize} />}
             title="새 매장 만들기"
             description={'매장을 만들고\n관리자로 시작해요'}
             onPress={onCreate}
           />
           <StoreStartBanner
             tone="solid"
+            illustration={<StoreWorkerIllustration size={SPEC.illustrationSize} />}
             title="매장에 참여하기"
             description={'초대 받은 매장에\n직원으로 참여해요'}
             onPress={onJoin}
