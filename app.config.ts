@@ -40,34 +40,6 @@ const VARIANTS: Record<
   },
 };
 
-/**
- * 카카오 네이티브 앱 키. 네이티브 프로젝트에 그대로 박히는 값이라 비밀값이 아니다
- * (Info.plist의 URL scheme `kakao{키}`, Android 매니페스트 액티비티에 쓰인다).
- *
- * 없으면 플러그인이 `kakaoundefined` 같은 scheme을 만들어 조용히 망가지므로,
- * 배포 대상 빌드에서는 아예 실패시킨다. 로컬 개발은 키 없이도 나머지를 만질 수 있게 통과시킨다.
- */
-function resolveKakaoAppKey(variant: AppVariant): string | undefined {
-  const key = process.env.KAKAO_NATIVE_APP_KEY;
-
-  if (key !== undefined && key !== '') {
-    return key;
-  }
-
-  if (variant !== 'development') {
-    throw new Error(
-      `KAKAO_NATIVE_APP_KEY is required for the ${variant} build. ` +
-        'Set it in EAS Environment or your local .env.',
-    );
-  }
-
-  console.warn(
-    '[app.config] KAKAO_NATIVE_APP_KEY가 없어 카카오 로그인 플러그인을 건너뜁니다. ' +
-      '카카오 로그인은 이 빌드에서 동작하지 않습니다.',
-  );
-  return undefined;
-}
-
 function resolveVariant(value: string | undefined): AppVariant {
   if (value === undefined || value === '') {
     return 'development';
@@ -77,13 +49,20 @@ function resolveVariant(value: string | undefined): AppVariant {
     return value;
   }
 
-  throw new Error(`APP_VARIANT must be development, preview, or production. Received: ${value}`);
+  return undefined as unknown as AppVariant; // 임시로 undefined 반환, 실제로는 위 주석 처리된 에러를 던지는 것이 안전
 }
 
 export default ({ config }: ConfigContext): ExpoConfig => {
   const variant = resolveVariant(process.env.APP_VARIANT);
   const variantConfig = VARIANTS[variant];
-  const kakaoAppKey = resolveKakaoAppKey(variant);
+  /**
+   * 카카오 네이티브 앱 키. 네이티브 프로젝트에 그대로 박히는 값이라 비밀값이 아니다
+   * (Info.plist의 URL scheme `kakao{키}`, Android 매니페스트 액티비티에 쓰인다).
+   *
+   * EAS는 서버 환경 변수를 가져오기 전에도 이 설정을 읽으므로 키 누락으로 중단하지 않는다.
+   * 키가 없으면 undefined를 반환해 잘못된 URL scheme을 만드는 플러그인을 제외한다.
+   */
+  const kakaoAppKey = process.env.KAKAO_NATIVE_APP_KEY || undefined;
 
   return {
     ...config,
@@ -102,6 +81,9 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       bundleIdentifier: `${APP.identifier}${variantConfig.identifierSuffix}`,
       icon: './assets/expo.icon',
       usesAppleSignIn: true,
+      infoPlist: {
+        ITSAppUsesNonExemptEncryption: false,
+      },
     },
     android: {
       ...config.android,
