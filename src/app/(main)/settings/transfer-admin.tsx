@@ -1,11 +1,11 @@
-import { RoutePlaceholderScreen } from '@/features/routes/screens/RoutePlaceholderScreen';
+import { useLocalSearchParams } from 'expo-router';
+import { TransferAdminScreen } from '@/features/settings/screens/TransferAdminScreen';
 
 export default function TransferAdminRoute() {
+  const { purpose } = useLocalSearchParams<{ purpose?: string }>();
   return (
-    <RoutePlaceholderScreen
-      title="관리자 권한 승계"
-      description="다음 관리자를 선택하고 권한 변경을 확인하는 화면입니다."
-      featureIds="SET-15~16"
+    <TransferAdminScreen
+      purpose={purpose === 'leave' || purpose === 'withdraw' ? purpose : 'manage'}
     />
   );
 }

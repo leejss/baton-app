@@ -10,6 +10,17 @@ export const ROUTES = {
   my: '/my' satisfies Href,
   notifications: '/notifications' satisfies Href,
   store: '/store' satisfies Href,
+  settings: {
+    profile: '/settings/profile',
+    invitations: '/settings/invitations',
+    employees: '/settings/employees',
+    leaveStore: '/settings/leave-store',
+    deleteAccount: '/settings/delete-account',
+    transfer: (purpose: 'manage' | 'leave' | 'withdraw' = 'manage') =>
+      ({ pathname: '/settings/transfer-admin', params: { purpose } }) satisfies Href,
+    result: (kind: 'withdrawn' | 'left') =>
+      ({ pathname: '/settings-result', params: { kind } }) satisfies Href,
+  } as const,
 
   auth: {
     start: '/start',

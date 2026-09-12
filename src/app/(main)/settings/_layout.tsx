@@ -2,7 +2,7 @@ import { Stack } from 'expo-router';
 
 export default function SettingsLayout() {
   return (
-    <Stack>
+    <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="index" options={{ title: '설정' }} />
       <Stack.Screen name="profile" options={{ title: '프로필 수정' }} />
       <Stack.Screen name="invitations" options={{ title: '직원 초대' }} />
