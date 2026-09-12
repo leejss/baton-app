@@ -15,35 +15,42 @@ import { radius, SCREEN_PADDING_X, spacing, useTheme } from '@/theme';
 type MainHeaderProps = {
   title?: string;
   onBack?: () => void;
+  backgroundColor?: string;
+  showNotification?: boolean;
 };
 
-/** 제목이 없는 홈만 워드마크를 표시하며, 모든 메인 화면이 같은 조회를 사용한다. */
-export function MainHeader({ title, onBack }: MainHeaderProps) {
+export function MainHeader({
+  title,
+  onBack,
+  backgroundColor,
+  showNotification = true,
+}: MainHeaderProps) {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const theme = useTheme();
   const context = useMainContext();
-  const notifications = useQuery(
-    notificationQueries.list({
+  const notifications = useQuery({
+    ...notificationQueries.list({
       storeId: context.storeId,
       userId: context.userId,
     }),
-  );
+    enabled: showNotification,
+  });
   const membership = context.membership;
   const storeLabel = membership && `${membership.store.storeName} ${membership.store.branchName}`;
   const roleLabel = membership?.role === 'MANAGER' ? '관리자' : '직원';
   const count = notifications.data?.unreadCount ?? 0;
   const badgeText = notifications.data?.badgeText ?? '';
+  const headerBackgroundColor =
+    backgroundColor ??
+    (onBack !== undefined
+      ? theme.colors.surface
+      : title !== undefined
+        ? theme.colors.background
+        : undefined);
 
   return (
-    <View
-      style={[
-        styles.root,
-        { paddingTop: insets.top },
-        title !== undefined && { backgroundColor: theme.colors.background },
-        onBack !== undefined && { backgroundColor: theme.colors.surface },
-      ]}
-    >
+    <View style={[styles.root, { paddingTop: insets.top, backgroundColor: headerBackgroundColor }]}>
       <View style={styles.inner}>
         {title === undefined ? (
           <Image
@@ -99,7 +106,7 @@ export function MainHeader({ title, onBack }: MainHeaderProps) {
               </Text>
             </View>
           ) : null}
-          {notifications.isError && (
+          {showNotification && notifications.isError && (
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="알림 다시 조회"
@@ -109,21 +116,28 @@ export function MainHeader({ title, onBack }: MainHeaderProps) {
               <Text variant="caption">알림 재조회</Text>
             </Pressable>
           )}
-          <Pressable
-            accessibilityLabel={count > 0 ? `알림, 읽지 않은 알림 ${badgeText}개` : '알림'}
-            accessibilityRole="button"
-            onPress={() => router.navigate(ROUTES.notifications)}
-            style={({ pressed }) => [styles.notificationButton, pressed && styles.pressed]}
-          >
-            <NavNotification color="navigationForeground" />
-            {count > 0 && (
-              <View style={[styles.badge, { backgroundColor: theme.colors.accent }]}>
-                <Text color="accentOn" variant="caption" weight="semibold" style={styles.badgeText}>
-                  {badgeText}
-                </Text>
-              </View>
-            )}
-          </Pressable>
+          {showNotification && (
+            <Pressable
+              accessibilityLabel={count > 0 ? `알림, 읽지 않은 알림 ${badgeText}개` : '알림'}
+              accessibilityRole="button"
+              onPress={() => router.navigate(ROUTES.notifications)}
+              style={({ pressed }) => [styles.notificationButton, pressed && styles.pressed]}
+            >
+              <NavNotification color="navigationForeground" />
+              {count > 0 && (
+                <View style={[styles.badge, { backgroundColor: theme.colors.accent }]}>
+                  <Text
+                    color="accentOn"
+                    variant="caption"
+                    weight="semibold"
+                    style={styles.badgeText}
+                  >
+                    {badgeText}
+                  </Text>
+                </View>
+              )}
+            </Pressable>
+          )}
         </View>
       </View>
     </View>
