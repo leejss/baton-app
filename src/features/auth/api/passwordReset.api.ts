@@ -2,12 +2,6 @@ import { post, postVoid } from '@/shared/api/client';
 import { normalizeError } from '@/shared/api/errors';
 
 import {
-  mockRequestVerificationCode,
-  mockResetPassword,
-  mockVerifyCode,
-  USE_MOCK_AUTH,
-} from '@/features/auth/api/auth.mock';
-import {
   verificationChallengeSchema,
   verificationTokenSchema,
   type VerificationChallenge,
@@ -18,8 +12,6 @@ import {
 /**
  * 이메일 인증·비밀번호 재설정 API. 경로·필드는 wiki `openapi.yaml`(ADR-026 확정본)을 따른다.
  * 모두 `공개` 엔드포인트라 토큰을 싣지 않는다.
- *
- * 백엔드가 아직 배포되지 않아 `USE_MOCK_AUTH`가 켜져 있으면 `auth.mock`이 대신한다.
  */
 
 /**
@@ -34,10 +26,6 @@ export async function requestVerificationCode(
   options?: { purpose?: VerificationPurpose; signal?: AbortSignal },
 ): Promise<VerificationChallenge> {
   const purpose = options?.purpose ?? 'PASSWORD_RESET';
-
-  if (USE_MOCK_AUTH) {
-    return mockRequestVerificationCode(email, purpose);
-  }
 
   return post('/auth/email-verifications', { email, purpose }, verificationChallengeSchema, {
     signal: options?.signal,
@@ -57,10 +45,6 @@ export async function verifyCode(
   options?: { purpose?: VerificationPurpose; signal?: AbortSignal },
 ): Promise<VerifyCodeOutcome> {
   const purpose = options?.purpose ?? 'PASSWORD_RESET';
-
-  if (USE_MOCK_AUTH) {
-    return mockVerifyCode(email, code);
-  }
 
   try {
     const result = await post(
@@ -87,9 +71,5 @@ export async function resetPassword(
   params: { email: string; emailVerificationToken: string; newPassword: string },
   signal?: AbortSignal,
 ): Promise<void> {
-  if (USE_MOCK_AUTH) {
-    return mockResetPassword();
-  }
-
   await postVoid('/auth/password-resets', params, { signal, auth: false });
 }

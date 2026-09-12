@@ -1,11 +1,6 @@
-import { RoutePlaceholderScreen } from '@/features/routes/screens/RoutePlaceholderScreen';
+import { Redirect } from 'expo-router';
+import { ROUTES } from '@/shared/lib/routes';
 
 export default function SettingsRoute() {
-  return (
-    <RoutePlaceholderScreen
-      title="설정"
-      description="사용자 권한에 맞는 설정 메뉴 화면입니다."
-      featureIds="SET-01, SET-05"
-    />
-  );
+  return <Redirect href={ROUTES.my} />;
 }

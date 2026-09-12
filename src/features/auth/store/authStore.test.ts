@@ -94,3 +94,26 @@ it('사용자가 직접 로그아웃하면 서버 세션도 폐기한다', async
     signOutReason: null,
   });
 });
+
+it('회원탈퇴 이후에는 이미 폐기된 서버 세션을 다시 요청하지 않는다', async () => {
+  const fetchMock = jest.spyOn(globalThis, 'fetch');
+  await useAuthStore.getState().signOut('withdrawn');
+  expect(fetchMock).not.toHaveBeenCalled();
+  expect(secureStorage.remove).toHaveBeenCalledWith('auth.session');
+  expect(useAuthStore.getState()).toMatchObject({
+    status: 'signedOut',
+    session: null,
+    signOutReason: 'withdrawn',
+  });
+});
+
+it('로그아웃 요청이 실패하면 재시도할 수 있도록 세션을 유지한다', async () => {
+  jest.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(null, { status: 503 }));
+  await expect(useAuthStore.getState().signOut()).rejects.toMatchObject({ status: 503 });
+  expect(secureStorage.remove).not.toHaveBeenCalled();
+  expect(useAuthStore.getState()).toMatchObject({
+    status: 'signedIn',
+    session,
+    signOutReason: null,
+  });
+});

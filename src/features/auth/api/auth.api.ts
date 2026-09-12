@@ -4,7 +4,6 @@ import { getDeviceId } from '@/shared/lib/deviceId';
 
 import type { AppleCredential } from '@/features/auth/lib/appleAuth';
 
-import { mockAuthenticateSocial, mockSignIn, USE_MOCK_AUTH } from '@/features/auth/api/auth.mock';
 import {
   sessionSchema,
   socialAuthenticationSchema,
@@ -36,11 +35,7 @@ export async function authenticateWithKakao(
   kakaoAccessToken: string,
   signal?: AbortSignal,
 ): Promise<SocialSignInOutcome> {
-  // 카카오 SDK 로그인은 이미 끝난 뒤다. 목이 대신하는 건 서버 토큰 교환뿐이다.
-  if (USE_MOCK_AUTH) {
-    return mockAuthenticateSocial();
-  }
-
+  // 카카오 SDK에서 받은 토큰을 서버 세션으로 교환한다.
   const deviceId = await getDeviceId();
 
   const result = await post(
@@ -118,10 +113,6 @@ export async function signInWithEmail(
   password: string,
   signal?: AbortSignal,
 ): Promise<SignInOutcome> {
-  if (USE_MOCK_AUTH) {
-    return mockSignIn(email);
-  }
-
   const deviceId = await getDeviceId();
 
   try {
@@ -145,17 +136,7 @@ export async function signInWithEmail(
   }
 }
 
-/**
- * 서버 세션 폐기. 계약상 사용자당 활성 세션이 하나라(ADR-005) 로컬 토큰만 지우면
- * 서버 쪽 세션이 남는다.
- *
- * 실패해도 던지지 않는다 — 네트워크가 끊긴 상태에서도 사용자는 로그아웃돼야 하고,
- * 서버 세션은 만료로 정리된다. "서버 정리 실패" 때문에 앱에 갇히는 쪽이 더 나쁘다.
- */
-export async function signOutFromServer(signal?: AbortSignal): Promise<void> {
-  try {
-    await postVoid('/auth/logout', undefined, { signal });
-  } catch {
-    // 무시. 호출자는 이 실패로 흐름을 멈추지 않는다.
-  }
+/** 서버 로그아웃 실패 시 세션을 유지해 화면에서 다시 시도할 수 있게 한다. */
+export function signOutFromServer(signal?: AbortSignal): Promise<void> {
+  return postVoid('/auth/logout', undefined, { signal });
 }

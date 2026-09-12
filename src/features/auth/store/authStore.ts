@@ -26,7 +26,7 @@ const SESSION_KEY = 'auth.session';
  * 경우와 응답만으로는 구분되지 않는다 — 갱신 실패는 둘 다 `401 UNAUTHORIZED`다.
  * 서버가 두 경우에 다른 `errorCode`를 주면 그때 갈라야 한다.
  */
-export type SignOutReason = 'sessionRevoked';
+export type SignOutReason = 'sessionRevoked' | 'withdrawn';
 
 type AuthSnapshot =
   | { status: 'restoring'; session: null }
@@ -80,7 +80,7 @@ export const useAuthStore = create<AuthStore>()((set, get) => ({
   signOut: async (reason) => {
     // 갱신 실패로 들어온 경우 서버 로그아웃의 401이 같은 갱신 작업을 기다리면
     // 서로 완료를 기다리게 된다. 이미 거부된 세션은 기기에서만 정리한다.
-    if (reason !== 'sessionRevoked') {
+    if (reason === undefined) {
       await signOutFromServer();
     }
     await signOutFromKakao();

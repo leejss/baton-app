@@ -14,13 +14,20 @@ import { useAuthStore } from '@/features/auth/store/authStore';
 
 export default function MainLayout() {
   const status = useAuthStore((state) => state.status);
+  const signOutReason = useAuthStore((state) => state.signOutReason);
 
   if (status === 'restoring') {
     return null;
   }
 
   if (status === 'signedOut') {
-    return <Redirect href={ROUTES.auth.start} />;
+    return (
+      <Redirect
+        href={
+          signOutReason === 'withdrawn' ? ROUTES.settings.result('withdrawn') : ROUTES.auth.start
+        }
+      />
+    );
   }
 
   return (
