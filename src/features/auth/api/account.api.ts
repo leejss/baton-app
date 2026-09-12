@@ -30,7 +30,8 @@ export function updateDisplayName(displayName: string, signal?: AbortSignal): Pr
  * `impactAcknowledged`는 "영향 안내를 읽고 동의했다"는 표시이고 계약상 필수다.
  * 화면이 영향(일정·인수인계·첨부·알림이 함께 삭제됨)을 보여준 뒤에만 `true`로 부른다.
  *
- * 유일한 관리자인 매장이 있으면 서버가 `409`로 거절한다 — 매장을 먼저 비활성화해야 한다.
+ * 승계 가능한 직원이 있으면 `409 MANAGER_TRANSFER_REQUIRED`로 거절한다.
+ * 유일 관리자의 매장은 서버가 비활성화한 뒤 계정을 삭제한다.
  */
 export function withdraw(signal?: AbortSignal): Promise<void> {
   return delWithBody('/users/me', { impactAcknowledged: true }, { signal });
