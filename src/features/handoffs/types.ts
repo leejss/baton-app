@@ -11,8 +11,11 @@ export function isHandoffScope(value: string | undefined): value is HandoffScope
   return HANDOFF_SCOPES.some((scope) => scope === value);
 }
 
+export type HandoffDirection = 'sent' | 'received';
+
 export type HandoffCardModel = {
   id: string;
+  direction: HandoffDirection;
   type: HandoffTypeDto;
   typeLabel: string;
   title: string;
@@ -32,6 +35,7 @@ export type HandoffDetailAttachmentModel = {
 
 export type HandoffDetailModel = {
   id: string;
+  type: HandoffTypeDto;
   typeLabel: string;
   title: string;
   body: string;

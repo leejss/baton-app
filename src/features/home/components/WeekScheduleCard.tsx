@@ -1,7 +1,6 @@
 import { QueryBoundary } from '@/shared/ui/QueryBoundary';
 import { QueryRefreshNotice } from '@/shared/ui/QueryRefreshNotice';
 import { useQuery } from '@tanstack/react-query';
-import { Image } from 'expo-image';
 import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
@@ -11,7 +10,7 @@ import { HomeShiftRow } from '@/features/home/components/HomeShiftRow';
 import { WeekDayButton } from '@/features/home/components/WeekDayButton';
 import { getHomeWeekDays } from '@/features/home/lib/homeDate';
 import { formatKoreanDate } from '@/shared/lib/formatters';
-import { Text } from '@/shared/ui';
+import { IllustIcon, Text } from '@/shared/ui';
 import { ArrowRightS } from '@/shared/ui/icons';
 import { shadows, spacing, useTheme } from '@/theme';
 
@@ -50,12 +49,7 @@ export function WeekScheduleCard({
         onPress={handleDetailsPress}
         style={({ pressed }) => [styles.titleButton, pressed && styles.pressed]}
       >
-        <Image
-          source={require('@/assets/images/home/section-marker.svg')}
-          contentFit="fill"
-          accessible={false}
-          style={styles.marker}
-        />
+        <IllustIcon name="calendar" />
         <Text variant="title" weight="semibold">
           {title}
         </Text>
@@ -110,10 +104,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-  },
-  marker: {
-    width: 18,
-    height: 18,
   },
   content: {
     gap: 22,

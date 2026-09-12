@@ -98,7 +98,7 @@ export function HandoffDetailScreen({
                 failed={detailQuery.isRefetchError}
                 onRetry={() => void detailQuery.refetch()}
               />
-              <HandoffTypeBadge label={detail.typeLabel} />
+              <HandoffTypeBadge label={detail.typeLabel} type={detail.type} />
 
               <View style={styles.article}>
                 <View style={styles.headingSection}>

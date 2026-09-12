@@ -1,8 +1,8 @@
 import { StyleSheet, View } from 'react-native';
 
 import type { HandoffTypeDto } from '@/features/handoffs/api/handoff.schema';
-import { HandoffTypeIcon } from '@/features/handoffs/components/HandoffTypeIcon';
-import { Pressable, Text } from '@/shared/ui';
+import { HANDOFF_TYPE_ILLUST_ICONS } from '@/features/handoffs/lib/handoffTypeIllustIcons';
+import { IllustIcon, Pressable, Text } from '@/shared/ui';
 import { SCREEN_PADDING_X, radius, useTheme } from '@/theme';
 
 type HandoffTypeOptionProps = {
@@ -39,7 +39,7 @@ export function HandoffTypeOption({
         pressed && styles.pressed,
       ]}
     >
-      <HandoffTypeIcon />
+      <IllustIcon name={HANDOFF_TYPE_ILLUST_ICONS[type]} size={26} />
       <View style={styles.copy}>
         <Text weight="semibold" style={styles.label}>
           {label}

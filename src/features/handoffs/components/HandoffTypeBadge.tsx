@@ -1,16 +1,18 @@
 import { StyleSheet, View } from 'react-native';
 
-import { HandoffTypeIcon } from '@/features/handoffs/components/HandoffTypeIcon';
-import { Text } from '@/shared/ui';
+import type { HandoffTypeDto } from '@/features/handoffs/api/handoff.schema';
+import { HANDOFF_TYPE_ILLUST_ICONS } from '@/features/handoffs/lib/handoffTypeIllustIcons';
+import { IllustIcon, Text } from '@/shared/ui';
 
 type HandoffTypeBadgeProps = {
   label: string;
+  type: HandoffTypeDto;
 };
 
-export function HandoffTypeBadge({ label }: HandoffTypeBadgeProps) {
+export function HandoffTypeBadge({ label, type }: HandoffTypeBadgeProps) {
   return (
     <View style={styles.root}>
-      <HandoffTypeIcon size={16} tone="accent" />
+      <IllustIcon name={HANDOFF_TYPE_ILLUST_ICONS[type]} size={16} />
       <Text variant="bodySmall" weight="semibold" color="accent">
         {label}
       </Text>

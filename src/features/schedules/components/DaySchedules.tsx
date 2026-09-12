@@ -14,7 +14,7 @@ import { ScheduleWorkerRow } from '@/features/schedules/components/ScheduleWorke
 import type { ScheduleItem } from '@/features/schedules/types';
 import { canEditSchedule, daySchedules } from '@/features/schedules/lib/schedulePolicy';
 import { formatKoreanDate } from '@/shared/lib/formatters';
-import { Pressable, Text } from '@/shared/ui';
+import { IllustIcon, Pressable, Text } from '@/shared/ui';
 import { spacing, useTheme } from '@/theme';
 
 type DaySchedulesProps = {
@@ -55,12 +55,15 @@ export function DaySchedules({ date, now, isManaging = false, onSelect }: DaySch
   return (
     <View style={[styles.card, { backgroundColor: colors.background }]}>
       <QueryRefreshNotice failed={query.isError} onRetry={retry} />
-      <Text variant="title" weight="bold">
-        {formatKoreanDate(date)}{' '}
-        <Text variant="title" weight="bold" color="accent">
-          총 {model.workerCount}명
+      <View style={styles.titleRow}>
+        <IllustIcon name="calendar" />
+        <Text variant="title" weight="bold">
+          {formatKoreanDate(date)}{' '}
+          <Text variant="title" weight="bold" color="accent">
+            총 {model.workerCount}명
+          </Text>
         </Text>
-      </Text>
+      </View>
       {items.length === 0 ? (
         <ScheduleMessage message="해당 날짜에 등록된 근무 일정이 없습니다." />
       ) : (
@@ -100,6 +103,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
     paddingVertical: spacing.lg,
     gap: spacing.md,
+  },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
   },
   more: { minHeight: 44, alignItems: 'center', justifyContent: 'center' },
 });

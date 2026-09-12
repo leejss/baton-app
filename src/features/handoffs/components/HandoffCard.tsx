@@ -1,8 +1,7 @@
-import { Image } from 'expo-image';
 import { StyleSheet, View, type GestureResponderEvent } from 'react-native';
 
 import type { HandoffCardModel } from '@/features/handoffs/types';
-import { Pressable, Text } from '@/shared/ui';
+import { IllustIcon, Pressable, Text } from '@/shared/ui';
 import { KebabMenu } from '@/shared/ui/icons';
 import { SCREEN_PADDING_X, useTheme } from '@/theme';
 
@@ -34,14 +33,7 @@ export function HandoffCard({ item, onPress, onManagePress }: HandoffCardProps) 
       ]}
     >
       <View style={styles.mainContent}>
-        <Image
-          source={require('@/assets/images/handoffs/handoff-card-leading.svg')}
-          contentFit="fill"
-          accessible={false}
-          accessibilityElementsHidden
-          importantForAccessibility="no"
-          style={styles.leadingIcon}
-        />
+        <IllustIcon name={item.direction} />
 
         <View style={styles.textContent}>
           <Text variant="caption" weight="medium" style={styles.subtleText}>
@@ -95,11 +87,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-  },
-  leadingIcon: {
-    width: 26,
-    height: 26,
-    flexShrink: 0,
   },
   textContent: {
     flex: 1,

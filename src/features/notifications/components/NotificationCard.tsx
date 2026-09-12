@@ -1,8 +1,7 @@
-import { Image } from 'expo-image';
 import { StyleSheet, View } from 'react-native';
 
 import type { Notification } from '@/features/notifications/types';
-import { Pressable, Text } from '@/shared/ui';
+import { IllustIcon, Pressable, Text, type IllustIconName } from '@/shared/ui';
 import { spacing, useTheme } from '@/theme';
 
 type NotificationCardProps = {
@@ -11,18 +10,17 @@ type NotificationCardProps = {
   onPress: (notification: Notification) => void;
 };
 
-const ICONS = {
-  announcement: require('@/assets/images/notifications/announcement.svg'),
-  handoffReceived: require('@/assets/images/notifications/handoff-received.svg'),
-  handoffConfirmed: require('@/assets/images/notifications/handoff-confirmed.svg'),
-  schedule: require('@/assets/images/notifications/schedule.svg'),
-};
+const NOTIFICATION_ILLUST_ICONS = {
+  announcement: 'announcement',
+  handoffReceived: 'handoffReceived',
+  handoffConfirmed: 'handoffConfirmed',
+  schedule: 'workSchedule',
+} as const satisfies Record<Notification['kind'], IllustIconName>;
 
 // Figma 943:103882의 치수. 전역 스케일을 변경하지 않고 이 카드에만 한정한다.
 const CARD = {
   radius: 16,
   paddingVertical: 18,
-  iconSize: 26,
   iconGap: 14,
   textGap: 6,
   dotSize: 6,
@@ -49,14 +47,7 @@ export function NotificationCard({ notification, isOpening, onPress }: Notificat
         pressed && styles.pressed,
       ]}
     >
-      <Image
-        source={ICONS[notification.kind]}
-        contentFit="contain"
-        style={styles.icon}
-        accessible={false}
-        accessibilityElementsHidden
-        importantForAccessibility="no"
-      />
+      <IllustIcon name={NOTIFICATION_ILLUST_ICONS[notification.kind]} />
       <View style={styles.content}>
         <Text variant="caption" weight="semibold">
           {notification.heading}
@@ -85,7 +76,6 @@ const styles = StyleSheet.create({
     paddingVertical: CARD.paddingVertical,
     marginBottom: spacing.md,
   },
-  icon: { width: CARD.iconSize, height: CARD.iconSize },
   content: { flex: 1, minWidth: 0, gap: CARD.textGap },
   dotSlot: { width: CARD.dotSize, height: CARD.dotSize },
   dot: {
