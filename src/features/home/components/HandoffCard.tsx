@@ -3,14 +3,13 @@ import { QueryBoundary } from '@/shared/ui/QueryBoundary';
 import { QueryRefreshNotice } from '@/shared/ui/QueryRefreshNotice';
 import { handoffMutations } from '@/features/handoffs/api/handoff.mutations';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Image } from 'expo-image';
 import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { mapHomeHandoffSectionModel } from '@/features/home/api/mappers';
 import { homeQueries } from '@/features/home/api/home.queries';
 import { HandoffRow } from '@/features/home/components/HandoffRow';
-import { Text } from '@/shared/ui';
+import { IllustIcon, Text } from '@/shared/ui';
 import { ArrowRightS } from '@/shared/ui/icons';
 import { shadows, spacing, useTheme } from '@/theme';
 
@@ -63,12 +62,7 @@ export function HandoffCard({ date, onDetailsPress, storeId }: HandoffCardProps)
       />
       <View style={[styles.card, shadows.default, { backgroundColor: theme.colors.background }]}>
         <View style={styles.titleRow}>
-          <Image
-            source={require('@/assets/images/home/section-marker.svg')}
-            contentFit="fill"
-            accessible={false}
-            style={styles.marker}
-          />
+          <IllustIcon name="home" />
           <View style={styles.titleTextRow}>
             <Text variant="title" weight="semibold">
               새 인수인계
@@ -177,10 +171,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-  },
-  marker: {
-    width: 18,
-    height: 18,
   },
   titleTextRow: {
     flexDirection: 'row',

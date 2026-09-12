@@ -61,6 +61,7 @@ export function toHandoffCardModel(
 
   return {
     id: String(item.id),
+    direction: isSender ? 'sent' : 'received',
     type: item.type,
     typeLabel: getHandoffTypeLabel(item.type),
     title: item.title,
@@ -81,6 +82,7 @@ export function toHandoffDetailModel(
 ): HandoffDetailModel {
   return {
     id: String(handoff.id),
+    type: handoff.type,
     typeLabel: getHandoffTypeLabel(handoff.type),
     title: handoff.title,
     body: handoff.body,

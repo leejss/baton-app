@@ -22,6 +22,16 @@ export { ErrorState } from '@/shared/ui/ErrorState';
 export { ExternalLink } from '@/shared/ui/ExternalLink';
 export { Checkbox, type CheckboxProps } from '@/shared/ui/Checkbox';
 export { CodeInput, type CodeInputProps } from '@/shared/ui/CodeInput';
+export { IllustIcon, type IllustIconProps } from '@/shared/ui/IllustIcon';
+export {
+  ILLUST_ICON_ASSETS,
+  ILLUST_ICON_ORDER,
+  type IllustIconName,
+} from '@/shared/ui/illustIconAssets';
+export {
+  ILLUSTRATION_ASSETS,
+  type IllustrationName,
+} from '@/shared/ui/illustrationAssets';
 export {
   Modal,
   MODAL_ICON_SIZE,

@@ -32,9 +32,18 @@ describe('handoff mapper', () => {
   });
 
   it('본인이 보낸 확인 전 항목에만 관리 권한을 준다', () => {
-    expect(toHandoffCardModel(ownUnconfirmed, CURRENT_USER_ID).canManage).toBe(true);
-    expect(toHandoffCardModel(receivedUnconfirmed, CURRENT_USER_ID).canManage).toBe(false);
-    expect(toHandoffCardModel(ownConfirmed, CURRENT_USER_ID).canManage).toBe(false);
+    expect(toHandoffCardModel(ownUnconfirmed, CURRENT_USER_ID)).toMatchObject({
+      canManage: true,
+      direction: 'sent',
+    });
+    expect(toHandoffCardModel(receivedUnconfirmed, CURRENT_USER_ID)).toMatchObject({
+      canManage: false,
+      direction: 'received',
+    });
+    expect(toHandoffCardModel(ownConfirmed, CURRENT_USER_ID)).toMatchObject({
+      canManage: false,
+      direction: 'sent',
+    });
     expect(
       toHandoffCardModel(ownUnconfirmed, CURRENT_USER_ID, new Date(), 'received').canManage,
     ).toBe(false);

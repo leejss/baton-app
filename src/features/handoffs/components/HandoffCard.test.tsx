@@ -6,6 +6,7 @@ import type { HandoffCardModel } from '@/features/handoffs/types';
 
 const baseItem: HandoffCardModel = {
   id: 'handoff-1',
+  direction: 'sent',
   type: 'WORK_TASK',
   typeLabel: '업무 처리',
   title: '마감 정산 확인',

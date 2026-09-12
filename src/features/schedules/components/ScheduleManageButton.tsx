@@ -5,8 +5,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { ROUTES } from '@/shared/lib/routes';
 import { BottomSheet } from '@/shared/ui/BottomSheet';
-import { Pressable, Text } from '@/shared/ui';
-import { Plus, EditFill } from '@/shared/ui/icons';
+import { IllustIcon, Pressable, Text } from '@/shared/ui';
 import { radius, spacing, useTheme } from '@/theme';
 
 export function ScheduleManageButton({ date }: { date?: string }) {
@@ -46,7 +45,7 @@ export function ScheduleManageButton({ date }: { date?: string }) {
             style={[styles.option, { borderColor: colors.border }]}
             onPress={() => navigate(ROUTES.schedules.new(date))}
           >
-            <Plus />
+            <IllustIcon name="workScheduleAdd" size={26} />
             <View style={styles.description}>
               <Text weight="semibold">근무등록</Text>
               <Text variant="bodySmall" color="textSecondary">
@@ -61,7 +60,7 @@ export function ScheduleManageButton({ date }: { date?: string }) {
             style={[styles.option, { borderColor: colors.border }]}
             onPress={() => navigate(ROUTES.schedules.manage(date))}
           >
-            <EditFill />
+            <IllustIcon name="workScheduleEdit" size={26} />
             <View style={styles.description}>
               <Text weight="semibold">근무수정/삭제</Text>
               <Text variant="bodySmall" color="textSecondary">
