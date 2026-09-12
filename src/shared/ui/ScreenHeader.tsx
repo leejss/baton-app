@@ -29,17 +29,24 @@ export function ScreenHeader({
   const isCentered = titleAlign === 'center';
 
   return (
-    <View style={{ paddingTop: insets.top, backgroundColor: colors.background }}>
-      <View
-        style={[styles.inner, isCentered && styles.bordered, { borderColor: colors.borderSubtle }]}
-      >
+    <View
+      style={[
+        isCentered && styles.bordered,
+        {
+          paddingTop: insets.top,
+          backgroundColor: colors.background,
+          borderColor: colors.borderSubtle,
+        },
+      ]}
+    >
+      <View style={styles.inner}>
         <View style={[styles.actions, isCentered && styles.side]}>
           {(onClose ?? onBack) && (
             <Pressable
               accessibilityRole="button"
               accessibilityLabel={onClose ? '작성 취소' : '뒤로 가기'}
               onPress={onClose ?? onBack}
-              style={styles.button}
+              style={[styles.button, styles.leadingButton]}
             >
               {onClose ? <X /> : <ArrowLeftS />}
             </Pressable>
@@ -74,6 +81,7 @@ export function ScreenHeader({
 const styles = StyleSheet.create({
   // 기존 화면 헤더의 62px 최소 높이를 유지한다.
   inner: {
+    width: '100%',
     minHeight: 62,
     paddingHorizontal: SCREEN_PADDING_X,
     paddingVertical: spacing.sm,
@@ -85,6 +93,7 @@ const styles = StyleSheet.create({
   side: { flex: 1 },
   trailing: { justifyContent: 'flex-end' },
   button: { width: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' },
+  leadingButton: { alignItems: 'flex-start' },
   title: { flex: 1, minWidth: 0 },
   centeredTitle: { flex: 0, flexShrink: 1, textAlign: 'center' },
 });

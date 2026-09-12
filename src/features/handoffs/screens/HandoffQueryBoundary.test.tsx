@@ -13,6 +13,9 @@ import { createTestClient, MainTestProvider } from '@/test/MainTestProvider';
 import { INITIAL_MOCK_HANDOFFS, MOCK_MEMBERS } from '@/test/fixtures/handoffs';
 
 jest.mock('expo-router', () => ({ useFocusEffect: jest.fn() }));
+jest.mock('react-native-keyboard-controller', () =>
+  jest.requireActual('react-native-keyboard-controller/jest'),
+);
 
 const handoff = INITIAL_MOCK_HANDOFFS[0];
 const recipients = MOCK_MEMBERS.filter((member) => member.userId !== 1).map((member) => ({

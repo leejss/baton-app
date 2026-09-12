@@ -6,7 +6,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQueryClient, useSuspenseQueries } from '@tanstack/react-query';
 import { type Ref, useImperativeHandle, useState } from 'react';
 import { useController, useForm } from 'react-hook-form';
-import { Alert, ScrollView, StyleSheet, View } from 'react-native';
+import { Alert, StyleSheet, View } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 
 import { getHandoffTypeLabel, toLocalAttachments } from '@/features/handoffs/api/mappers';
 import { handoffQueries } from '@/features/handoffs/api/handoff.queries';
@@ -148,8 +149,8 @@ export function HandoffEditContent({ ref, handoffId, onBack, onSaved }: HandoffE
     return <ErrorState error={detailQuery.error} onBack={onBack} />;
   return (
     <View style={[styles.root, { backgroundColor: theme.colors.surfaceSunken }]}>
-      <ScrollView
-        automaticallyAdjustKeyboardInsets
+      <KeyboardAwareScrollView
+        bottomOffset={spacing.md}
         contentInsetAdjustmentBehavior="automatic"
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
@@ -199,7 +200,7 @@ export function HandoffEditContent({ ref, handoffId, onBack, onSaved }: HandoffE
             onPress={handleOpenRecipientPicker}
           />
         </View>
-      </ScrollView>
+      </KeyboardAwareScrollView>
       <HandoffFooterActions
         secondaryLabel="취소"
         primaryLabel="저장"
