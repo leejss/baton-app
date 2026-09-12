@@ -154,7 +154,6 @@ export function createMockScheduleDataSource(options: MockOptions = {}): Schedul
       const employee = getEmployee(input.employeeId);
       const dates = rangeDates(input.startDate, input.endDate);
       for (const date of dates) {
-        assertFuture(date, input.startTime);
         seedMonth(date.slice(0, 7));
       }
       const duplicates = dates.filter((date) =>
@@ -177,12 +176,18 @@ export function createMockScheduleDataSource(options: MockOptions = {}): Schedul
           details,
         );
       const results = dates.map((workDate) => {
+        if (hasStarted(workDate, input.startTime, now()))
+          return {
+            workDate,
+            status: 'FAILED' as const,
+            errorCode: 'SCHEDULE_ALREADY_STARTED',
+          };
         if (duplicates.includes(workDate)) return { workDate, status: 'DUPLICATE' as const };
         if (failures.delete(workDate))
           return {
             workDate,
             status: 'FAILED' as const,
-            errorCode: 'SERVICE_UNAVAILABLE',
+            errorCode: 'SCHEDULE_CREATION_FAILED',
           };
         const id = nextId++;
         const schedule: ScheduleDto = {

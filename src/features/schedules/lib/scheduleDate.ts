@@ -37,6 +37,14 @@ export function normalizeSelectedDate(
   return value.slice(0, 7) >= min && value.slice(0, 7) <= max ? value : undefined;
 }
 
+export function normalizeRegistrationDate(
+  value: string | undefined,
+  today: string,
+): string | undefined {
+  const date = normalizeSelectedDate(value, today);
+  return date && date >= today ? date : undefined;
+}
+
 /** 실패한 날짜만 연속 구간으로 묶어 API의 startDate/endDate 계약에 맞춘다. */
 export function contiguousRanges(dates: string[]): DateRange[] {
   const result: DateRange[] = [];
