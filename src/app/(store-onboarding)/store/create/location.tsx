@@ -1,11 +1,15 @@
-import { RoutePlaceholderScreen } from '@/features/routes/screens/RoutePlaceholderScreen';
+import { router } from 'expo-router';
 
-export default function StoreLocationRoute() {
+import { goBackOr } from '@/shared/lib/navigation';
+import { ROUTES } from '@/shared/lib/routes';
+
+import { StoreCreateBranchScreen } from '@/features/stores/screens/StoreCreateBranchScreen';
+
+export default function CreateStoreLocationRoute() {
   return (
-    <RoutePlaceholderScreen
-      title="매장 위치"
-      description="주소와 상세주소를 입력하는 단계입니다."
-      featureIds="STORE-06"
+    <StoreCreateBranchScreen
+      onBack={() => goBackOr(ROUTES.storeCreate.index)}
+      onNext={() => router.push(ROUTES.storeCreate.contact)}
     />
   );
 }

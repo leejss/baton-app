@@ -1,11 +1,21 @@
-import { RoutePlaceholderScreen } from '@/features/routes/screens/RoutePlaceholderScreen';
+import { router } from 'expo-router';
+
+import { goBackOr } from '@/shared/lib/navigation';
+import { ROUTES } from '@/shared/lib/routes';
+
+import { StoreJoinCodeScreen } from '@/features/stores/screens/StoreJoinCodeScreen';
+import { useStoreJoinStore } from '@/features/stores/store/storeJoinStore';
 
 export default function JoinStoreRoute() {
+  const setPreview = useStoreJoinStore((state) => state.setPreview);
+
   return (
-    <RoutePlaceholderScreen
-      title="초대코드 입력"
-      description="4자리 초대코드로 참여할 매장을 찾는 화면입니다."
-      featureIds="STORE-02"
+    <StoreJoinCodeScreen
+      onBack={() => goBackOr(ROUTES.store)}
+      onPreviewed={(preview) => {
+        setPreview(preview);
+        router.push(ROUTES.storeJoin.confirm);
+      }}
     />
   );
 }

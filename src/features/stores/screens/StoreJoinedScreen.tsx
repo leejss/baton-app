@@ -1,0 +1,82 @@
+import { StyleSheet, View } from 'react-native';
+
+import { BottomActionBar, Box, Button, ScreenHeader, Text, textStyles } from '@/shared/ui';
+import { SCREEN_PADDING_X } from '@/theme';
+
+/**
+ * 매장 참여 완료(STORE-04). Figma "03 매장 참여 완료" — `943:111826`.
+ *
+ * 참여가 끝난 뒤의 안내만 있는 화면이다. 진행 표시는 없다.
+ */
+export type StoreJoinedScreenProps = {
+  onBack: () => void;
+  /** "시작하기". 라우트가 홈으로 보낸다. */
+  onStart: () => void;
+};
+
+const SPEC = {
+  /** 헤더 ↔ 타이틀. */
+  titleTop: 26,
+  /** 타이틀 ↔ 일러스트. */
+  illustrationTop: 40,
+  /** 일러스트 크기(266×249). 아트워크가 오면 이 자리만 교체한다. */
+  illustrationWidth: 266,
+  illustrationHeight: 249,
+  /** 제목 ↔ 설명. */
+  headlineGap: 12,
+} as const;
+
+export function StoreJoinedScreen({ onBack, onStart }: StoreJoinedScreenProps) {
+  return (
+    <Box background="background" style={styles.root}>
+      <ScreenHeader onBack={onBack} />
+
+      <View style={styles.content}>
+        <View style={styles.headline}>
+          <Text variant="display" weight="bold" style={textStyles.center}>
+            매장 참여가 완료 됐어요!
+          </Text>
+          <Text variant="body" weight="medium" color="textSecondary" style={textStyles.center}>
+            이제 근무 매장의 인수인계를 시작해 보세요.
+          </Text>
+        </View>
+
+        <Illustration />
+      </View>
+
+      <BottomActionBar>
+        <Button label="시작하기" color="black" onPress={onStart} />
+      </BottomActionBar>
+    </Box>
+  );
+}
+
+/** 시안에서 아직 회색 사각형인 자리. 일러스트가 나오면 이 컴포넌트만 교체한다. */
+function Illustration() {
+  return (
+    <Box
+      background="placeholder"
+      style={styles.illustration}
+      accessibilityElementsHidden
+      importantForAccessibility="no"
+    />
+  );
+}
+
+const styles = StyleSheet.create({
+  root: { flex: 1 },
+  content: {
+    flex: 1,
+    paddingHorizontal: SCREEN_PADDING_X,
+    paddingTop: SPEC.titleTop,
+  },
+  headline: {
+    gap: SPEC.headlineGap,
+  },
+  illustration: {
+    width: SPEC.illustrationWidth,
+    height: SPEC.illustrationHeight,
+    marginTop: SPEC.illustrationTop,
+    alignSelf: 'center',
+  },
+});

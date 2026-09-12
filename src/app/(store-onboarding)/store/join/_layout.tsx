@@ -1,11 +1,6 @@
 import { Stack } from 'expo-router';
 
+/** 시안의 상단은 제목 없는 뒤로가기뿐이라 화면이 직접 그린다. */
 export default function JoinStoreLayout() {
-  return (
-    <Stack>
-      <Stack.Screen name="index" options={{ title: '매장 참여' }} />
-      <Stack.Screen name="confirm" options={{ title: '매장 확인' }} />
-      <Stack.Screen name="complete" options={{ title: '참여 완료' }} />
-    </Stack>
-  );
+  return <Stack screenOptions={{ headerShown: false }} />;
 }

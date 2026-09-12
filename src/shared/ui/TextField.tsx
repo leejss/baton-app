@@ -27,6 +27,8 @@ type TextFieldState = 'default' | 'focus' | 'filled' | 'error' | 'success' | 'di
 
 export type TextFieldProps = Omit<TextInputProps, 'style' | 'placeholderTextColor' | 'editable'> & {
   label?: string;
+  /** 라벨 앞에 옅은 "(선택)"을 붙인다. 시안 `Text input`의 선택 입력 표기다. */
+  isOptional?: boolean;
   /**
    * 입력 아래 보조 영역. 문자열이면 상태에 맞는 색으로 그려주고,
    * 노드면 그대로 둔다(예: "비밀번호를 잊으셨나요?" 같은 액션).
@@ -128,6 +130,7 @@ function resolveState({
 
 export function TextField({
   label,
+  isOptional = false,
   subtitle,
   status = 'none',
   disabled = false,
@@ -154,6 +157,11 @@ export function TextField({
     <View style={styles.container}>
       {label !== undefined && (
         <Text variant="title" weight="semibold" color="textSecondary">
+          {isOptional && (
+            <Text variant="title" weight="semibold" color="textTertiary">
+              {'(선택) '}
+            </Text>
+          )}
           {label}
         </Text>
       )}
@@ -168,7 +176,7 @@ export function TextField({
 
         <TextInput
           // 라벨이 별도 Text라 스크린 리더가 입력과 묶어주지 못한다. 직접 연결한다.
-          accessibilityLabel={label}
+          accessibilityLabel={isOptional && label !== undefined ? `(선택) ${label}` : label}
           style={[styles.textInput, { color: colors[tone.value] }]}
           placeholderTextColor={colors.textTertiary}
           editable={!disabled}

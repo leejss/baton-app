@@ -1,12 +1,6 @@
 import { Stack } from 'expo-router';
 
+/** 시안의 상단은 제목 없는 뒤로가기뿐이라 화면이 직접 그린다. */
 export default function CreateStoreLayout() {
-  return (
-    <Stack>
-      <Stack.Screen name="index" options={{ title: '새 매장 만들기' }} />
-      <Stack.Screen name="location" options={{ title: '매장 위치' }} />
-      <Stack.Screen name="contact" options={{ title: '매장 연락처' }} />
-      <Stack.Screen name="complete" options={{ title: '생성 완료' }} />
-    </Stack>
-  );
+  return <Stack screenOptions={{ headerShown: false }} />;
 }

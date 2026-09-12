@@ -9,7 +9,7 @@ export const memberSchema = z.object({
   role: z.enum(['MANAGER', 'EMPLOYEE']),
   status: z.enum(['ACTIVE', 'LEFT']),
 });
-const storeSchema = z.object({
+export const storeSchema = z.object({
   id: z.number().int().positive(),
   storeName: z.string(),
   branchName: z.string(),
@@ -30,3 +30,61 @@ export const myStoreSchema = z.object({
 });
 export type MemberDto = z.infer<typeof memberSchema>;
 export type Membership = z.infer<typeof membershipSchema>;
+
+/**
+ * 매장 초대 코드. 계약상 **숫자 4자리**이고 발급 후 24시간 유효하다
+ * (`api-spec.md` §3 `InvitationCodeValue`).
+ */
+export const INVITATION_CODE_LENGTH = 4;
+export const invitationCodeValueSchema = z.string().regex(/^[0-9]{4}$/);
+
+export const invitationCodeSchema = z.object({
+  code: invitationCodeValueSchema,
+  expiresAt: z.iso.datetime({ offset: true }),
+  status: z.enum(['ACTIVE', 'EXPIRED', 'REVOKED']),
+});
+
+/**
+ * 매장 생성·참여 응답.
+ *
+ * `initialInvitationCode`는 **매장 생성 응답에서 최초 발급에 성공한 경우에만** 온다.
+ * 코드 발급만 실패해도 매장과 멤버십은 만들어지므로(`invitationCodeIssueStatus`)
+ * 화면은 코드 없는 완료 상태를 반드시 처리해야 한다.
+ */
+export const storeContextSchema = z.object({
+  store: storeSchema,
+  membership: membershipSchema,
+  initialInvitationCode: invitationCodeSchema.nullish(),
+  invitationCodeIssueStatus: z.enum(['ISSUED', 'ISSUE_FAILED']).nullish(),
+});
+
+/** `POST /stores/join/preview` 응답. 참여 확정 전 보여줄 매장 정보다. */
+export const storeInvitationPreviewSchema = z.object({
+  storeId: z.number().int().positive(),
+  storeName: z.string(),
+  branchName: z.string(),
+  address: z.string(),
+  detailAddress: z.string().nullish(),
+  storeContact: z.string(),
+  invitationCode: invitationCodeValueSchema,
+  expiresAt: z.iso.datetime({ offset: true }),
+});
+
+export type Store = z.infer<typeof storeSchema>;
+export type InvitationCode = z.infer<typeof invitationCodeSchema>;
+export type StoreContext = z.infer<typeof storeContextSchema>;
+export type StoreInvitationPreview = z.infer<typeof storeInvitationPreviewSchema>;
+
+/**
+ * 매장 생성 요청. 제약은 계약(`StoreCreateRequest`)을 따른다 —
+ * 상세주소만 선택이고 나머지는 필수다.
+ *
+ * 요청 스키마라 선택 필드는 `.optional()`이다(응답의 `.nullish()`와 반대).
+ */
+export type CreateStoreParams = {
+  storeName: string;
+  branchName: string;
+  address: string;
+  detailAddress?: string;
+  storeContact: string;
+};

@@ -1,11 +1,21 @@
-import { RoutePlaceholderScreen } from '@/features/routes/screens/RoutePlaceholderScreen';
+import { router } from 'expo-router';
+
+import { ROUTES } from '@/shared/lib/routes';
+
+import { StoreEntryScreen } from '@/features/stores/screens/StoreEntryScreen';
+import { useStoreCreateStore } from '@/features/stores/store/storeCreateStore';
 
 export default function StoreEntryRoute() {
+  const startCreate = useStoreCreateStore((state) => state.start);
+
   return (
-    <RoutePlaceholderScreen
-      title="매장 시작"
-      description="새 매장을 만들거나 초대코드로 참여하는 진입 화면입니다."
-      featureIds="STORE-01"
+    <StoreEntryScreen
+      onBack={() => router.replace(ROUTES.home)}
+      onJoin={() => router.push(ROUTES.storeJoin.index)}
+      onCreate={() => {
+        startCreate();
+        router.push(ROUTES.storeCreate.index);
+      }}
     />
   );
 }

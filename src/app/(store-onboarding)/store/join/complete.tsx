@@ -1,11 +1,15 @@
-import { RoutePlaceholderScreen } from '@/features/routes/screens/RoutePlaceholderScreen';
+import { router } from 'expo-router';
+
+import { goBackOr } from '@/shared/lib/navigation';
+import { ROUTES } from '@/shared/lib/routes';
+
+import { StoreJoinedScreen } from '@/features/stores/screens/StoreJoinedScreen';
 
 export default function CompleteStoreJoinRoute() {
   return (
-    <RoutePlaceholderScreen
-      title="매장 참여 완료"
-      description="직원 권한으로 매장 참여가 완료된 화면입니다."
-      featureIds="STORE-04"
+    <StoreJoinedScreen
+      onBack={() => goBackOr(ROUTES.store)}
+      onStart={() => router.replace(ROUTES.home)}
     />
   );
 }

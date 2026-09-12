@@ -25,6 +25,21 @@ export const ROUTES = {
     complete: '/signup/complete',
   } as const satisfies Record<string, Href>,
 
+  /** 매장 온보딩(STORE-02~04). 참여 플로우는 코드 입력 → 매장 확인 → 완료다. */
+  storeJoin: {
+    index: '/store/join',
+    confirm: '/store/join/confirm',
+    complete: '/store/join/complete',
+  } as const satisfies Record<string, Href>,
+
+  /** 매장 생성(STORE-05~07). 생성 완료 화면이 최초 초대 코드를 보여준다. */
+  storeCreate: {
+    index: '/store/create',
+    location: '/store/create/location',
+    contact: '/store/create/contact',
+    complete: '/store/create/complete',
+  } as const satisfies Record<string, Href>,
+
   resetPassword: {
     index: '/reset-password',
     code: '/reset-password/code',
