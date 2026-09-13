@@ -1,207 +1,66 @@
 import { palette } from '@/theme/tokens';
 
 /**
- * 시맨틱 컬러. 컴포넌트가 참조하는 유일한 컬러 레이어다.
- * `palette`(원시 토큰)를 컴포넌트에서 직접 import 하지 않는다.
+ * Figma `최종 디자인 시스템`의 semantic 컬러를 앱에서 사용하는 형태로 옮긴 투영본.
  *
- * ## 이름 규칙
- * 의미색(accent/danger/success/warning)은 넷씩 짝을 이룬다.
- *
- * | 키 | 용도 |
- * |---|---|
- * | `accent` | 꽉 찬 배경(버튼·뱃지 fill) |
- * | `accentOn` | 그 배경 위에 올라가는 전경(텍스트·아이콘) |
- * | `accentSubtle` | 옅은 톤 배경(인라인 알림·칩) |
- * | `accentText` | background/surface/subtle 위에 직접 올리는 텍스트·아이콘 |
- *
- * ## 대비비
- * 아래 조합은 전부 WCAG AA(4.5:1)를 실측으로 통과시킨 값이다. 최저치는
- * `successText`/`successSubtle` = 4.79. 색을 바꾸면 반드시 다시 측정할 것.
- *
- * 예외 둘:
- * - `textDisabled`는 비활성 텍스트라 WCAG 대비 요건에서 제외된다.
- * - `border`는 장식용 구분선이다. 입력 필드 테두리처럼 **의미를 전달하는**
- *   경계는 3:1을 넘는 `borderStrong`을 쓴다.
- *
- * ## 테마 무관 값
- * `static*`은 라이트/다크 어느 쪽에서도 뒤집히지 않는 고정색이다. 카카오 노랑처럼
- * 우리가 못 바꾸는 배경 위의 전경에만 쓴다. 테마에 따라 뒤집혀야 하면 `textInverse`다.
+ * Figma의 로컬 변수 경로를 slash 없이 camelCase로 표현한다. 같은 색상값을 갖더라도
+ * Figma에서 의미가 다른 변수는 별도의 키로 유지한다. 컴포넌트는 이 레이어만 참조한다.
+ * 현재 Figma 컬러 컬렉션은 단일 모드만 제공하므로 별도 컬러 세트를 두지 않는다.
  */
-const light = {
-  /** 화면 바닥. */
-  background: palette.white,
-  /** 배경 위에 한 단 올라온 면(카드·시트). */
-  surface: palette.gray50,
-  /** surface보다 한 단 더 눌린 면(입력 필드 바닥, 코드 칩). */
-  surfaceSunken: palette.gray100,
-  /** 비활성 버튼·입력 배경. `border`와 값은 같지만 의미가 달라 키를 나눈다. */
-  surfaceDisabled: palette.gray200,
-  /**
-   * 아직 일러스트가 안 나온 자리를 채우는 회색 사각형. 아트워크가 들어오면 이 키를
-   * 쓰는 `Illustration` 컴포넌트와 함께 사라진다.
-   */
-  placeholder: palette.gray200,
+const colors = {
+  backgroundDefault: palette.white, // background/default
+  backgroundSubtle: palette.gray50, // background/subtle
 
-  textPrimary: palette.gray900,
-  textSecondary: palette.gray600,
-  textTertiary: palette.gray500,
-  textDisabled: palette.gray400,
-  /** 어두운 면 위에 올라가는 텍스트. */
-  textInverse: palette.white,
+  foregroundStrong: palette.gray800, // foreground/strong
+  foregroundDefault: palette.gray600, // foreground/default
+  foregroundSubtle: palette.gray400, // foreground/subtle
+  foregroundDisabled: palette.gray400, // foreground/disabled
+  foregroundInverse: palette.white, // foreground/inverse
+  foregroundBlueSoft: palette.blue600, // foreground/blue/soft
+  foregroundBlueDefault: palette.blue700, // foreground/blue/default
+  foregroundWarningDefault: palette.red600, // foreground/warning/default
+  foregroundSuccessDefault: palette.green600, // foreground/success/default
+  foregroundCautionaryDefault: palette.yellow600, // foreground/cautionary/default
 
-  /**
-   * Figma 하단 탭(node 13:1916)의 고정 전경색.
-   * TODO(design-system): `textPrimary`와 역할·값을 다시 맞춘 뒤 전용 키 유지 여부를 결정해야 한다.
-   */
-  navigationForeground: palette.gray800,
+  surfaceBlueStrong: palette.blue600, // surface/blue/strong
+  surfaceBlueDefault: palette.blue50, // surface/blue/default
+  surfaceBlueSubtle: palette.blue100, // surface/blue/subtle
+  surfaceBluePressed: palette.blue700, // surface/blue/pressed
+  surfaceNeutralStrong: palette.gray800, // surface/neutral/strong
+  surfaceNeutralDefault: palette.white, // surface/neutral/default
+  surfaceNeutralMedium: palette.gray200, // surface/neutral/medium
+  surfaceNeutralSubtle: palette.gray100, // surface/neutral/subtle
+  surfaceNeutralDisabled: palette.gray200, // surface/neutral/disabled
+  surfaceNeutralPressed: palette.gray950, // surface/neutral/pressed
+  surfaceWarningDefault: palette.red500, // surface/warning/default
+  surfaceWarningSoft: palette.red50, // surface/warning/soft
+  surfaceWarningPressed: palette.red600, // surface/warning/pressed
+  surfaceSuccessDefault: palette.green500, // surface/success/default
+  surfaceSuccessSoft: palette.green50, // surface/success/soft
+  surfaceSuccessPressed: palette.green700, // surface/success/pressed
+  surfaceCautionaryDefault: palette.yellow500, // surface/cautionary/default
+  surfaceCautionarySoft: palette.yellow100, // surface/cautionary/soft
 
-  border: palette.gray200,
-  borderStrong: palette.gray500,
-  /** 포커스된 입력 필드. 로그인 시안에서 유일하게 gray950이 쓰이는 자리다. */
-  borderFocus: palette.gray950,
-  /** 비활성 입력 필드 테두리. `border`보다 더 옅어 존재감을 낮춘다. */
-  borderSubtle: palette.gray100,
+  borderStrong: palette.gray300, // border/strong
+  borderDefault: palette.gray300, // border/default
+  borderSubtle: palette.gray100, // border/subtle
+  borderPressed: palette.gray950, // border/pressed
+  borderWarningDefault: palette.red500, // border/warning/default
+  borderSuccessDefault: palette.green500, // border/success/default
+  overlayDimmed: 'rgba(0, 0, 0, 0.6)', // overlay/dimmed
 
-  accent: palette.blue600,
-  accentOn: palette.white,
-  accentSubtle: palette.blue50,
-  accentText: palette.blue700,
+  tagSurfaceFillNeutral: palette.gray500, // tag/surface/fill/neutral
+  // Figma semantic direct value. It is intentionally not a primitive palette value.
+  tagSurfaceSoftBlue: '#EFF6FF', // tag/surface/soft/blue
+  tagSurfaceSoftOrange: palette.orange50, // tag/surface/soft/orange
+  tagForegroundOrange: palette.orange600, // tag/foreground/orange
 
-  danger: palette.red600,
-  dangerOn: palette.white,
-  dangerSubtle: palette.red50,
-  dangerText: palette.red700,
-  /** 에러 입력 필드·스낵바 테두리. 문구색(`dangerText`)보다 한 단 밝다. */
-  dangerBorder: palette.red500,
-
-  /** green600은 흰 글자와 3.30:1이라 fill로 못 쓴다. 그래서 700이 solid다. */
-  success: palette.green700,
-  successOn: palette.white,
-  successSubtle: palette.green50,
-  successText: palette.green700,
-
-  /** 노랑 계열은 흰 글자가 어떤 단계에서도 통과하지 못한다. 전경은 항상 어두운 쪽. */
-  warning: palette.yellow400,
-  warningOn: palette.gray900,
-  warningSubtle: palette.yellow50,
-  warningText: palette.yellow700,
-
-  /**
-   * ── 액션(버튼·칩) 전용 ────────────────────────────────────────────
-   * 출처: Figma 디자인 시스템 `Action Button_square`(1169:28103),
-   * `Action Button_rounded`(1169:29426), `chips_역할`(1169:30119).
-   * 시안의 `surface/*`, `foreground/*`, `tag/*` 토큰과 1:1로 대응한다.
-   *
-   * ⚠️ 다크 값은 시안에 없다. 아래 `darkColors`의 대응 값은 라이트에서 역산한
-   * 임시값이며, 다크 시안이 나오면 통째로 교체한다.
-   */
-
-  /** `surface/neutral/strong` — 검정 계열 솔리드 버튼 배경. */
-  surfaceInverse: palette.gray800,
-  /** `surface/neutral/pressed` — 그 버튼을 눌렀을 때. */
-  surfaceInversePressed: palette.gray950,
-  /** 위 두 배경 위에 올라가는 전경. */
-  onSurfaceInverse: palette.white,
-
-  /** `surface/blue/pressed` — accent 솔리드 버튼을 눌렀을 때. */
-  accentPressed: palette.blue700,
-  /** `surface/blue/default` — 라운드 버튼의 연한 파랑 배경. */
-  accentSoft: palette.blue25,
-  /** `foreground/blue/soft` — `accentSoft` 위의 전경. */
-  onAccentSoft: palette.blue600,
-
-  /** `surface/warning/default` — 빨강 솔리드 버튼 배경. `danger`(red600)와 단계가 다르다. */
-  dangerSolid: palette.red500,
-  /** `surface/warning/pressed`. */
-  dangerSolidPressed: palette.red600,
-
-  /** `tag/surface/soft/orange` · `tag/foreground/orange` — 역할 칩. */
-  tagOrangeSurface: palette.orange50,
-  tagOrangeText: palette.orange600,
-
+  /** Figma 바깥의 고정색. 브랜드·시스템 고정 배경 위에서만 사용한다. */
   staticWhite: palette.white,
   staticBlack: palette.black,
-
-  /** 모달·바텀시트 뒤에 까는 막. Figma 명세 없음 — 필요해서 파생한 값이다. */
-  overlay: 'rgba(0, 0, 0, 0.48)',
-  /**
-   * 하단 토스트(`Notification`, 73:6524)의 반투명 배경. Figma `tag/surface/fill/neutral`
-   * (gray500) 위에 `opacity/52`를 얹은 값이라 rgba로 둔다 — View `opacity`로 처리하면
-   * 위의 글자까지 같이 흐려진다. 전경은 항상 `staticWhite`.
-   */
-  toastBackground: 'rgba(107, 114, 128, 0.52)',
 } as const;
 
-/** 값은 문자열로 넓힌다 — light/dark가 같은 키 집합만 공유하면 된다. */
-export type ThemeColors = Record<keyof typeof light, string>;
+export type ThemeColors = { [Key in keyof typeof colors]: string };
 export type ThemeColorName = keyof ThemeColors;
 
-export const lightColors: ThemeColors = light;
-
-export const darkColors: ThemeColors = {
-  background: palette.gray950,
-  surface: palette.gray900,
-  surfaceSunken: palette.gray800,
-  surfaceDisabled: palette.gray800,
-  placeholder: palette.gray800,
-
-  textPrimary: palette.gray50,
-  textSecondary: palette.gray300,
-  textTertiary: palette.gray400,
-  textDisabled: palette.gray600,
-  textInverse: palette.gray900,
-
-  /** 하단 탭은 Figma 명세대로 흰 배경을 고정하므로 다크모드에서도 같은 전경색을 쓴다. */
-  navigationForeground: palette.gray800,
-
-  border: palette.gray800,
-  borderStrong: palette.gray500,
-  /** 어두운 면에서는 흰 테두리가 포커스를 가장 분명하게 드러낸다. */
-  borderFocus: palette.white,
-  /** 배경(gray950)에서 한 단만 올라온다 — `border`보다 더 물러난 톤. */
-  borderSubtle: palette.gray900,
-
-  /** solid는 light와 같은 단계를 쓴다 — 어두운 배경에서도 흰 전경이 5.17:1로 통과한다. */
-  accent: palette.blue600,
-  accentOn: palette.white,
-  accentSubtle: palette.blue950,
-  accentText: palette.blue400,
-
-  danger: palette.red600,
-  dangerOn: palette.white,
-  dangerSubtle: palette.red950,
-  dangerText: palette.red400,
-  dangerBorder: palette.red500,
-
-  success: palette.green700,
-  successOn: palette.white,
-  successSubtle: palette.green950,
-  successText: palette.green400,
-
-  warning: palette.yellow400,
-  warningOn: palette.gray900,
-  warningSubtle: palette.yellow950,
-  warningText: palette.yellow400,
-
-  /** 다크 시안 없음 — 밝은 면 위에 어두운 글자로 뒤집어 대비를 유지한다. */
-  surfaceInverse: palette.gray100,
-  surfaceInversePressed: palette.white,
-  onSurfaceInverse: palette.gray900,
-
-  accentPressed: palette.blue500,
-  accentSoft: palette.blue950,
-  onAccentSoft: palette.blue300,
-
-  dangerSolid: palette.red500,
-  dangerSolidPressed: palette.red400,
-
-  tagOrangeSurface: palette.orange950,
-  tagOrangeText: palette.orange300,
-
-  staticWhite: palette.white,
-  staticBlack: palette.black,
-
-  overlay: 'rgba(0, 0, 0, 0.64)',
-  /** 어두운 바닥에서는 같은 회색이 묻혀서 한 단 밝은 gray400(#9CA3AF)을 쓴다. */
-  toastBackground: 'rgba(156, 163, 175, 0.52)',
-};
+export const appColors: ThemeColors = colors;

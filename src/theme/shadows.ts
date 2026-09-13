@@ -16,8 +16,8 @@ import type { ViewStyle } from 'react-native';
  * iOS/Android가 동일하게 렌더된다(New Architecture 필요 — SDK 57 기본값).
  * 레거시 `shadowOffset`/`elevation`과 **섞어 쓰지 않는다.** 안드로이드에서 두 번 그려진다.
  *
- * 그림자 색은 검정 고정이라 다크모드에서는 사실상 보이지 않는다. 다크에서
- * 깊이를 표현해야 하면 그림자 대신 `colors.surface` 단계를 올린다.
+ * 그림자 색은 Figma 명세대로 검정 고정이다. 깊이 표현은 컬러 테마 분기와
+ * 무관하게 이 토큰을 사용한다.
  */
 export const shadows = {
   subtle: { boxShadow: '0px 2px 4px 0px rgba(0, 0, 0, 0.06)' },
