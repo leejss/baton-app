@@ -7,24 +7,9 @@ import {
 } from '@tanstack/react-query';
 import * as Network from 'expo-network';
 import { AppState } from 'react-native';
-import { isAppError, normalizeError } from '@/shared/api/errors';
-import { logger } from '@/shared/lib/logger';
+import { isAppError } from '@/shared/api/errors';
+import { reportError } from '@/shared/lib/reportError';
 
-export function logApiFailure(error: unknown, operation: string): void {
-  const normalized = normalizeError(error);
-  if (normalized.code === 'canceled') return;
-  const attributes = {
-    operation,
-    code: normalized.code,
-    status: normalized.status,
-    errorCode: normalized.errorCode,
-  };
-  if (normalized.errorCode === 'SCHEDULE_DUPLICATES_REQUIRE_CONFIRMATION') {
-    logger.info('중복 일정 확인이 필요합니다', attributes);
-  } else {
-    logger.error('API 작업 실패', attributes);
-  }
-}
 export function shouldRetryQuery(failureCount: number, error: unknown): boolean {
   return (
     failureCount < 2 &&
@@ -37,24 +22,10 @@ export function shouldRetryQuery(failureCount: number, error: unknown): boolean 
 export function createQueryClient(): QueryClient {
   return new QueryClient({
     queryCache: new QueryCache({
-      onError: (error, query) =>
-        logApiFailure(
-          error,
-          String(
-            query.meta?.operation ??
-              query.queryKey
-                .filter((part) => typeof part === 'string')
-                .slice(0, 3)
-                .join('.'),
-          ),
-        ),
+      onError: (error) => reportError(error),
     }),
     mutationCache: new MutationCache({
-      onError: (error, _variables, _context, mutation) =>
-        logApiFailure(
-          error,
-          String(mutation.meta?.operation ?? mutation.options.mutationKey?.join('.') ?? 'mutation'),
-        ),
+      onError: (error) => reportError(error),
     }),
     defaultOptions: {
       queries: {

@@ -2,7 +2,8 @@ import { uploadSchema } from '@/features/handoffs/api/attachment.schema';
 import { File } from 'expo-file-system';
 import { fetch } from 'expo/fetch';
 import { post, del } from '@/shared/api/client';
-import { AppError, isAppError, normalizeError } from '@/shared/api/errors';
+import { AppError, isAppError, normalizeError, normalizeFetchError } from '@/shared/api/errors';
+import { readHttpResponse } from '@/shared/api/httpResponse';
 import { attachmentSchema } from '@/features/handoffs/api/handoff.schema';
 import type { LocalAttachment } from '@/features/handoffs/types';
 
@@ -57,17 +58,35 @@ export async function uploadAttachment(
     // 별도 호스트에는 API 인증 헤더를 절대 전달하지 않는다.
     headers.delete('authorization');
     let putError: unknown;
+    const startedAt = Date.now();
+    const body = new File(file.uri);
+    const uploadSignal = AbortSignal.any([signal, AbortSignal.timeout(60_000)]);
     try {
       const response = await fetch(ticket.uploadUrl, {
         method: 'PUT',
         headers,
-        body: new File(file.uri),
-        signal: AbortSignal.any([signal, AbortSignal.timeout(60_000)]),
+        body,
+        signal: uploadSignal,
+      }).catch((error: unknown) => {
+        const normalized = normalizeFetchError(error, uploadSignal);
+        throw new AppError(normalized.code, normalized.message, {
+          cause: normalized,
+          http: { method: 'PUT', route: 's3.upload', durationMs: Date.now() - startedAt },
+        });
       });
-      if (!response.ok)
+      if (!response.ok) {
+        const { http, readError } = await readHttpResponse(
+          response,
+          { method: 'PUT', route: 's3.upload' },
+          startedAt,
+          uploadSignal,
+        );
         throw new AppError('server', '사진을 업로드하지 못했습니다.', {
           status: response.status,
+          http,
+          cause: readError,
         });
+      }
     } catch (error) {
       putError = normalizeError(error);
     }

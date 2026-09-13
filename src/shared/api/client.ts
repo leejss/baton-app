@@ -2,7 +2,9 @@ import { API_URL, assertApiConfigured } from '@/shared/config/api';
 import { z, type ZodType } from 'zod';
 
 import { logRequestStart } from '@/shared/api/devNetworkLog';
-import { AppError, normalizeError } from '@/shared/api/errors';
+import { AppError, normalizeFetchError, type HttpDiagnostics } from '@/shared/api/errors';
+import { normalizeApiRoute, readHttpResponse } from '@/shared/api/httpResponse';
+import { reportError } from '@/shared/lib/reportError';
 
 /**
  * HTTP 단일 진입점. 화면·훅은 여기를 직접 부르지 않고 각 도메인의 api 모듈을 거친다.
@@ -96,25 +98,27 @@ function readRetryAfter(response: Response): number | null {
   return Number.isFinite(seconds) && seconds > 0 ? seconds : null;
 }
 
-async function readEnvelope(response: Response): Promise<z.infer<typeof envelopeSchema> | null> {
-  if (response.status === 204) {
-    return null;
-  }
+type HttpResult = Awaited<ReturnType<typeof readHttpResponse>> & { response: Response };
+
+function readEnvelope(http: HttpDiagnostics): z.infer<typeof envelopeSchema> | null {
+  if (!http.raw) return null;
   try {
-    const parsed = envelopeSchema.safeParse(await response.json());
+    const parsed = envelopeSchema.safeParse(JSON.parse(http.raw));
     return parsed.success ? parsed.data : null;
   } catch {
-    // 본문이 비었거나 JSON이 아닌 경우. 오류 응답에서 드물게 발생한다.
     return null;
   }
 }
 
-function toServerError(response: Response, envelope: Awaited<ReturnType<typeof readEnvelope>>) {
+function toServerError({ response, http, readError }: HttpResult, cause?: unknown) {
+  const envelope = readEnvelope(http);
   return new AppError('server', envelope?.meta.message ?? '요청을 처리하지 못했어요.', {
     details: envelope?.data,
     errorCode: envelope?.meta.errorCode ?? null,
     status: response.status,
     retryAfterSeconds: readRetryAfter(response),
+    http,
+    cause: cause ?? readError,
   });
 }
 
@@ -123,7 +127,7 @@ async function fetchOnce(
   path: string,
   body: unknown,
   options: RequestOptions,
-): Promise<Response> {
+): Promise<HttpResult> {
   const headers: Record<string, string> = { Accept: 'application/json' };
 
   if (body !== undefined) {
@@ -140,59 +144,74 @@ async function fetchOnce(
   }
 
   // 개발 빌드에서만 동작한다. 프로덕션에서는 호출해도 아무 일도 하지 않는다.
-  const log = logRequestStart(method, path, body, isAuthorized);
+  const startedAt = Date.now();
+  const route = normalizeApiRoute(path);
+  const log = logRequestStart(method, path, isAuthorized, startedAt);
+  // 직렬화와 signal 생성 실패는 fetch의 네트워크 오류가 아니다.
+  const init: RequestInit = {
+    method,
+    headers,
+    body: body === undefined ? undefined : JSON.stringify(body),
+    signal: withTimeout(options.signal),
+  };
 
+  let response: Response;
   try {
-    const response = await fetch(`${API_URL}${path}`, {
-      method,
-      headers,
-      body: body === undefined ? undefined : JSON.stringify(body),
-      signal: withTimeout(options.signal),
-    });
-    log.succeeded(response);
-    return response;
+    response = await fetch(`${API_URL}${path}`, init);
   } catch (error) {
-    log.failed(error);
-    throw normalizeError(error);
+    const normalized = normalizeFetchError(error, init.signal);
+    const failure = new AppError(normalized.code, normalized.message, {
+      cause: normalized,
+      http: { method, route, durationMs: Date.now() - startedAt },
+    });
+    log.failed(failure);
+    throw failure;
   }
+  const bodyResult = await readHttpResponse(response, { method, route }, startedAt, init.signal);
+  log.succeeded(response);
+  return { response, ...bodyResult };
 }
 
 /**
  * 동시에 여러 요청이 401을 받아도 갱신은 한 번만 한다.
  * 각자 갱신하면 Refresh Token 로테이션 때문에 뒤따르는 요청이 폐기된 토큰을 쓰게 된다.
  */
-let refreshInFlight: Promise<boolean> | null = null;
+type RefreshResult = { refreshed: boolean; failure?: AppError };
+let refreshInFlight: Promise<RefreshResult> | null = null;
 
-async function refreshTokens(): Promise<boolean> {
+async function refreshTokens(): Promise<RefreshResult> {
   const bridge = authBridge;
   const refreshToken = bridge?.getRefreshToken() ?? null;
   if (bridge === null || refreshToken === null) {
-    return false;
+    return { refreshed: false };
   }
 
-  const response = await fetchOnce(
-    'POST',
-    '/auth/token/refresh',
-    { refreshToken },
-    { auth: false },
-  );
-  if (!response.ok) {
+  const result = await fetchOnce('POST', '/auth/token/refresh', { refreshToken }, { auth: false });
+  if (!result.response.ok) {
+    const failure = toServerError(result);
+    reportError(failure);
     await bridge.onSessionExpired();
-    return false;
+    return { refreshed: false, failure };
   }
 
-  const envelope = await readEnvelope(response);
+  const envelope = readEnvelope(result.http);
   const parsed = tokenPairSchema.safeParse(envelope?.data);
   if (!parsed.success) {
+    const failure = new AppError('schema', '서버 응답 형식이 예상과 달라요.', {
+      status: result.response.status,
+      cause: parsed.error,
+      http: result.http,
+    });
+    reportError(failure);
     await bridge.onSessionExpired();
-    return false;
+    return { refreshed: false, failure };
   }
 
   await bridge.onTokensRefreshed(parsed.data);
-  return true;
+  return { refreshed: true };
 }
 
-async function refreshTokensOnce(): Promise<boolean> {
+async function refreshTokensOnce(): Promise<RefreshResult> {
   refreshInFlight ??= refreshTokens().finally(() => {
     refreshInFlight = null;
   });
@@ -204,21 +223,24 @@ async function request(
   path: string,
   body: unknown,
   options: RequestOptions,
-): Promise<Response> {
+): Promise<HttpResult> {
   assertApiConfigured();
 
-  let response = await fetchOnce(method, path, body, options);
+  let result = await fetchOnce(method, path, body, options);
+  let refreshFailure: AppError | undefined;
 
   // 만료된 Access Token은 한 번만 갱신해서 재시도한다. 실패하면 그대로 401을 올린다.
-  if (response.status === 401 && options.auth !== false && (await refreshTokensOnce())) {
-    response = await fetchOnce(method, path, body, options);
+  if (result.response.status === 401 && options.auth !== false) {
+    const refresh = await refreshTokensOnce();
+    refreshFailure = refresh.failure;
+    if (refresh.refreshed) result = await fetchOnce(method, path, body, options);
   }
 
-  if (!response.ok) {
-    throw toServerError(response, await readEnvelope(response));
+  if (!result.response.ok) {
+    throw toServerError(result, refreshFailure);
   }
 
-  return response;
+  return result;
 }
 
 /** 본문을 스키마로 검증해서 돌려준다. 서버 응답을 그대로 믿지 않는다. */
@@ -229,12 +251,19 @@ async function requestJson<T>(
   schema: ZodType<T>,
   options: RequestOptions,
 ): Promise<T> {
-  const response = await request(method, path, body, options);
-  const envelope = await readEnvelope(response);
+  const result = await request(method, path, body, options);
+  const { response, http } = result;
+  const envelope = readEnvelope(http);
 
   // 계약상 `meta.result`가 FAIL이면 HTTP도 4xx/5xx다. 둘이 어긋나면 서버를 믿지 않는다.
-  if (envelope === null || envelope.meta.result === 'FAIL') {
-    throw toServerError(response, envelope);
+  if (envelope === null) {
+    throw new AppError('schema', '서버 응답 형식이 예상과 달라요.', {
+      status: response.status,
+      http,
+    });
+  }
+  if (envelope.meta.result === 'FAIL') {
+    throw toServerError(result);
   }
 
   const parsed = schema.safeParse(envelope.data);
@@ -242,6 +271,7 @@ async function requestJson<T>(
     throw new AppError('schema', '서버 응답 형식이 예상과 달라요.', {
       status: response.status,
       cause: parsed.error,
+      http,
     });
   }
 

@@ -12,13 +12,14 @@ const SENSITIVE_ATTRIBUTE_PATTERN =
 const EMAIL_PATTERN = /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi;
 const BEARER_TOKEN_PATTERN = /\bBearer\s+\S+/gi;
 const CREDENTIAL_PATTERN =
-  /\b(api[_-]?key|access[_-]?token|refresh[_-]?token|password|secret)\s*[:=]\s*\S+/gi;
+  /\b(api[_-]?key|access[_-]?token|refresh[_-]?token|password|secret)["']?\s*[:=]\s*["']?[^\s,"'}]+/gi;
 
 function redactMessage(message: string): string {
   return message
     .replace(EMAIL_PATTERN, '[REDACTED_EMAIL]')
     .replace(BEARER_TOKEN_PATTERN, 'Bearer [REDACTED]')
-    .replace(CREDENTIAL_PATTERN, '$1=[REDACTED]');
+    .replace(CREDENTIAL_PATTERN, '$1=[REDACTED]')
+    .slice(0, 4096);
 }
 
 function sanitizeAttributes(attributes: LogAttributes | undefined): Record<string, LogAttribute> {
@@ -27,7 +28,17 @@ function sanitizeAttributes(attributes: LogAttributes | undefined): Record<strin
   }
 
   return Object.fromEntries(
-    Object.entries(attributes).filter(([key]) => !SENSITIVE_ATTRIBUTE_PATTERN.test(key)),
+    Object.entries(attributes)
+      .filter(([key, value]) => {
+        if (key === 'raw') return typeof value === 'string';
+        if (key === 'response_content_type') return true;
+        return !SENSITIVE_ATTRIBUTE_PATTERN.test(key.replace(/([a-z])([A-Z])/g, '$1_$2'));
+      })
+      .map(([key, value]) => [
+        key,
+        // 예약 필드 raw는 서버 응답 원문이다. 마스킹·절단을 하지 않는다.
+        key !== 'raw' && typeof value === 'string' ? redactMessage(value) : value,
+      ]),
   );
 }
 
@@ -57,11 +68,23 @@ function createPostHogClient(): PostHog | null {
       serviceName: 'baton-mobile',
       serviceVersion: appInfo.version ?? undefined,
       environment: appInfo.environment,
+      resourceAttributes: { 'app.build_number': appInfo.buildNumber },
     },
   });
 }
 
-const posthog = createPostHogClient();
+let posthog: PostHog | null | undefined;
+
+function getPostHogClient(): PostHog | null {
+  if (posthog === undefined) {
+    try {
+      posthog = createPostHogClient();
+    } catch {
+      posthog = null;
+    }
+  }
+  return posthog;
+}
 
 function writeConsole(
   level: LogLevel,
@@ -80,38 +103,44 @@ function writeConsole(
   console[level](message, attributes);
 }
 
-function writeRemote(
-  level: 'warn' | 'error',
-  message: string,
-  attributes: LogAttributes | undefined,
-): void {
-  if (posthog === null) {
-    return;
+function write(level: LogLevel, message: string, attributes?: LogAttributes): void {
+  const safeMessage = redactMessage(message);
+  const safeAttributes = sanitizeAttributes(attributes);
+  try {
+    writeConsole(level, safeMessage, safeAttributes);
+  } catch {
+    // 개발 콘솔 실패가 원격 수집을 막지 않는다.
   }
-
-  posthog.logger[level](redactMessage(message), sanitizeAttributes(attributes));
+  if (level !== 'warn' && level !== 'error') return;
+  try {
+    getPostHogClient()?.logger[level](safeMessage, safeAttributes);
+  } catch {
+    // 로거 실패는 재보고하지 않는다.
+  }
 }
 
 export const logger = {
   debug(message: string, attributes?: LogAttributes): void {
-    writeConsole('debug', message, attributes);
+    write('debug', message, attributes);
   },
 
   info(message: string, attributes?: LogAttributes): void {
-    writeConsole('info', message, attributes);
+    write('info', message, attributes);
   },
 
   warn(message: string, attributes?: LogAttributes): void {
-    writeConsole('warn', message, attributes);
-    writeRemote('warn', message, attributes);
+    write('warn', message, attributes);
   },
 
   error(message: string, attributes?: LogAttributes): void {
-    writeConsole('error', message, attributes);
-    writeRemote('error', message, attributes);
+    write('error', message, attributes);
   },
 
   async flush(): Promise<void> {
-    await posthog?.flushLogs();
+    try {
+      await getPostHogClient()?.flushLogs();
+    } catch {
+      // 앱 생명주기와 오류 처리를 방해하지 않는다.
+    }
   },
 };

@@ -7,7 +7,10 @@ import { AppError } from '@/shared/api/errors';
 jest.mock('expo/fetch', () => ({ fetch: jest.fn() }));
 jest.mock('expo-file-system', () => ({
   File: class {
-    constructor(public uri: string) {}
+    uri: string;
+    constructor(uri: string) {
+      this.uri = uri;
+    }
   },
 }));
 jest.mock('@/shared/api/client', () => ({ post: jest.fn(), del: jest.fn() }));
@@ -31,6 +34,27 @@ const verified = {
 };
 afterEach(() => {
   jest.resetAllMocks();
+});
+
+it('S3 실패 원문을 보존하되 presigned 요청 URL은 로그 문맥에 넣지 않는다', async () => {
+  jest
+    .mocked(post)
+    .mockResolvedValueOnce({
+      attachmentId: 501,
+      uploadUrl: 'https://storage.example/upload?signature=synthetic',
+      requiredHeaders: { 'Content-Type': 'image/jpeg', 'If-None-Match': '*' },
+    })
+    .mockRejectedValueOnce(new AppError('server', 'complete failed', { status: 500 }));
+  const raw = '<Error>synthetic upstream failure</Error>\n';
+  jest
+    .mocked(fetch)
+    .mockResolvedValue(new Response(raw, { status: 503 }) as Awaited<ReturnType<typeof fetch>>);
+  await expect(
+    uploadAttachment({ ...file, attachmentId: undefined }, () => {}, new AbortController().signal),
+  ).rejects.toMatchObject({
+    status: 503,
+    http: { method: 'PUT', route: 's3.upload', raw },
+  });
 });
 it('완료 확인만 실패했던 사진은 PUT 없이 complete부터 재시도한다', async () => {
   jest.mocked(post).mockResolvedValueOnce(verified);

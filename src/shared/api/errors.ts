@@ -17,6 +17,15 @@ export type AppErrorCode =
   | 'configuration'
   | 'schema';
 
+export type HttpDiagnostics = {
+  method: string;
+  route: string;
+  durationMs: number;
+  contentType?: string | null;
+  /** 서버 응답 원문만 허용한다. 마스킹·크기 제한 없이 전송한다. */
+  raw?: string;
+};
+
 /**
  * 계약에 정의된 오류 코드. 화면 분기에 실제로 쓰는 것만 좁혀 둔다.
  * 목록 전체는 wiki `wiki/api-spec.md` §11에 있다.
@@ -42,6 +51,7 @@ export type ServerErrorCode =
 const FALLBACK_MESSAGE = '알 수 없는 문제가 발생했어요.';
 
 type AppErrorOptions = {
+  http?: HttpDiagnostics;
   cause?: unknown;
   /** 중복 확인처럼 오류 응답의 data에 포함되는 추가 정보. 사용하는 feature에서 검증한다. */
   details?: unknown;
@@ -53,6 +63,7 @@ type AppErrorOptions = {
 };
 
 export class AppError extends Error {
+  readonly http: HttpDiagnostics | undefined;
   readonly details: unknown;
   readonly code: AppErrorCode;
   readonly errorCode: string | null;
@@ -62,6 +73,7 @@ export class AppError extends Error {
   constructor(code: AppErrorCode, message: string, options?: AppErrorOptions) {
     super(message, { cause: options?.cause });
     this.name = 'AppError';
+    this.http = options?.http;
     this.details = options?.details;
     this.code = code;
     this.errorCode = options?.errorCode ?? null;
@@ -98,16 +110,29 @@ export function normalizeError(error: unknown): AppError {
     });
   }
 
-  if (error instanceof TypeError) {
-    // fetch는 네트워크 실패를 TypeError로 던진다.
-    return new AppError('network', '네트워크에 연결할 수 없어요.', {
-      cause: error,
-    });
-  }
-
   if (error instanceof Error) {
     return new AppError('unknown', error.message, { cause: error });
   }
 
   return new AppError('unknown', FALLBACK_MESSAGE, { cause: error });
+}
+
+/** fetch·본문 읽기 경계 전용. Expo FetchError도 포함하며 일반 코드에서는 사용하지 않는다. */
+export function normalizeFetchError(error: unknown, signal?: AbortSignal | null): AppError {
+  if (isAppError(error)) return error;
+
+  // Expo는 취소 원인을 FetchError로 감싸기도 하므로 요청 signal을 우선한다.
+  const reason = signal?.aborted
+    ? signal.reason
+    : error instanceof Error && error.cause instanceof Error
+      ? error.cause
+      : error;
+  const normalized = normalizeError(reason);
+  if (normalized.code === 'timeout' || normalized.code === 'canceled') {
+    return new AppError(normalized.code, normalized.message, { cause: error });
+  }
+  if (signal?.aborted) {
+    return new AppError('canceled', '요청이 취소됐어요.', { cause: error });
+  }
+  return new AppError('network', '네트워크에 연결할 수 없어요.', { cause: error });
 }

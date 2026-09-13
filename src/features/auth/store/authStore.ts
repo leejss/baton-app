@@ -116,6 +116,5 @@ registerAuthBridge({
   onSessionExpired: async () => {
     // Refresh Token까지 죽었으면 되살릴 방법이 없다. 조용히 로그아웃 상태로 되돌린다.
     await useAuthStore.getState().signOut('sessionRevoked');
-    logger.warn('세션이 만료되어 로그아웃했습니다');
   },
 });
