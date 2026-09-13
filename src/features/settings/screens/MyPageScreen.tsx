@@ -29,11 +29,7 @@ export function MyPageScreen() {
   });
   return (
     <View style={[styles.root, { backgroundColor: colors.backgroundDefault }]}>
-      <MainHeader
-        title="마이페이지"
-        onBack={() => router.replace(ROUTES.home)}
-        backgroundColor={colors.backgroundDefault}
-      />
+      <MainHeader title="마이페이지" />
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.avatar}>
           <ProfileAvatar profileImage={profile.profileImage} size={124} />
