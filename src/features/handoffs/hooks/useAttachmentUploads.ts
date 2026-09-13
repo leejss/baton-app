@@ -2,7 +2,7 @@ import { useMutation } from '@tanstack/react-query';
 import { useEffect, useRef } from 'react';
 import { uploadAttachment, deleteAttachment } from '@/features/handoffs/api/attachment.api';
 import type { LocalAttachment } from '@/features/handoffs/types';
-import { logApiFailure } from '@/shared/api/queryClient';
+import { reportError } from '@/shared/lib/reportError';
 
 type Options = {
   attachments: LocalAttachment[];
@@ -31,9 +31,7 @@ export function useAttachmentUploads({ attachments, onAdd, onUpdate, onRemove }:
       } finally {
         tasks.current.delete(file.localId);
         if (task.removed && task.file.attachmentId !== undefined)
-          void deleteAttachment(task.file.attachmentId).catch((error) =>
-            logApiFailure(error, 'attachments.remove'),
-          );
+          void deleteAttachment(task.file.attachmentId).catch(reportError);
       }
     },
   });
@@ -58,9 +56,7 @@ export function useAttachmentUploads({ attachments, onAdd, onUpdate, onRemove }:
       task.removed = true;
       task.controller.abort();
     } else if (file?.attachmentId !== undefined && !file.isLinked)
-      void deleteAttachment(file.attachmentId).catch((error) =>
-        logApiFailure(error, 'attachments.remove'),
-      );
+      void deleteAttachment(file.attachmentId).catch(reportError);
     onRemove(id);
   };
   return {

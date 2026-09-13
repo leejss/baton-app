@@ -1,7 +1,6 @@
 import { useMutation } from '@tanstack/react-query';
 
-import { isAppError, normalizeError } from '@/shared/api/errors';
-import { logger } from '@/shared/lib/logger';
+import { isAppError } from '@/shared/api/errors';
 
 import {
   authenticateWithApple,
@@ -38,14 +37,6 @@ export function useKakaoSignIn() {
         await signIn(outcome.session);
       }
     },
-    onError: (error) => {
-      const appError = normalizeError(error);
-      if (isCanceled(appError)) {
-        return;
-      }
-      // 토큰·개인정보는 절대 싣지 않는다. 실패 종류만 남긴다.
-      logger.warn('카카오 로그인 실패', { code: appError.code });
-    },
   });
 }
 
@@ -67,14 +58,6 @@ export function useAppleSignIn() {
       if (outcome.status === 'signedIn') {
         await signIn(outcome.session);
       }
-    },
-    onError: (error) => {
-      const appError = normalizeError(error);
-      if (isCanceled(appError)) {
-        return;
-      }
-      // 토큰·개인정보는 절대 싣지 않는다. 실패 종류만 남긴다.
-      logger.warn('Apple 로그인 실패', { code: appError.code });
     },
   });
 }
@@ -98,11 +81,6 @@ export function useEmailSignIn() {
       if (outcome.status === 'signedIn') {
         await signIn(outcome.session);
       }
-    },
-    onError: (error) => {
-      const appError = normalizeError(error);
-      // 이메일·비밀번호는 절대 싣지 않는다. 실패 종류만 남긴다.
-      logger.warn('이메일 로그인 실패', { code: appError.code });
     },
   });
 }

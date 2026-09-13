@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Alert } from 'react-native';
 
 import { normalizeError } from '@/shared/api/errors';
+import { reportError } from '@/shared/lib/reportError';
 
 import { isCanceled, useAppleSignIn, useKakaoSignIn } from '@/features/auth/api/auth.mutations';
 import type { SocialProvider } from '@/features/auth/api/signup.schema';
@@ -31,7 +32,7 @@ export function useSocialSignIn({ onSignupRequired }: UseSocialSignInParams) {
    */
   const [canUseApple, setCanUseApple] = useState(false);
   useEffect(() => {
-    void isAppleSignInAvailable().then(setCanUseApple);
+    void isAppleSignInAvailable().then(setCanUseApple).catch(reportError);
   }, []);
 
   type Outcome =

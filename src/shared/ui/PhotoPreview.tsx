@@ -5,6 +5,7 @@ import { Button } from '@/shared/ui/Button';
 import { Pressable } from '@/shared/ui/Pressable';
 import { Text } from '@/shared/ui/Text';
 import { logger } from '@/shared/lib/logger';
+import { reportError } from '@/shared/lib/reportError';
 import { radius, spacing, useTheme } from '@/theme';
 export function PhotoPreview({
   uri,
@@ -27,15 +28,15 @@ export function PhotoPreview({
       await onRefresh();
       setVersion((value) => value + 1);
       setFailed(false);
+    } catch (error) {
+      reportError(error);
     } finally {
       setRefreshing(false);
     }
   };
   const onError = () => {
     setFailed(true);
-    logger.warn('첨부 사진을 표시하지 못했습니다', {
-      operation: 'attachments.preview',
-    });
+    logger.warn('첨부 사진을 표시하지 못했습니다', {});
   };
   return (
     <>

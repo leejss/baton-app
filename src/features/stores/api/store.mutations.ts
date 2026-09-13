@@ -1,7 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-import { hasServerErrorCode, normalizeError } from '@/shared/api/errors';
-import { logger } from '@/shared/lib/logger';
+import { hasServerErrorCode } from '@/shared/api/errors';
 
 import {
   createStore,
@@ -22,11 +21,6 @@ export function isAlreadyJoined(error: unknown): boolean {
   return hasServerErrorCode(error, 'STORE_ALREADY_JOINED');
 }
 
-function logFailure(step: string) {
-  return (error: unknown) =>
-    logger.warn('매장 요청 실패', { step, code: normalizeError(error).code });
-}
-
 /**
  * 매장 생성(STORE-07). 성공하면 사용자의 소속이 생기므로 `stores/me`를 무효화한다 —
  * 권한이 바뀌는 작업이라 낙관적 업데이트는 하지 않는다.
@@ -37,7 +31,6 @@ export function useCreateStore() {
   return useMutation({
     mutationFn: (params: CreateStoreParams) => createStore(params),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: storeQueries.all() }),
-    onError: logFailure('createStore'),
   });
 }
 
@@ -46,12 +39,6 @@ export function usePreviewStoreInvitation() {
   return useMutation({
     mutationFn: ({ invitationCode }: { invitationCode: string }) =>
       previewStoreInvitation(invitationCode),
-    onError: (error) => {
-      // 무효한 코드는 화면이 안내하는 정상 결과라 경고 로그를 남기지 않는다.
-      if (!isInvitationInvalid(error)) {
-        logFailure('previewInvitation')(error);
-      }
-    },
   });
 }
 
@@ -62,7 +49,6 @@ export function useJoinStore() {
   return useMutation({
     mutationFn: ({ invitationCode }: { invitationCode: string }) => joinStore(invitationCode),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: storeQueries.all() }),
-    onError: logFailure('joinStore'),
   });
 }
 
@@ -74,6 +60,5 @@ export function useIssueInvitationCode(storeId: number) {
     mutationFn: () => issueInvitationCode(storeId),
     onSuccess: () =>
       queryClient.invalidateQueries({ queryKey: storeQueries.invitationCode(storeId).queryKey }),
-    onError: logFailure('issueInvitationCode'),
   });
 }

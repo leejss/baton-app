@@ -1,8 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-import { normalizeError } from '@/shared/api/errors';
-import { logger } from '@/shared/lib/logger';
-
 import { updateDisplayName, withdraw } from '@/features/auth/api/account.api';
 import { useAuthStore } from '@/features/auth/store/authStore';
 
@@ -15,10 +12,6 @@ export function useUpdateDisplayName() {
   return useMutation({
     mutationFn: (displayName: string) => updateDisplayName(displayName),
     onSuccess: () => queryClient.invalidateQueries(),
-    onError: (error) => {
-      // 이름은 개인정보라 싣지 않는다. 실패 종류만 남긴다.
-      logger.warn('이름 변경 실패', { code: normalizeError(error).code });
-    },
   });
 }
 
@@ -38,9 +31,6 @@ export function useWithdraw() {
       await queryClient.cancelQueries();
       await signOut('withdrawn');
       queryClient.clear();
-    },
-    onError: (error) => {
-      logger.warn('회원 탈퇴 실패', { code: normalizeError(error).code });
     },
   });
 }

@@ -2,7 +2,7 @@ import { handoffQueries } from '@/features/handoffs/api/handoff.queries';
 import { notificationQueries } from '@/features/notifications/api/notification.queries';
 import { storeQueries } from '@/features/stores/api/store.queries';
 import { logger } from '@/shared/lib/logger';
-import { logApiFailure } from '@/shared/api/queryClient';
+import { reportError } from '@/shared/lib/reportError';
 import { createSchedules } from '@/features/schedules/api/schedule.api';
 import type { QueryClient } from '@tanstack/react-query';
 import { homeQueries } from '@/features/home/api/home.queries';
@@ -51,13 +51,6 @@ export async function saveScheduleDates(
       result.duplicates.push(...saved.duplicates);
       result.failed.push(...saved.failed);
       result.failures.push(...saved.failures);
-      for (const failure of saved.failures)
-        logger.warn('날짜별 근무 저장 실패', {
-          operation: 'schedules.create',
-          errorCode: failure.errorCode,
-          date: failure.date,
-          retryable: failure.retryable,
-        });
     } catch (error) {
       // 최초 요청의 중복·권한·입력 오류는 그대로 안내한다. 재시도에서는 앞 구간 성공을 보존한다.
       if (!retryDates) throw error;
@@ -72,8 +65,19 @@ export async function saveScheduleDates(
             (error.code === 'network' || error.code === 'timeout' || (error.status ?? 0) >= 500),
         })),
       );
-      logApiFailure(error, 'schedules.retry');
+      reportError(error);
     }
+  }
+  if (result.failures.length > 0) {
+    const counts: Record<string, number> = {};
+    for (const failure of result.failures)
+      counts[failure.errorCode] = (counts[failure.errorCode] ?? 0) + 1;
+    logger.warn('근무 일괄 저장 중 일부 항목이 실패했습니다.', {
+      created_count: result.created.length,
+      failed_count: result.failed.length,
+      duplicate_count: result.duplicates.length,
+      failure_counts: JSON.stringify(counts),
+    });
   }
   return result;
 }

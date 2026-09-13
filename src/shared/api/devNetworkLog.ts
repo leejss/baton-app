@@ -1,5 +1,6 @@
 import { normalizeError } from '@/shared/api/errors';
 import { logger } from '@/shared/lib/logger';
+import { normalizeApiRoute } from '@/shared/api/httpResponse';
 
 export type NetworkLogHandle = {
   succeeded: (response: Response) => void;
@@ -9,12 +10,11 @@ const NOOP: NetworkLogHandle = { succeeded: () => {}, failed: () => {} };
 export function logRequestStart(
   method: string,
   path: string,
-  _body: unknown,
   isAuthorized: boolean,
+  startedAt = Date.now(),
 ): NetworkLogHandle {
   if (!__DEV__) return NOOP;
-  const startedAt = Date.now();
-  const route = path.split('?')[0].replace(/\/\d+(?=\/|$)/g, '/:id');
+  const route = normalizeApiRoute(path);
   const attributes = { method, route, authenticated: isAuthorized };
   logger.debug('API 요청', attributes);
   return {

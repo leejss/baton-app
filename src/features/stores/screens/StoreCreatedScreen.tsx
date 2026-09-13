@@ -1,4 +1,5 @@
 import { setStringAsync } from 'expo-clipboard';
+import { reportError } from '@/shared/lib/reportError';
 import { Image } from 'expo-image';
 import { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
@@ -89,12 +90,14 @@ export function StoreCreatedScreen({
       return;
     }
 
-    void setStringAsync(invitationCode).then((isCopied) => {
-      // 복사가 실패하면 안내를 띄우지 않는다 — 안 된 걸 됐다고 말하는 쪽이 더 나쁘다.
-      if (isCopied) {
-        setCopiedAt(Date.now());
-      }
-    });
+    void setStringAsync(invitationCode)
+      .then((isCopied) => {
+        // 복사가 실패하면 안내를 띄우지 않는다 — 안 된 걸 됐다고 말하는 쪽이 더 나쁘다.
+        if (isCopied) {
+          setCopiedAt(Date.now());
+        }
+      })
+      .catch(reportError);
   };
 
   return (

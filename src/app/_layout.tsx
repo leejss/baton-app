@@ -2,20 +2,23 @@ import { SessionQueryProvider } from '@/shared/providers/SessionQueryProvider';
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
-import { AppState, StyleSheet, useColorScheme } from 'react-native';
+import { StyleSheet, useColorScheme } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 
 import { ForcedLogoutModal } from '@/features/auth/components/ForcedLogoutModal';
 import { useAuthStore } from '@/features/auth/store/authStore';
-import { logger } from '@/shared/lib/logger';
+import { reportError } from '@/shared/lib/reportError';
 import { ErrorState } from '@/shared/ui/ErrorState';
 import { SplashOverlay } from '@/shared/ui/SplashOverlay';
 
-SplashScreen.preventAutoHideAsync();
+void SplashScreen.preventAutoHideAsync().catch(reportError);
 
 /** Expo Router가 라우트 트리에서 발생한 렌더 에러를 잡을 때 쓰는 컴포넌트. */
 export function ErrorBoundary({ error, retry }: { error: Error; retry: () => Promise<void> }) {
+  useEffect(() => {
+    reportError(error);
+  }, [error]);
   return <ErrorState error={error} onRetry={retry} />;
 }
 
@@ -26,21 +29,8 @@ export default function RootLayout() {
 
   useEffect(() => {
     // 앱 시작 시 한 번. 끝날 때까지 스플래시가 화면을 덮고 있어 깜빡임이 없다.
-    void restoreSession();
+    void restoreSession().catch(reportError);
   }, [restoreSession]);
-
-  useEffect(() => {
-    // 백그라운드 전환 시 버퍼된 원격 로그를 내보낸다. 안 하면 종료 시 유실된다.
-    const appStateSubscription = AppState.addEventListener('change', (status) => {
-      if (status !== 'active') {
-        void logger.flush();
-      }
-    });
-
-    return () => {
-      appStateSubscription.remove();
-    };
-  }, []);
 
   return (
     <GestureHandlerRootView style={styles.root}>
