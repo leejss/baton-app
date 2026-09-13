@@ -28,7 +28,7 @@ const SPEC = {
 
 export function StoreJoinedScreen({ onBack, onStart }: StoreJoinedScreenProps) {
   return (
-    <Box background="background" style={styles.root}>
+    <Box background="backgroundDefault" style={styles.root}>
       <ScreenHeader onBack={onBack} />
 
       <View style={styles.content}>
@@ -36,7 +36,7 @@ export function StoreJoinedScreen({ onBack, onStart }: StoreJoinedScreenProps) {
           <Text variant="display" weight="bold" style={textStyles.center}>
             매장 참여가 완료 됐어요!
           </Text>
-          <Text variant="body" weight="medium" color="textSecondary" style={textStyles.center}>
+          <Text variant="body" weight="medium" color="foregroundDefault" style={textStyles.center}>
             이제 근무 매장의 인수인계를 시작해 보세요.
           </Text>
         </View>
@@ -55,7 +55,7 @@ export function StoreJoinedScreen({ onBack, onStart }: StoreJoinedScreenProps) {
 function Illustration() {
   return (
     <Box
-      background="placeholder"
+      background="surfaceNeutralDisabled"
       style={styles.illustration}
       accessibilityElementsHidden
       importantForAccessibility="no"

@@ -23,10 +23,10 @@ type UseIconResult = {
  * 글리프 파일이 반복해야 할 것(테마 조회, 크기, 접근성 분기)을 한곳에 모은다.
  * 글리프는 path 데이터만 갖고, 나머지 동작은 전부 여기서 결정된다.
  *
- * 다크모드 분기는 `useTheme()`이 이미 처리하므로 글리프가 개별 분기하지 않는다.
+ * 라이트모드 고정 테마는 `useTheme()`이 제공하므로 글리프가 개별 색상을 정의하지 않는다.
  */
 export function useIcon(
-  { size = DEFAULT_ICON_SIZE, color = 'textPrimary', label, style }: IconProps,
+  { size = DEFAULT_ICON_SIZE, color = 'foregroundStrong', label, style }: IconProps,
   viewBox: string = DEFAULT_VIEW_BOX,
 ): UseIconResult {
   const theme = useTheme();

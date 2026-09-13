@@ -50,7 +50,7 @@ export function PasswordResetLayout({
   const insets = useSafeAreaInsets();
 
   return (
-    <Box background="background" style={[styles.root, { paddingTop: insets.top }]}>
+    <Box background="backgroundDefault" style={[styles.root, { paddingTop: insets.top }]}>
       <AuthHeader onBack={onBack} />
 
       <KeyboardAwareScrollView
@@ -70,7 +70,7 @@ export function PasswordResetLayout({
         {onBackToSignIn !== undefined && (
           <TextLink
             label="로그인 화면으로 돌아가기"
-            color="textTertiary"
+            color="foregroundSubtle"
             onPress={onBackToSignIn}
           />
         )}

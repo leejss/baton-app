@@ -17,7 +17,7 @@ export function HandoffRecipientSelectScreen({
   const { colors } = useTheme();
 
   return (
-    <View style={[styles.root, { backgroundColor: colors.background }]}>
+    <View style={[styles.root, { backgroundColor: colors.backgroundDefault }]}>
       <ScreenHeader title="받는 사람 선택" onBack={onBack} />
       <QueryBoundary>
         <HandoffRecipientSelectContent onConfirm={onConfirm} />

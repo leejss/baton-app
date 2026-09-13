@@ -76,7 +76,7 @@ export function StartScreen({
 
   return (
     <Box
-      background="background"
+      background="backgroundDefault"
       style={[
         styles.root,
         { paddingTop: insets.top, paddingBottom: insets.bottom + SPEC.bottomInset },
@@ -99,7 +99,7 @@ export function StartScreen({
           <Text
             variant="body"
             weight="medium"
-            color="textSecondary"
+            color="foregroundDefault"
             style={[textStyles.center, styles.tagline]}
           >
             근무자는 바뀌어도 업무는 끊기지 않게

@@ -80,14 +80,15 @@
 
 | 시안 값 | 우리 토큰 | 처리 |
 |---|---|---|
-| `border/default` #D1D5DB (gray300) | `border` = gray200 #E5E7EB | 같은 역할의 `border`를 씀. **값이 한 단계 다르다** |
-| `foreground/subtle` #9CA3AF (gray400) | gray400은 `textDisabled`에 배정됨. 역할이 맞는 건 `textTertiary`(gray500) | `textTertiary`를 씀 |
-| `foreground/strong` #1F2937 (gray800) | `textPrimary` = gray900 #111827 | `textPrimary`를 씀 (기존에 알려진 불일치) |
+| `border/default` #D1D5DB (gray300) | `borderDefault` = gray300 #D1D5DB | Figma semantic `borderDefault`로 정렬 완료 |
+| `foreground/subtle` #9CA3AF (gray400) | `foregroundSubtle` = gray400 #9CA3AF | Figma semantic `foregroundSubtle`로 정렬 완료 |
+| `foreground/strong` #1F2937 (gray800) | `foregroundStrong` = gray800 #1F2937 | Figma semantic `foregroundStrong`로 정렬 완료 |
 | `radius/xl` 24 (Banner Button) | radius 스케일에 24가 없음 (8·12·20) | 컴포넌트 로컬 상수로 둠 |
 | spacing `xs` 6, `xl` 20 | 우리 스케일은 4의 배수 | 컴포넌트 로컬 상수로 둠 |
 
-전부 `tokens.ts`에 임의 추가하지 않고 기존 시맨틱을 쓰거나 로컬 상수로 뒀다(CLAUDE.md §4.3).
-**디자인 시스템 토큰 정리가 선행돼야 이 표가 사라진다.**
+컬러는 Figma local variable을 SoT로 삼아 `src/theme/colors.ts`의 Figma 경로 기반 토큰으로
+정렬했다. Figma에 바인딩되지 않은 화면 특화 raw color는 공통 테마에 넣지 않고 해당 화면에
+예외로 유지한다(CLAUDE.md §4.3).
 
 ---
 

@@ -11,8 +11,8 @@ export function HandoffAvatar({ name }: HandoffAvatarProps) {
   const theme = useTheme();
 
   return (
-    <View style={[styles.root, { backgroundColor: theme.colors.accentSubtle }]}>
-      <Text variant="bodySmall" weight="semibold" color="accentText">
+    <View style={[styles.root, { backgroundColor: theme.colors.surfaceBlueDefault }]}>
+      <Text variant="bodySmall" weight="semibold" color="foregroundBlueDefault">
         {name.slice(0, 1)}
       </Text>
     </View>

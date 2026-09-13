@@ -39,18 +39,18 @@ export function HandoffAttachmentStrip({
         style={[
           styles.addButton,
           {
-            backgroundColor: theme.colors.background,
-            borderColor: theme.colors.border,
+            backgroundColor: theme.colors.backgroundDefault,
+            borderColor: theme.colors.borderDefault,
           },
           (atLimit || isPicking) && styles.disabled,
         ]}
       >
-        <Camera size={24} color="navigationForeground" />
+        <Camera size={24} color="foregroundStrong" />
         <View style={styles.counterRow}>
-          <Text variant="caption" color="textSecondary" style={styles.counter}>
+          <Text variant="caption" color="foregroundDefault" style={styles.counter}>
             {attachments.length}
           </Text>
-          <Text variant="caption" style={[styles.counter, styles.counterLimit]}>
+          <Text variant="caption" color="foregroundDisabled" style={styles.counter}>
             /10
           </Text>
         </View>
@@ -82,7 +82,5 @@ const styles = StyleSheet.create({
   },
   counter: { fontVariant: ['tabular-nums'] },
   counterRow: { flexDirection: 'row' },
-  // TODO(design-system): Figma foreground/disabled가 시맨틱 컬러에 추가되면 원시값을 교체한다.
-  counterLimit: { color: '#9CA3AF' },
   disabled: { opacity: 0.4 },
 });

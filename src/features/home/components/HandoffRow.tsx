@@ -17,12 +17,12 @@ export function HandoffRow({ isPending, item, onConfirm }: HandoffRowProps) {
   const handleConfirm = () => onConfirm(item.id);
 
   return (
-    <View style={[styles.root, { backgroundColor: theme.colors.surfaceSunken }]}>
+    <View style={[styles.root, { backgroundColor: theme.colors.surfaceNeutralSubtle }]}>
       <Text
         numberOfLines={1}
         variant="bodySmall"
         weight="semibold"
-        color={isConfirmed ? 'textDisabled' : 'textPrimary'}
+        color={isConfirmed ? 'foregroundDisabled' : 'foregroundStrong'}
         style={[styles.title, isConfirmed && styles.confirmedTitle]}
       >
         {item.title}
@@ -39,14 +39,16 @@ export function HandoffRow({ isPending, item, onConfirm }: HandoffRowProps) {
           style={[
             styles.buttonVisual,
             {
-              backgroundColor: item.canConfirm ? theme.colors.textPrimary : theme.colors.border,
+              backgroundColor: item.canConfirm
+                ? theme.colors.surfaceNeutralStrong
+                : theme.colors.borderDefault,
             },
           ]}
         >
           <Text
             variant="caption"
             weight="semibold"
-            color={item.canConfirm ? 'textInverse' : 'textDisabled'}
+            color={item.canConfirm ? 'foregroundInverse' : 'foregroundDisabled'}
           >
             확인
           </Text>

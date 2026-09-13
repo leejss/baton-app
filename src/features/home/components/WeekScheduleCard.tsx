@@ -42,7 +42,9 @@ export function WeekScheduleCard({
   const handleQueryRetry = () => void summaryQuery.refetch();
 
   return (
-    <View style={[styles.card, shadows.default, { backgroundColor: theme.colors.background }]}>
+    <View
+      style={[styles.card, shadows.default, { backgroundColor: theme.colors.backgroundDefault }]}
+    >
       <Pressable
         accessibilityLabel={`${title} 월간 근무표 보기`}
         accessibilityRole="button"
@@ -63,7 +65,7 @@ export function WeekScheduleCard({
           ))}
         </View>
 
-        <View style={[styles.divider, { backgroundColor: theme.colors.border }]} />
+        <View style={[styles.divider, { backgroundColor: theme.colors.borderDefault }]} />
 
         <QueryBoundary query={summaryQuery}>
           <QueryRefreshNotice
@@ -72,7 +74,7 @@ export function WeekScheduleCard({
           />
           {model &&
             (model.items.length === 0 ? (
-              <Text color="textSecondary" style={styles.emptyText}>
+              <Text color="foregroundDefault" style={styles.emptyText}>
                 해당 날짜에 등록된 근무 일정이 없습니다.
               </Text>
             ) : (

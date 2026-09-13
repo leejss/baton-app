@@ -79,7 +79,7 @@ export function ScheduleEditorForm(props: ScheduleEditorFormProps) {
         bottomOffset={120}
         contentContainerStyle={styles.scroll}
       >
-        <View style={[styles.calendar, { backgroundColor: colors.background }]}>
+        <View style={[styles.calendar, { backgroundColor: colors.backgroundDefault }]}>
           <CalendarMonthHeader month={month} today={today} onChange={handleMonthChange} />
           <MonthlyCalendar
             month={month}
@@ -101,7 +101,7 @@ export function ScheduleEditorForm(props: ScheduleEditorFormProps) {
         )}
         <View style={styles.fields}>
           {step === 1 && (
-            <Text variant="bodySmall" color="textSecondary">
+            <Text variant="bodySmall" color="foregroundDefault">
               {item
                 ? '변경할 근무 날짜 한 개를 선택해주세요.'
                 : '날짜를 길게 누른 뒤 드래그하거나 시작일과 종료일을 눌러 선택해주세요.'}
@@ -118,19 +118,27 @@ export function ScheduleEditorForm(props: ScheduleEditorFormProps) {
           {(form.formState.errors.root ||
             form.formState.errors.employeeId ||
             form.formState.errors.startDate) && (
-            <Text accessibilityLiveRegion="polite" variant="bodySmall" color="dangerText">
+            <Text
+              accessibilityLiveRegion="polite"
+              variant="bodySmall"
+              color="foregroundWarningDefault"
+            >
               {form.formState.errors.root?.message ??
                 form.formState.errors.employeeId?.message ??
                 form.formState.errors.startDate?.message}
             </Text>
           )}
           {mutation.isError && !editor.duplicates && (
-            <Text accessibilityLiveRegion="polite" variant="bodySmall" color="dangerText">
+            <Text
+              accessibilityLiveRegion="polite"
+              variant="bodySmall"
+              color="foregroundWarningDefault"
+            >
               {mutation.error.message}
             </Text>
           )}
           {saveResult?.failed.length ? (
-            <Text variant="bodySmall" color="dangerText">
+            <Text variant="bodySmall" color="foregroundWarningDefault">
               재시도할 날짜: {saveResult.failed.join(', ')}
             </Text>
           ) : null}
@@ -150,11 +158,11 @@ export function ScheduleEditorForm(props: ScheduleEditorFormProps) {
             {step === 3 && (
               <Text variant="bodySmall">
                 근무{' '}
-                <Text color="accent" weight="semibold">
+                <Text color="foregroundBlueSoft" weight="semibold">
                   {dates.length}일
                 </Text>{' '}
                 선택 · 하루{' '}
-                <Text color="accent" weight="semibold">
+                <Text color="foregroundBlueSoft" weight="semibold">
                   {formatTimeRangeDuration(values.startTime ?? '', values.endTime ?? '')}
                 </Text>{' '}
                 근무

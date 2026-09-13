@@ -46,7 +46,7 @@ export function BottomSheet({
   return (
     <BottomSheetModal
       ref={sheetRef}
-      backgroundStyle={{ backgroundColor: colors.background }}
+      backgroundStyle={{ backgroundColor: colors.backgroundDefault }}
       enablePanDownToClose={dismissible}
       handleComponent={null}
       onDismiss={onDismiss}
@@ -55,7 +55,7 @@ export function BottomSheet({
         style={[
           styles.content,
           {
-            backgroundColor: colors.background,
+            backgroundColor: colors.backgroundDefault,
             // fit-to-content 측정 중에는 백분율 너비의 기준이 없으므로 숫자로 전달한다.
             width,
             maxHeight: height - insets.top - spacing.md,
@@ -80,7 +80,7 @@ export function BottomSheet({
               onPress={handleClose}
               style={styles.close}
             >
-              <X size={20} color="textDisabled" />
+              <X size={20} color="foregroundDisabled" />
             </Pressable>
           </View>
         )}

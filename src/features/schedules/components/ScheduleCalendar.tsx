@@ -90,7 +90,10 @@ export function ScheduleCalendar({
       <View style={styles.weekdays}>
         {['월', '화', '수', '목', '금', '토', '일'].map((day) => (
           <View key={day} style={styles.weekday}>
-            <Text variant="caption" color={day === '일' ? 'dangerText' : 'textDisabled'}>
+            <Text
+              variant="caption"
+              color={day === '일' ? 'foregroundWarningDefault' : 'foregroundDisabled'}
+            >
               {day}
             </Text>
           </View>

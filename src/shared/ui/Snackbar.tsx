@@ -36,17 +36,17 @@ export function Snackbar({ title, description, actionLabel, onAction }: Snackbar
       accessibilityRole="alert"
       style={[
         styles.container,
-        { backgroundColor: colors.dangerSubtle, borderColor: colors.dangerBorder },
+        { backgroundColor: colors.surfaceWarningSoft, borderColor: colors.borderWarningDefault },
       ]}
     >
-      <AlertCircleFill size={SPEC.iconSize} color="danger" />
+      <AlertCircleFill size={SPEC.iconSize} color="foregroundWarningDefault" />
 
       <View style={styles.message}>
         <Text variant="body" weight="semibold">
           {title}
         </Text>
         {description !== undefined && (
-          <Text variant="caption" weight="medium" color="textTertiary">
+          <Text variant="caption" weight="medium" color="foregroundSubtle">
             {description}
           </Text>
         )}
@@ -59,7 +59,7 @@ export function Snackbar({ title, description, actionLabel, onAction }: Snackbar
           onPress={onAction}
           hitSlop={SPEC.paddingVertical}
         >
-          <Text variant="bodySmall" weight="bold" color="danger">
+          <Text variant="bodySmall" weight="bold" color="foregroundWarningDefault">
             {actionLabel}
           </Text>
         </Pressable>

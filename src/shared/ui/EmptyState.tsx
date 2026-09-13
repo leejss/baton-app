@@ -15,7 +15,7 @@ export function EmptyState({ title, description }: EmptyStateProps) {
         {title}
       </Text>
       {description !== undefined && (
-        <Text color="textSecondary" style={textStyles.center}>
+        <Text color="foregroundDefault" style={textStyles.center}>
           {description}
         </Text>
       )}

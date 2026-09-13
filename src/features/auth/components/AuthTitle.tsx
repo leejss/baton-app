@@ -23,7 +23,7 @@ export function AuthTitle({ title, description, isCentered = false }: AuthTitleP
         {title}
       </Text>
       {description !== undefined && (
-        <Text variant="body" weight="medium" color="textSecondary" style={alignment}>
+        <Text variant="body" weight="medium" color="foregroundDefault" style={alignment}>
           {description}
         </Text>
       )}

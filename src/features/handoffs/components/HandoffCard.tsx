@@ -28,7 +28,7 @@ export function HandoffCard({ item, onPress, onManagePress }: HandoffCardProps) 
       onPress={handlePress}
       style={({ pressed }) => [
         styles.root,
-        { backgroundColor: theme.colors.background },
+        { backgroundColor: theme.colors.backgroundDefault },
         pressed && styles.pressed,
       ]}
     >
@@ -36,13 +36,13 @@ export function HandoffCard({ item, onPress, onManagePress }: HandoffCardProps) 
         <IllustIcon name={item.direction} />
 
         <View style={styles.textContent}>
-          <Text variant="caption" weight="medium" style={styles.subtleText}>
+          <Text variant="caption" weight="medium" color="foregroundSubtle">
             {item.dateLabel}
           </Text>
-          <Text variant="body" weight="semibold" numberOfLines={1} style={styles.title}>
+          <Text variant="body" weight="semibold" numberOfLines={1} color="foregroundStrong">
             {item.title}
           </Text>
-          <Text variant="caption" weight="medium" numberOfLines={1} style={styles.subtleText}>
+          <Text variant="caption" weight="medium" numberOfLines={1} color="foregroundSubtle">
             {item.statusLabel}
           </Text>
         </View>
@@ -56,7 +56,7 @@ export function HandoffCard({ item, onPress, onManagePress }: HandoffCardProps) 
           onPress={handleManagePress}
           style={styles.manageButton}
         >
-          <KebabMenu size={11.5} color="textDisabled" />
+          <KebabMenu size={11.5} color="foregroundDisabled" />
         </Pressable>
       )}
     </Pressable>
@@ -92,13 +92,6 @@ const styles = StyleSheet.create({
     flex: 1,
     minWidth: 0,
     gap: 2,
-  },
-  // TODO(design-system): Figma foreground/strong·subtle가 현재 시맨틱 컬러에 없어 원시값을 사용한다.
-  title: {
-    color: '#1F2937',
-  },
-  subtleText: {
-    color: '#9CA3AF',
   },
   manageButton: {
     width: 23,

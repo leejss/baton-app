@@ -1,6 +1,7 @@
 import { uploadSchema } from '@/features/handoffs/api/attachment.schema';
 import { File } from 'expo-file-system';
 import { fetch } from 'expo/fetch';
+import { throwIfAborted, withAbortTimeout } from '@/shared/api/abort';
 import { post, del } from '@/shared/api/client';
 import { AppError, isAppError, normalizeError, normalizeFetchError } from '@/shared/api/errors';
 import { readHttpResponse } from '@/shared/api/httpResponse';
@@ -39,7 +40,7 @@ export async function uploadAttachment(
         if (error.status === 400) await deleteAttachment(file.attachmentId);
       }
     }
-    signal.throwIfAborted();
+    throwIfAborted(signal);
     const ticket = await post(
       '/files/presign',
       {
@@ -60,37 +61,41 @@ export async function uploadAttachment(
     let putError: unknown;
     const startedAt = Date.now();
     const body = new File(file.uri);
-    const uploadSignal = AbortSignal.any([signal, AbortSignal.timeout(60_000)]);
+    const uploadSignal = withAbortTimeout(signal, 60_000);
     try {
-      const response = await fetch(ticket.uploadUrl, {
-        method: 'PUT',
-        headers,
-        body,
-        signal: uploadSignal,
-      }).catch((error: unknown) => {
-        const normalized = normalizeFetchError(error, uploadSignal);
-        throw new AppError(normalized.code, normalized.message, {
-          cause: normalized,
-          http: { method: 'PUT', route: 's3.upload', durationMs: Date.now() - startedAt },
+      try {
+        const response = await fetch(ticket.uploadUrl, {
+          method: 'PUT',
+          headers,
+          body,
+          signal: uploadSignal.signal,
+        }).catch((error: unknown) => {
+          const normalized = normalizeFetchError(error, uploadSignal.signal);
+          throw new AppError(normalized.code, normalized.message, {
+            cause: normalized,
+            http: { method: 'PUT', route: 's3.upload', durationMs: Date.now() - startedAt },
+          });
         });
-      });
-      if (!response.ok) {
-        const { http, readError } = await readHttpResponse(
-          response,
-          { method: 'PUT', route: 's3.upload' },
-          startedAt,
-          uploadSignal,
-        );
-        throw new AppError('server', '사진을 업로드하지 못했습니다.', {
-          status: response.status,
-          http,
-          cause: readError,
-        });
+        if (!response.ok) {
+          const { http, readError } = await readHttpResponse(
+            response,
+            { method: 'PUT', route: 's3.upload' },
+            startedAt,
+            uploadSignal.signal,
+          );
+          throw new AppError('server', '사진을 업로드하지 못했습니다.', {
+            status: response.status,
+            http,
+            cause: readError,
+          });
+        }
+      } catch (error) {
+        putError = normalizeError(error);
       }
-    } catch (error) {
-      putError = normalizeError(error);
+    } finally {
+      uploadSignal.cleanup();
     }
-    signal.throwIfAborted();
+    throwIfAborted(signal);
     // PUT 응답이 유실되어도 실제 업로드가 됐을 수 있다. complete는 멱등이다.
     try {
       await completeAttachment(ticket.attachmentId, signal);

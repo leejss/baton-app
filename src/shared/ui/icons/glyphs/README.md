@@ -64,7 +64,7 @@ export function ArrowRightS(props: IconProps) {
 
 | Figma | 색 | 막힌 이유 |
 |---|---|---|
-| `Icon/circle-point` (90:1562) | `#2563EB` + `#F1F6FF` | `#F1F6FF`가 팔레트에 없음 |
+| `Icon/circle-point` (90:1562) | `#2563EB` + `#F1F6FF` | 두 파랑의 시맨틱 역할 미정 |
 | `Icon/radioButton` (291:6810) | `#2563EB` + `#F1F6FF` | 〃 |
 | `Icon/check box` (307:5299) | `#2563EB` + `#1D4ED8` + white | 두 파랑의 역할 미정 |
 | `Icon/Close button` (73:1360) | `#9CA3AF` + `#F3F4F6` | 전경/배경 역할 미정 |

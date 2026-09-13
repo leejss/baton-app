@@ -22,12 +22,15 @@ export function WeekDayButton({ day, onSelect }: WeekDayButtonProps) {
       style={({ pressed }) => [styles.touchTarget, pressed && styles.pressed]}
     >
       <View
-        style={[styles.visual, day.isSelected && { backgroundColor: theme.colors.accentSubtle }]}
+        style={[
+          styles.visual,
+          day.isSelected && { backgroundColor: theme.colors.surfaceBlueDefault },
+        ]}
       >
         <Text
           variant="body"
           weight="medium"
-          color={day.isSelected ? 'accentText' : 'textDisabled'}
+          color={day.isSelected ? 'foregroundBlueDefault' : 'foregroundDisabled'}
           style={styles.dayText}
         >
           {day.day}

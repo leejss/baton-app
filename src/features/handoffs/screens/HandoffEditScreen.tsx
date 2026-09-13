@@ -27,7 +27,7 @@ export function HandoffEditScreen({ handoffId, onBack, onSaved }: HandoffEditScr
   };
 
   return (
-    <View style={[styles.root, { backgroundColor: colors.surfaceSunken }]}>
+    <View style={[styles.root, { backgroundColor: colors.surfaceNeutralSubtle }]}>
       <ScreenHeader title="인수인계 수정" onBack={handleBack} />
       <QueryBoundary resetKey={handoffId}>
         <HandoffEditContent

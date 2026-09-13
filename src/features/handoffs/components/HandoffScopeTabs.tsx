@@ -34,11 +34,17 @@ export function HandoffScopeTabs({ value, onChange }: HandoffScopeTabsProps) {
             style={[
               styles.tab,
               {
-                backgroundColor: selected ? theme.colors.navigationForeground : theme.colors.border,
+                backgroundColor: selected
+                  ? theme.colors.surfaceNeutralStrong
+                  : theme.colors.surfaceNeutralMedium,
               },
             ]}
           >
-            <Text variant="bodySmall" weight="medium" color={selected ? 'accentOn' : 'textPrimary'}>
+            <Text
+              variant="bodySmall"
+              weight="medium"
+              color={selected ? 'foregroundInverse' : 'foregroundStrong'}
+            >
               {item.label}
             </Text>
           </Pressable>

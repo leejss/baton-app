@@ -29,7 +29,8 @@ export function SocialCircleButton({
   const { colors } = useTheme();
   const isDisabled = disabled || isLoading;
 
-  const backgroundColor = provider === 'kakao' ? socialBrand.kakaoYellow : colors.textPrimary;
+  const backgroundColor =
+    provider === 'kakao' ? socialBrand.kakaoYellow : colors.surfaceNeutralStrong;
   const iconSize = ICON_SIZE[provider];
 
   return (

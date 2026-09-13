@@ -24,7 +24,7 @@ export function SettingsResultScreen({ kind }: { kind: 'withdrawn' | 'left' }) {
         <SettingsArtwork kind={kind === 'withdrawn' ? 'complete' : 'leave'} />
       </View>
       <View style={styles.action}>
-        <TextLink label="홈으로 가기" color="textTertiary" onPress={onFinish} />
+        <TextLink label="홈으로 가기" color="foregroundSubtle" onPress={onFinish} />
       </View>
     </SettingsLayout>
   );

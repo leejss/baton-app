@@ -15,8 +15,8 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(function TextIn
   return (
     <RNTextInput
       ref={ref}
-      placeholderTextColor={placeholderTextColor ?? theme.colors.textDisabled}
-      style={[theme.typography.body.regular, { color: theme.colors.textPrimary }, style]}
+      placeholderTextColor={placeholderTextColor ?? theme.colors.foregroundDisabled}
+      style={[theme.typography.body.regular, { color: theme.colors.foregroundStrong }, style]}
       {...rest}
     />
   );

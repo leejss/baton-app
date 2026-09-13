@@ -91,17 +91,21 @@ export function ScheduleActions({ id, now, onClose }: ScheduleActionsProps) {
         <ScheduleMessage message="근무 일정을 불러오는 중입니다." />
       ) : (
         <>
-          <Text variant="bodySmall" color="textSecondary">
+          <Text variant="bodySmall" color="foregroundDefault">
             근무일　{formatKoreanDate(item.date)}
             {'\n'}근무시간　{item.startTime} - {item.endTime}
           </Text>
           {mutation.isError && (
-            <Text accessibilityLiveRegion="polite" color="dangerText" variant="bodySmall">
+            <Text
+              accessibilityLiveRegion="polite"
+              color="foregroundWarningDefault"
+              variant="bodySmall"
+            >
               {mutation.error.message}
             </Text>
           )}
           {!canEdit && (
-            <Text variant="bodySmall" color="textSecondary">
+            <Text variant="bodySmall" color="foregroundDefault">
               이미 시작된 근무이거나 편집 권한이 없습니다.
             </Text>
           )}

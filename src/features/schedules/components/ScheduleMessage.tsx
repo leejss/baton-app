@@ -13,7 +13,7 @@ type ScheduleMessageProps = {
 export function ScheduleMessage({ message, onRetry, isLoading }: ScheduleMessageProps) {
   return (
     <View accessibilityLiveRegion="polite" style={styles.root}>
-      <Text variant="bodySmall" color="textSecondary" style={styles.text}>
+      <Text variant="bodySmall" color="foregroundDefault" style={styles.text}>
         {message}
       </Text>
       {onRetry && (

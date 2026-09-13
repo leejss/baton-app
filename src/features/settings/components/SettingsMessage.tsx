@@ -15,17 +15,17 @@ export function SettingsMessage({ tone, message }: SettingsFeedback) {
       style={[
         styles.root,
         {
-          backgroundColor: isError ? colors.dangerSubtle : colors.successSubtle,
-          borderColor: isError ? colors.dangerBorder : colors.success,
+          backgroundColor: isError ? colors.surfaceWarningSoft : colors.surfaceSuccessSoft,
+          borderColor: isError ? colors.borderWarningDefault : colors.borderSuccessDefault,
         },
       ]}
     >
       {isError ? (
-        <AlertCircleFill size={20} color="danger" />
+        <AlertCircleFill size={20} color="foregroundWarningDefault" />
       ) : (
-        <CheckSquare size={20} color="success" />
+        <CheckSquare size={20} color="foregroundSuccessDefault" />
       )}
-      <Text variant="bodySmall" weight="medium" color="textSecondary" style={styles.text}>
+      <Text variant="bodySmall" weight="medium" color="foregroundDefault" style={styles.text}>
         {message}
       </Text>
     </View>

@@ -74,7 +74,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     orientation: 'portrait',
     icon: './assets/images/icon.png',
     scheme: `${APP.scheme}${variantConfig.schemeSuffix}`,
-    userInterfaceStyle: 'automatic',
+    userInterfaceStyle: 'light',
     ios: {
       ...config.ios,
       appleTeamId: '3PVV8DQPL6',
@@ -100,6 +100,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     plugins: [
       'expo-router',
       'expo-image',
+      'expo-web-browser',
       [
         // 카카오 SDK는 Maven Central에 없고 카카오 자체 저장소에만 있다.
         // 여기 선언하지 않으면 Android 빌드가 com.kakao.sdk:v2-* 해석에 실패한다.

@@ -60,7 +60,9 @@ export function HandoffCard({ date, onDetailsPress, storeId }: HandoffCardProps)
         importantForAccessibility="no-hide-descendants"
         style={styles.decoration}
       />
-      <View style={[styles.card, shadows.default, { backgroundColor: theme.colors.background }]}>
+      <View
+        style={[styles.card, shadows.default, { backgroundColor: theme.colors.backgroundDefault }]}
+      >
         <View style={styles.titleRow}>
           <IllustIcon name="home" />
           <View style={styles.titleTextRow}>
@@ -71,7 +73,7 @@ export function HandoffCard({ date, onDetailsPress, storeId }: HandoffCardProps)
               <Text
                 variant="title"
                 weight="semibold"
-                color={model.totalCount === 0 ? 'textDisabled' : 'accentText'}
+                color={model.totalCount === 0 ? 'foregroundDisabled' : 'foregroundBlueDefault'}
                 style={styles.count}
               >
                 총 {model.totalCount}건
@@ -87,7 +89,7 @@ export function HandoffCard({ date, onDetailsPress, storeId }: HandoffCardProps)
           />
           {model &&
             (model.items.length === 0 ? (
-              <Text color="textSecondary" style={styles.emptyText}>
+              <Text color="foregroundDefault" style={styles.emptyText}>
                 전달받은 인수인계가 없어요
               </Text>
             ) : (
@@ -105,7 +107,11 @@ export function HandoffCard({ date, onDetailsPress, storeId }: HandoffCardProps)
 
                 {feedback !== undefined && (
                   <View accessibilityLiveRegion="polite" style={styles.feedback}>
-                    <Text variant="bodySmall" color="dangerText" style={styles.feedbackMessage}>
+                    <Text
+                      variant="bodySmall"
+                      color="foregroundWarningDefault"
+                      style={styles.feedbackMessage}
+                    >
                       {feedback.message}
                     </Text>
                     {feedback.canRetry && (
@@ -115,7 +121,11 @@ export function HandoffCard({ date, onDetailsPress, storeId }: HandoffCardProps)
                         onPress={handleRetry}
                         style={({ pressed }) => [styles.retryButton, pressed && styles.pressed]}
                       >
-                        <Text variant="bodySmall" weight="semibold" color="dangerText">
+                        <Text
+                          variant="bodySmall"
+                          weight="semibold"
+                          color="foregroundWarningDefault"
+                        >
                           다시 시도
                         </Text>
                       </Pressable>
@@ -132,7 +142,7 @@ export function HandoffCard({ date, onDetailsPress, storeId }: HandoffCardProps)
                   <Text variant="bodySmall" weight="medium" style={styles.detailsText}>
                     자세히 보기
                   </Text>
-                  <ArrowRightS size={16} color="textSecondary" />
+                  <ArrowRightS size={16} color="foregroundDefault" />
                 </Pressable>
               </>
             ))}
@@ -146,7 +156,7 @@ const styles = StyleSheet.create({
   stack: {
     width: '100%',
   },
-  // TODO(design-system): Figma node 732:17462/17468의 배경, 24px radius, 11/18/26/28px 값은 홈 전용 raw 값이다.
+  // Figma raw color이며 local variable에 바인딩되지 않은 홈 화면 전용 장식 예외다.
   decoration: {
     position: 'absolute',
     top: 10,
@@ -210,6 +220,7 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
   },
   detailsText: {
+    // Figma raw color이며 local variable에 바인딩되지 않은 화면 전용 예외다.
     color: '#5C5E63',
   },
   pressed: { opacity: 0.65 },

@@ -24,7 +24,7 @@ export function ScheduleEditorScreen({ scheduleId, initialDate }: ScheduleEditor
         ? parsedId
         : 0;
   return (
-    <View style={[styles.root, { backgroundColor: colors.surfaceSunken }]}>
+    <View style={[styles.root, { backgroundColor: colors.surfaceNeutralSubtle }]}>
       <ScreenHeader
         title={scheduleId ? '근무수정' : '근무등록'}
         titleAlign="left"

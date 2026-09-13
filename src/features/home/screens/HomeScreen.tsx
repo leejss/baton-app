@@ -8,7 +8,7 @@ import { WeekScheduleCard } from '@/features/home/components/WeekScheduleCard';
 import { MainHeader } from '@/features/tabs/components/MainHeader';
 import { getTodayInSeoul } from '@/shared/lib/date';
 import { Text } from '@/shared/ui';
-import { spacing } from '@/theme';
+import { spacing, useTheme } from '@/theme';
 
 type HomeScreenProps = {
   initialDate?: string;
@@ -16,6 +16,7 @@ type HomeScreenProps = {
 
 export function HomeScreen({ initialDate = getTodayInSeoul() }: HomeScreenProps) {
   const router = useRouter();
+  const { colors } = useTheme();
 
   const context = useMainContext();
   const handleHandoffDetailsPress = () => router.navigate(ROUTES.handoffs.list('all'));
@@ -25,7 +26,7 @@ export function HomeScreen({ initialDate = getTodayInSeoul() }: HomeScreenProps)
     router.push(ROUTES.handoffs.createForRecipient(String(recipientId)));
 
   return (
-    <View style={styles.root}>
+    <View style={[styles.root, { backgroundColor: colors.surfaceBlueDefault }]}>
       <MainHeader />
       <ScrollView
         contentInsetAdjustmentBehavior="automatic"
@@ -57,10 +58,8 @@ export function HomeScreen({ initialDate = getTodayInSeoul() }: HomeScreenProps)
 }
 
 const styles = StyleSheet.create({
-  // TODO(design-system): Figma node 732:17460의 홈 전용 배경과 393px 기준 폭은 공용 토큰에 없다.
   root: {
     flex: 1,
-    backgroundColor: '#F1F6FF',
   },
   fullPageState: {
     flexGrow: 1,
@@ -79,10 +78,9 @@ const styles = StyleSheet.create({
     gap: 22,
   },
   greeting: {
-    // TODO(design-system): Figma node 732:17465의 22px Bold는 토큰/폰트가 없어 Semibold로 대체한다.
+    // Figma node 732:17465의 22px Bold는 토큰/폰트가 없어 Semibold로 대체한다.
     fontSize: 22,
     lineHeight: 32,
-    color: '#000000',
   },
   cards: {
     gap: spacing.md,

@@ -49,14 +49,14 @@ export function SchedulesScreen({ initialDate, isManaging = false }: SchedulesSc
   };
   const handleBack = () => (router.canGoBack() ? router.back() : router.navigate(ROUTES.home));
   return (
-    <View style={[styles.root, { backgroundColor: colors.surfaceSunken }]}>
+    <View style={[styles.root, { backgroundColor: colors.surfaceNeutralSubtle }]}>
       {isManaging ? (
         <ScreenHeader title="근무수정/삭제" titleAlign="left" onBack={handleBack} />
       ) : (
         <MainHeader title="근무표" />
       )}
       <ScrollView contentInsetAdjustmentBehavior="automatic" contentContainerStyle={styles.scroll}>
-        <View style={[styles.calendar, { backgroundColor: colors.background }]}>
+        <View style={[styles.calendar, { backgroundColor: colors.backgroundDefault }]}>
           <CalendarMonthHeader
             month={month}
             today={today}

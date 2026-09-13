@@ -23,7 +23,7 @@ export function HomeShiftRow({ item, onCreateHandoff }: HomeShiftRowProps) {
           source={getHomeProfileImageSource(item.profileImageKey)}
           contentFit="cover"
           accessible={false}
-          style={[styles.profile, { borderColor: theme.colors.surfaceSunken }]}
+          style={[styles.profile, { borderColor: theme.colors.surfaceNeutralSubtle }]}
         />
         <Text numberOfLines={1} weight="semibold" style={styles.name}>
           {item.name}
@@ -32,7 +32,7 @@ export function HomeShiftRow({ item, onCreateHandoff }: HomeShiftRowProps) {
           numberOfLines={1}
           variant="caption"
           weight="medium"
-          color="textDisabled"
+          color="foregroundDisabled"
           style={styles.time}
         >
           {item.startTime} - {item.endTime}
@@ -46,9 +46,9 @@ export function HomeShiftRow({ item, onCreateHandoff }: HomeShiftRowProps) {
           onPress={handlePress}
           style={({ pressed }) => [styles.touchTarget, pressed && styles.pressed]}
         >
-          <View style={styles.buttonVisual}>
-            <SendFill size={16} color="accent" />
-            <Text variant="bodySmall" weight="semibold" color="accentText">
+          <View style={[styles.buttonVisual, { backgroundColor: theme.colors.surfaceBlueDefault }]}>
+            <SendFill size={16} color="foregroundBlueSoft" />
+            <Text variant="bodySmall" weight="semibold" color="foregroundBlueDefault">
               인수인계
             </Text>
           </View>
@@ -93,13 +93,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     flexShrink: 0,
   },
-  // TODO(design-system): Figma node 1095:31306의 32px rounded action은 공용 Button에 없는 크기다.
+  // Figma node 1095:31306의 32px rounded action은 공용 Button에 없는 크기다.
   buttonVisual: {
     minHeight: 32,
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 42,
-    backgroundColor: '#F1F6FF',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',

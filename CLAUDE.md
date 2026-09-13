@@ -75,7 +75,7 @@ src/
 │
 ├─ theme/
 │  ├─ tokens.ts              # 원시 토큰 (팔레트, 스페이싱 스케일)
-│  ├─ colors.ts              # 시맨틱 컬러 (light/dark)
+│  ├─ colors.ts              # Figma semantic 컬러 (라이트모드 고정)
 │  ├─ typography.ts
 │  └─ index.ts               # useTheme()
 │
@@ -145,7 +145,7 @@ export function OrderCard({ order, onPress, isSelected = false }: OrderCardProps
   const { colors, spacing } = useTheme();
 
   return (
-    <View style={[styles.container, { padding: spacing.md, backgroundColor: colors.surface }]}>
+    <View style={[styles.container, { padding: spacing.md, backgroundColor: colors.backgroundSubtle }]}>
       <Text variant="titleMd">{order.title}</Text>
     </View>
   );
@@ -184,40 +184,39 @@ imports → 타입 → 상수 → 컴포넌트 → 서브컴포넌트 → styles
 ```ts
 // src/theme/tokens.ts
 export const spacing = {
-  xs: 4, sm: 8, md: 16, lg: 24, xl: 32, xxl: 48,
+  xs: 4, sm: 8, md: 16, lg: 24, xl: 32,
 } as const;
 
-export const radius = { sm: 6, md: 12, lg: 20, full: 999 } as const;
+export const radius = { sm: 8, md: 12, lg: 20, full: 999 } as const;
 
 export const palette = {
-  gray0: '#FFFFFF', gray100: '#F4F5F7', gray900: '#111317',
-  brand500: '#2F6BFF', brand600: '#1F4FD8',
-  red500: '#E5484D', green500: '#30A46C',
+  white: '#FFFFFF', gray300: '#D1D5DB', gray600: '#4B5563', gray800: '#1F2937',
+  blue50: '#F1F6FF', blue600: '#2563EB', blue700: '#1D4ED8',
+  red500: '#EF4444', red600: '#DC2626', green500: '#22C55E', green600: '#16A34A',
 } as const;
 ```
 
 ```ts
-// src/theme/colors.ts — 시맨틱 레이어. 컴포넌트는 이것만 참조한다.
-export const lightColors = {
-  background: palette.gray0,
-  surface: palette.gray100,
-  textPrimary: palette.gray900,
-  textSecondary: '#5C6270',
-  accent: palette.brand500,
-  danger: palette.red500,
-  border: '#E3E5EA',
+// src/theme/colors.ts — Figma semantic 레이어. 컴포넌트는 이것만 참조한다.
+const colors = {
+  backgroundDefault: palette.white,
+  foregroundStrong: palette.gray800,
+  foregroundDefault: palette.gray600,
+  surfaceBlueStrong: palette.blue600,
+  borderDefault: palette.gray300,
 } as const;
-
-export const darkColors: typeof lightColors = { /* ... */ };
+export const appColors = colors;
 ```
 
 **규칙**
 
 - 컴포넌트에서 `palette`를 직접 import 하지 않는다. 항상 `useTheme().colors`(시맨틱)만 쓴다.
-- 색상 리터럴(`'#fff'`, `'rgba(...)'`)을 컴포넌트에 쓰지 않는다. 자동화되지 않은 규칙은 코드 리뷰에서 확인한다.
+- 색상 리터럴(`'#fff'`, `'rgba(...)'`)은 컴포넌트에 쓰지 않는다. 단, Figma local variable에
+  바인딩되지 않은 화면 특화 raw 예외와 브랜드·네이티브 설정·SVG/일러스트 원본 색상은
+  공통 테마에 추가하지 않고 명시적인 주석과 함께 보존할 수 있다.
 - 여백은 `spacing` 스케일만 사용. `padding: 13` 같은 값 금지.
 - 레이아웃 간격은 `margin`보다 **`gap`** 을 우선한다.
-- 다크모드는 `useColorScheme()` 기반으로 `useTheme()`이 처리한다. 컴포넌트가 개별 분기하지 않는다.
+- 앱은 Figma `최종 디자인 시스템` 기준 라이트모드로 고정한다. 기기 색상 모드 감지나 다크 테마 분기를 추가하지 않는다.
 
 ### 4.2 화면 기본 골격
 
@@ -235,24 +234,30 @@ Figma MCP와 Dev Mode는 항상 **원시 CSS**를 준다 — `#2563EB`, `padding
 
 | Figma가 주는 것 | 코드에 쓰는 것 |
 |---|---|
-| `color: #2563EB` | `colors.accent` — 시맨틱만. `palette.blue600` 직접 참조도 금지 |
-| `background: #F9FAFB` | `colors.surface` |
+| `color: #2563EB` | `colors.surfaceBlueStrong` — Figma semantic만. `palette.blue600` 직접 참조도 금지 |
+| `background: #F9FAFB` | `colors.backgroundSubtle` |
 | `padding: 16px` | `spacing.md` |
 | `gap: 8px` | `spacing.sm` |
 | `border-radius: 12px` | `radius.md` |
 | `box-shadow: 0 4px 8px rgba(0,0,0,.08)` | `shadows.default` |
 | `font: 600 16px/28px Pretendard` | `<Text variant="body" weight="semibold">` |
 
-의미색은 `accent`(채운 배경) / `accentOn`(그 위 전경) / `accentSubtle`(옅은 배경) / `accentText`(배경 위 텍스트) 4개가 한 세트다. `danger`·`success`·`warning`도 같은 규칙. 시안에서 그 색이 **어떤 역할로 쓰였는지**를 보고 고른다 — 색값이 같다고 아무 키나 쓰면 다크모드에서 깨진다.
+컬러 토큰명은 Figma local variable 경로를 slash 없이 camelCase로 옮긴다. 예를 들어
+`foreground/strong`은 `foregroundStrong`, `surface/blue/default`는
+`surfaceBlueDefault`다. 값이 같더라도 Figma에서 의미가 다른 변수는 하나로 합치지 않고,
+기존 앱 이름의 호환 alias도 만들지 않는다.
 
-**토큰에 없는 값이 나오면 거기서 멈춘다.** 가까운 값으로 반올림하지 않고, `tokens.ts`에 조용히 추가하지도 않는다.
+**토큰에 없는 값이 나오면 공통 테마에 조용히 추가하지 않는다.** Figma에서 local variable에
+바인딩되지 않은 화면 특화 raw color는 원본값을 유지하되 해당 화면에만 예외 상수로 둔다.
+그 외의 색은 Figma 변수의 의도를 확인하기 전까지 구현하지 않는다.
 
-1. 디자이너에게 의도한 값인지 확인한다.
-2. 답이 오기 전까지 그 부분은 구현하지 않고 남겨둔다.
+1. Figma local variable 바인딩 여부를 확인한다.
+2. 바인딩되지 않은 화면 특화 값이면 공통 토큰에 넣지 않고 예외임을 주석으로 남긴다.
+3. 그 외에는 디자이너에게 의도한 값인지 확인한다.
 
 이유: 토큰 밖 값을 한 번 통과시키면 다음 사람이 그걸 선례로 또 넣는다. 팔레트가 두 벌이 되는 건 대개 이 한 줄에서 시작한다.
 
-**원본 우선순위**: `src/theme/*`는 Figma primitives 섹션을 옮긴 것이다. 값이 Tailwind 같은 익숙한 팔레트와 달라도 **Figma가 맞다.** 익숙한 값으로 "고치지" 않는다.
+**원본 우선순위**: `src/theme/*`는 Figma `primitives`와 `semantic` local variable을 옮긴 것이다. 값이 Tailwind 같은 익숙한 팔레트와 달라도 **Figma가 맞다.** 익숙한 값으로 "고치지" 않는다.
 
 ---
 

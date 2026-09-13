@@ -1,6 +1,4 @@
-import { useColorScheme } from 'react-native';
-
-import { darkColors, lightColors, type ThemeColorName, type ThemeColors } from '@/theme/colors';
+import { appColors, type ThemeColorName, type ThemeColors } from '@/theme/colors';
 import { shadows, type ShadowName } from '@/theme/shadows';
 import { MAX_CONTENT_WIDTH, radius, SCREEN_PADDING_X, socialBrand, spacing } from '@/theme/tokens';
 import {
@@ -18,26 +16,22 @@ export type Theme = {
   typography: typeof typography;
   shadows: typeof shadows;
   fontFamily: typeof fontFamily;
-  isDark: boolean;
 };
 
-const lightTheme: Theme = {
-  colors: lightColors,
+const appTheme: Theme = {
+  colors: appColors,
   spacing,
   radius,
   typography,
   shadows,
   fontFamily,
-  isDark: false,
 };
 
-const darkTheme: Theme = { ...lightTheme, colors: darkColors, isDark: true };
-
 /**
- * 다크모드 분기는 여기서만 한다. 컴포넌트는 `useColorScheme()`을 직접 호출하지 않는다.
+ * 앱은 Figma 디자인 시스템에 맞춰 라이트모드 하나만 사용한다.
  */
 export function useTheme(): Theme {
-  return useColorScheme() === 'dark' ? darkTheme : lightTheme;
+  return appTheme;
 }
 
 export {

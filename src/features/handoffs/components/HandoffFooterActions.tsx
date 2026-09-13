@@ -2,7 +2,6 @@ import { StyleSheet, View } from 'react-native';
 
 import { BottomActionBar, Pressable, Text } from '@/shared/ui';
 import { useTheme } from '@/theme';
-import { palette } from '@/theme/tokens';
 
 type HandoffFooterActionsProps = {
   primaryLabel: string;
@@ -25,7 +24,8 @@ export function HandoffFooterActions({
 }: HandoffFooterActionsProps) {
   const theme = useTheme();
   const isPrimaryDisabled = primaryDisabled || primaryLoading;
-  const primaryBackground = primaryTone === 'accent' ? theme.colors.accent : palette.gray800;
+  const primaryBackground =
+    primaryTone === 'accent' ? theme.colors.surfaceBlueStrong : theme.colors.surfaceNeutralStrong;
 
   return (
     <BottomActionBar>
@@ -40,11 +40,11 @@ export function HandoffFooterActions({
             style={({ pressed }) => [
               styles.button,
               styles.secondary,
-              { backgroundColor: theme.colors.surfaceSunken },
+              { backgroundColor: theme.colors.surfaceNeutralSubtle },
               pressed && styles.pressed,
             ]}
           >
-            <Text weight="semibold" style={styles.secondaryLabel}>
+            <Text weight="semibold" color="foregroundDisabled">
               {secondaryLabel}
             </Text>
           </Pressable>
@@ -65,7 +65,7 @@ export function HandoffFooterActions({
             (pressed || isPrimaryDisabled) && styles.dimmed,
           ]}
         >
-          <Text weight="semibold" color="accentOn">
+          <Text weight="semibold" color="foregroundInverse">
             {primaryLoading ? '처리 중' : primaryLabel}
           </Text>
         </Pressable>
@@ -89,8 +89,6 @@ const styles = StyleSheet.create({
   },
   secondary: { width: 89 },
   primary: { flex: 1 },
-  // TODO(design-system): Figma foreground/subtle 색상이 시맨틱 컬러에 추가되면 원시값을 교체한다.
-  secondaryLabel: { color: '#9CA3AF' },
   pressed: { opacity: 0.72 },
   dimmed: { opacity: 0.4 },
 });

@@ -34,23 +34,23 @@ export function EmployeesScreen() {
           `${member.displayName} ${member.email}`.toLowerCase().includes(query.toLowerCase())),
     ) ?? [];
   return (
-    <View style={[styles.root, { backgroundColor: colors.background }]}>
+    <View style={[styles.root, { backgroundColor: colors.backgroundDefault }]}>
       <ScreenHeader title="직원 관리하기" onBack={() => goBackOr(ROUTES.my)} />
       {!canManage ? (
         <Text style={styles.message}>관리자만 이용할 수 있어요.</Text>
       ) : (
         <>
-          <View style={[styles.search, { backgroundColor: colors.surfaceSunken }]}>
-            <Search color="textDisabled" size={26} />
+          <View style={[styles.search, { backgroundColor: colors.surfaceNeutralSubtle }]}>
+            <Search color="foregroundDisabled" size={26} />
             <TextInput
               accessibilityLabel="직원 이름 또는 이메일 검색"
               placeholder="이름, 이메일로 검색해 주세요."
-              placeholderTextColor={colors.textDisabled}
+              placeholderTextColor={colors.foregroundDisabled}
               value={search}
               onChangeText={setSearch}
               maxLength={100}
               autoCapitalize="none"
-              style={[styles.input, { color: colors.textSecondary }]}
+              style={[styles.input, { color: colors.foregroundDefault }]}
             />
           </View>
           <QueryBoundary query={members}>
@@ -61,7 +61,7 @@ export function EmployeesScreen() {
               contentContainerStyle={styles.list}
               keyboardShouldPersistTaps="handled"
               ListEmptyComponent={
-                <Text color="textSecondary" style={styles.message}>
+                <Text color="foregroundDefault" style={styles.message}>
                   {query ? '검색 결과가 없어요.' : '아직 초대된 직원이 없어요.'}
                 </Text>
               }

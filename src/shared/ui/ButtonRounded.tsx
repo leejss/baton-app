@@ -53,17 +53,17 @@ type Skin = { background: ThemeColorName; label: ThemeColorName };
 
 const TONES: Record<ButtonRoundedTone, Skin> = {
   /** `surface/neutral/strong` + `foreground/inverse`. */
-  black: { background: 'surfaceInverse', label: 'onSurfaceInverse' },
+  black: { background: 'surfaceNeutralStrong', label: 'foregroundInverse' },
   /** `surface/neutral/medium` + `foreground/default`. */
-  grey: { background: 'surfaceDisabled', label: 'textSecondary' },
+  grey: { background: 'surfaceNeutralMedium', label: 'foregroundDefault' },
   /** `surface/blue/default` + `foreground/blue/soft`. */
-  blue: { background: 'accentSoft', label: 'onAccentSoft' },
+  blue: { background: 'surfaceBlueDefault', label: 'foregroundBlueSoft' },
   /** `surface/warning/soft` + `foreground/warning/default`. */
-  red: { background: 'dangerSubtle', label: 'danger' },
+  red: { background: 'surfaceWarningSoft', label: 'foregroundWarningDefault' },
 };
 
 /** 시안 `color=Default, state=Disabled`. 톤과 무관하게 하나다. */
-const DISABLED: Skin = { background: 'surfaceDisabled', label: 'textDisabled' };
+const DISABLED: Skin = { background: 'surfaceNeutralDisabled', label: 'foregroundDisabled' };
 
 export function ButtonRounded({
   label,
