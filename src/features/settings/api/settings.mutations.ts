@@ -21,14 +21,22 @@ export async function leaveCurrentStore(storeId: number, userId: number) {
     );
   }
   if (membership.role === 'EMPLOYEE') return leaveStore(storeId);
-  const members = await fetchMembers(storeId);
-  if (hasTransferCandidates(members, userId)) {
-    throw new AppError('server', '관리자 권한을 먼저 넘겨주세요.', {
-      errorCode: 'MANAGER_TRANSFER_REQUIRED',
-      status: 409,
-    });
+  /**
+   * 승계할 직원이 없는 유일 관리자는 매장을 비활성화한 **뒤 소속을 종료**한다(requirements §6.2).
+   * 비활성화만 하고 멈추면 소속이 활성으로 남아 새 매장 생성·참여가 `STORE_ALREADY_JOINED`로 막힌다.
+   * 앞 단계는 되돌리지 않으므로, 이미 비활성화된 매장이면 소속 종료만 이어서 재시도한다.
+   */
+  if (membership.store.status === 'ACTIVE') {
+    const members = await fetchMembers(storeId);
+    if (hasTransferCandidates(members, userId)) {
+      throw new AppError('server', '관리자 권한을 먼저 넘겨주세요.', {
+        errorCode: 'MANAGER_TRANSFER_REQUIRED',
+        status: 409,
+      });
+    }
+    await deactivateStore(storeId);
   }
-  return deactivateStore(storeId);
+  return leaveStore(storeId);
 }
 
 export function useLeaveCurrentStore(storeId: number, userId: number) {

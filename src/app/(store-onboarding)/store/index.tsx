@@ -2,11 +2,13 @@ import { router } from 'expo-router';
 
 import { ROUTES } from '@/shared/lib/routes';
 
+import { useEndInactiveMembership } from '@/features/stores/hooks/useEndInactiveMembership';
 import { StoreEntryScreen } from '@/features/stores/screens/StoreEntryScreen';
 import { useStoreCreateStore } from '@/features/stores/store/storeCreateStore';
 
 export default function StoreEntryRoute() {
   const startCreate = useStoreCreateStore((state) => state.start);
+  useEndInactiveMembership();
 
   return (
     <StoreEntryScreen

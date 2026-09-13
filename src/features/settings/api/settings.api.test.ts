@@ -133,17 +133,35 @@ it('다른 직원이 생겼으면 비활성화하지 않고 승계를 요구한�
   });
   expect(fetch).toHaveBeenCalledTimes(2);
 });
-it('유일 관리자는 최신 구성원 확인 뒤 매장을 비활성화한다', async () => {
+it('유일 관리자는 최신 구성원 확인 뒤 매장을 비활성화하고 소속을 종료한다', async () => {
   const fetch = jest
     .spyOn(globalThis, 'fetch')
     .mockResolvedValueOnce(ok({ membership: { store, role: 'MANAGER', status: 'ACTIVE' } }))
     .mockResolvedValueOnce(ok([]))
+    .mockResolvedValueOnce(new Response(null, { status: 204 }))
     .mockResolvedValueOnce(new Response(null, { status: 204 }));
   await leaveCurrentStore(10, 1);
-  expect(fetch).toHaveBeenLastCalledWith(
-    'https://api.example.com/api/v1/stores/10/deactivate',
-    expect.objectContaining({ method: 'POST' }),
-  );
+  expect(fetch.mock.calls.map(([url, init]) => [url, init?.method])).toEqual([
+    ['https://api.example.com/api/v1/stores/me', 'GET'],
+    ['https://api.example.com/api/v1/stores/10/members', 'GET'],
+    ['https://api.example.com/api/v1/stores/10/deactivate', 'POST'],
+    ['https://api.example.com/api/v1/stores/10/members/me', 'DELETE'],
+  ]);
+});
+it('이미 비활성화된 매장이면 소속 종료만 다시 시도한다', async () => {
+  const fetch = jest
+    .spyOn(globalThis, 'fetch')
+    .mockResolvedValueOnce(
+      ok({
+        membership: { store: { ...store, status: 'INACTIVE' }, role: 'MANAGER', status: 'ACTIVE' },
+      }),
+    )
+    .mockResolvedValueOnce(new Response(null, { status: 204 }));
+  await leaveCurrentStore(10, 1);
+  expect(fetch.mock.calls.map(([url]) => url)).toEqual([
+    'https://api.example.com/api/v1/stores/me',
+    'https://api.example.com/api/v1/stores/10/members/me',
+  ]);
 });
 it('이미 다른 매장으로 바뀐 경우 기존 매장을 변경하지 않는다', async () => {
   const fetch = jest
