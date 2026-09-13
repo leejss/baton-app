@@ -43,7 +43,7 @@ export function NotificationCard({ notification, isOpening, onPress }: Notificat
       onPress={handlePress}
       style={({ pressed }) => [
         styles.card,
-        { backgroundColor: colors.background },
+        { backgroundColor: colors.backgroundDefault },
         pressed && styles.pressed,
       ]}
     >
@@ -52,15 +52,17 @@ export function NotificationCard({ notification, isOpening, onPress }: Notificat
         <Text variant="caption" weight="semibold">
           {notification.heading}
         </Text>
-        <Text variant="bodySmall" weight="medium" color="textSecondary">
+        <Text variant="bodySmall" weight="medium" color="foregroundDefault">
           {notification.message}
         </Text>
-        <Text variant="caption" color="textTertiary">
+        <Text variant="caption" color="foregroundSubtle">
           {notification.timeLabel}
         </Text>
       </View>
       <View style={styles.dotSlot}>
-        {notification.isUnread && <View style={[styles.dot, { backgroundColor: colors.accent }]} />}
+        {notification.isUnread && (
+          <View style={[styles.dot, { backgroundColor: colors.surfaceBlueStrong }]} />
+        )}
       </View>
     </Pressable>
   );

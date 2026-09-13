@@ -21,7 +21,7 @@ export function RoutePlaceholderScreen({
   const insets = useSafeAreaInsets();
 
   return (
-    <Box background="background" style={styles.root}>
+    <Box background="backgroundDefault" style={styles.root}>
       {header}
       <ScrollView
         contentInsetAdjustmentBehavior="automatic"
@@ -39,10 +39,10 @@ export function RoutePlaceholderScreen({
               {title}
             </Text>
           )}
-          <Text color="textSecondary" style={textStyles.center}>
+          <Text color="foregroundDefault" style={textStyles.center}>
             {description}
           </Text>
-          <Text variant="caption" color="textTertiary" style={textStyles.center}>
+          <Text variant="caption" color="foregroundSubtle" style={textStyles.center}>
             기능 명세: {featureIds}
           </Text>
         </View>

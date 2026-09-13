@@ -34,7 +34,7 @@ export function ScreenHeader({
         isCentered && styles.bordered,
         {
           paddingTop: insets.top,
-          backgroundColor: colors.background,
+          backgroundColor: colors.backgroundDefault,
           borderColor: colors.borderSubtle,
         },
       ]}

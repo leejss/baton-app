@@ -101,7 +101,7 @@ export function StoreCreatedScreen({
   };
 
   return (
-    <Box background="background" style={styles.root}>
+    <Box background="backgroundDefault" style={styles.root}>
       <ScreenHeader onBack={onBack} />
 
       <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
@@ -109,7 +109,7 @@ export function StoreCreatedScreen({
           <Text variant="display" weight="bold" style={textStyles.center}>
             매장이 생성 됐어요!
           </Text>
-          <Text variant="body" weight="medium" color="textSecondary" style={textStyles.center}>
+          <Text variant="body" weight="medium" color="foregroundDefault" style={textStyles.center}>
             {'이제 직원들을 매장에 초대하고\n인수인계를 시작해보세요.'}
           </Text>
         </View>
@@ -127,7 +127,12 @@ export function StoreCreatedScreen({
           {invitationCode !== null && (
             <View style={styles.codeBlock}>
               <InvitationCodeCard code={invitationCode} onCopy={handleCopy} />
-              <Text variant="caption" weight="medium" color="textTertiary" style={styles.notice}>
+              <Text
+                variant="caption"
+                weight="medium"
+                color="foregroundSubtle"
+                style={styles.notice}
+              >
                 {
                   '초대 코드는 발급 후 24시간 동안 유효해요\n설정에서 언제든 새 코드를 발급할 수 있어요'
                 }

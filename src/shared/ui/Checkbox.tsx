@@ -7,8 +7,8 @@ import { radius, useTheme } from '@/theme';
  * 체크박스. 시안 `Icon/check box`(`307:5299`)의 미선택 상태를 옮겼다 —
  * 흰 바닥에 1.4pt 회색 테두리, 안쪽 정사각형이 슬롯의 약 90%.
  *
- * ⚠️ 회원가입 시안(`943:111541`)에는 선택 상태 프레임이 없다. 선택 상태는 `accent` 바닥에
- * `accentOn` 체크로 **파생**했다. 디자인이 나오면 여기만 맞춘다.
+ * ⚠️ 회원가입 시안(`943:111541`)에는 선택 상태 프레임이 없다. 선택 상태는
+ * `surfaceBlueStrong` 바닥에 `foregroundInverse` 체크를 올린다.
  *
  * 라벨은 받지 않는다. 라벨과 함께 눌리는 행 전체는 호출부(`TermsCheckItem` 등)가 Pressable로
  * 감싸고, 이 컴포넌트는 `onToggle`을 생략하면 순수 표시용이 된다.
@@ -43,12 +43,12 @@ export function Checkbox({ isChecked, onToggle, accessibilityLabel, size = 28 }:
         {
           width: boxSize,
           height: boxSize,
-          backgroundColor: isChecked ? colors.accent : colors.background,
-          borderColor: isChecked ? colors.accent : colors.borderStrong,
+          backgroundColor: isChecked ? colors.surfaceBlueStrong : colors.backgroundDefault,
+          borderColor: isChecked ? colors.surfaceBlueStrong : colors.borderStrong,
         },
       ]}
     >
-      {isChecked && <Check size={Math.round(boxSize * SPEC.iconRatio)} color="accentOn" />}
+      {isChecked && <Check size={Math.round(boxSize * SPEC.iconRatio)} color="foregroundInverse" />}
     </View>
   );
 

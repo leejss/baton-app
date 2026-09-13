@@ -38,9 +38,9 @@ export function HandoffAttachmentThumbnail({
         onPress={handleRemove}
         disabled={disabled}
         accessibilityState={{ disabled }}
-        style={[styles.remove, { backgroundColor: theme.colors.navigationForeground }]}
+        style={[styles.remove, { backgroundColor: theme.colors.surfaceNeutralStrong }]}
       >
-        <X size={14} color="accentOn" />
+        <X size={14} color="foregroundInverse" />
       </Pressable>
       {attachment.uploadStatus === 'uploading' && <Text variant="caption">업로드 중</Text>}
       {(attachment.uploadStatus === 'failed' || attachment.uploadStatus === 'ready') && (
@@ -51,7 +51,7 @@ export function HandoffAttachmentThumbnail({
           disabled={disabled}
           style={styles.retry}
         >
-          <Text variant="caption" color="dangerText">
+          <Text variant="caption" color="foregroundWarningDefault">
             다시 시도
           </Text>
         </Pressable>

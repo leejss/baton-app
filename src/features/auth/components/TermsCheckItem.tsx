@@ -52,16 +52,19 @@ export function TermsCheckItem({
 
   const isAll = variant === 'all';
   const fullLabel = prefix === undefined ? label : `${prefix} ${label}`;
-  // 시안: 개별 항목은 체크 전 회색(#9CA3AF)이고, 전체 동의는 항상 진하다.
-  const labelColor = isAll || isChecked ? 'textPrimary' : 'textDisabled';
+  // 시안: 개별 항목은 체크 전 foregroundDisabled이고, 전체 동의는 항상 진하다.
+  const labelColor = isAll || isChecked ? 'foregroundStrong' : 'foregroundDisabled';
 
   return (
     <View
       style={[
         styles.row,
         isAll
-          ? [styles.allRow, { backgroundColor: colors.surfaceSunken }]
-          : [styles.itemRow, { backgroundColor: colors.background, borderColor: colors.border }],
+          ? [styles.allRow, { backgroundColor: colors.surfaceNeutralSubtle }]
+          : [
+              styles.itemRow,
+              { backgroundColor: colors.backgroundDefault, borderColor: colors.borderDefault },
+            ],
       ]}
     >
       <Pressable
@@ -96,7 +99,7 @@ export function TermsCheckItem({
           hitSlop={(44 - SPEC.item.arrowSlot) / 2}
           style={styles.arrowSlot}
         >
-          <ArrowRightS size={SPEC.item.arrowSize} color="textTertiary" />
+          <ArrowRightS size={SPEC.item.arrowSize} color="foregroundSubtle" />
         </Pressable>
       )}
     </View>

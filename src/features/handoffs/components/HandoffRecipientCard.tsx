@@ -29,13 +29,13 @@ export function HandoffRecipientCard({
       style={({ pressed }) => [
         styles.root,
         {
-          backgroundColor: theme.colors.background,
-          borderColor: theme.colors.border,
+          backgroundColor: theme.colors.backgroundDefault,
+          borderColor: theme.colors.borderDefault,
         },
         pressed && styles.pressed,
       ]}
     >
-      <View style={[styles.avatarFrame, { borderColor: theme.colors.surfaceSunken }]}>
+      <View style={[styles.avatarFrame, { borderColor: theme.colors.surfaceNeutralSubtle }]}>
         <Image
           source={require('@/assets/images/home/profile-placeholder.png')}
           contentFit="cover"
@@ -46,10 +46,10 @@ export function HandoffRecipientCard({
         />
       </View>
       <View style={styles.copy}>
-        <Text weight="semibold" style={styles.name}>
+        <Text weight="semibold" color="foregroundStrong">
           {recipient === null ? '받는 사람을 선택해주세요.' : `${recipient.displayName} 님`}
         </Text>
-        <Text variant="caption" weight="medium" style={styles.description}>
+        <Text variant="caption" weight="medium" color="foregroundSubtle">
           {recipient === null
             ? '한 명을 선택할 수 있어요'
             : isRecommended
@@ -57,7 +57,7 @@ export function HandoffRecipientCard({
               : recipient.email}
         </Text>
       </View>
-      <ArrowRightS size={22} color="textDisabled" />
+      <ArrowRightS size={22} color="foregroundDisabled" />
     </Pressable>
   );
 }
@@ -84,7 +84,4 @@ const styles = StyleSheet.create({
   },
   avatar: { width: '100%', height: '100%' },
   copy: { flex: 1, minWidth: 0, gap: spacing.xs },
-  // TODO(design-system): Figma foreground/strong·subtle가 시맨틱 컬러에 추가되면 원시값을 교체한다.
-  name: { color: '#1F2937' },
-  description: { color: '#9CA3AF' },
 });

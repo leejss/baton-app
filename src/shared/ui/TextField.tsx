@@ -64,40 +64,40 @@ const PALETTE: Record<
   }
 > = {
   default: {
-    border: 'border',
-    background: 'background',
-    value: 'textTertiary',
-    subtitle: 'textTertiary',
+    border: 'borderDefault',
+    background: 'backgroundDefault',
+    value: 'foregroundSubtle',
+    subtitle: 'foregroundSubtle',
   },
   focus: {
-    border: 'borderFocus',
-    background: 'background',
-    value: 'textPrimary',
-    subtitle: 'textTertiary',
+    border: 'borderPressed',
+    background: 'backgroundDefault',
+    value: 'foregroundStrong',
+    subtitle: 'foregroundSubtle',
   },
   filled: {
     border: 'borderStrong',
-    background: 'background',
-    value: 'textSecondary',
-    subtitle: 'textTertiary',
+    background: 'backgroundDefault',
+    value: 'foregroundDefault',
+    subtitle: 'foregroundSubtle',
   },
   error: {
-    border: 'dangerBorder',
-    background: 'background',
-    value: 'textPrimary',
-    subtitle: 'danger',
+    border: 'borderWarningDefault',
+    background: 'backgroundDefault',
+    value: 'foregroundStrong',
+    subtitle: 'foregroundWarningDefault',
   },
   success: {
-    border: 'success',
-    background: 'background',
-    value: 'textPrimary',
-    subtitle: 'success',
+    border: 'borderSuccessDefault',
+    background: 'backgroundDefault',
+    value: 'foregroundStrong',
+    subtitle: 'foregroundSuccessDefault',
   },
   disabled: {
     border: 'borderSubtle',
-    background: 'surfaceDisabled',
-    value: 'textTertiary',
-    subtitle: 'textTertiary',
+    background: 'surfaceNeutralDisabled',
+    value: 'foregroundDisabled',
+    subtitle: 'foregroundDisabled',
   },
 };
 
@@ -156,9 +156,9 @@ export function TextField({
   return (
     <View style={styles.container}>
       {label !== undefined && (
-        <Text variant="title" weight="semibold" color="textSecondary">
+        <Text variant="title" weight="semibold" color="foregroundDefault">
           {isOptional && (
-            <Text variant="title" weight="semibold" color="textTertiary">
+            <Text variant="title" weight="semibold" color="foregroundSubtle">
               {'(선택) '}
             </Text>
           )}
@@ -178,7 +178,7 @@ export function TextField({
           // 라벨이 별도 Text라 스크린 리더가 입력과 묶어주지 못한다. 직접 연결한다.
           accessibilityLabel={isOptional && label !== undefined ? `(선택) ${label}` : label}
           style={[styles.textInput, { color: colors[tone.value] }]}
-          placeholderTextColor={colors.textTertiary}
+          placeholderTextColor={colors.foregroundSubtle}
           editable={!disabled}
           value={value}
           onFocus={(event) => {
@@ -193,7 +193,7 @@ export function TextField({
         />
 
         {timer !== undefined && (
-          <Text variant="caption" weight="medium" color="danger">
+          <Text variant="caption" weight="medium" color="foregroundWarningDefault">
             {timer}
           </Text>
         )}

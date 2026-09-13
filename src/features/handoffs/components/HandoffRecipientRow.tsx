@@ -29,14 +29,14 @@ export function HandoffRecipientRow({ item, selected, onSelect }: HandoffRecipie
         <View style={styles.nameRow}>
           <Text weight="semibold">{item.member.displayName}</Text>
           {item.isRecommended && (
-            <View style={[styles.badge, { backgroundColor: theme.colors.accentSubtle }]}>
-              <Text variant="caption" weight="medium" color="accentText">
+            <View style={[styles.badge, { backgroundColor: theme.colors.surfaceBlueDefault }]}>
+              <Text variant="caption" weight="medium" color="foregroundBlueDefault">
                 다음 근무자
               </Text>
             </View>
           )}
         </View>
-        <Text variant="bodySmall" color="textSecondary">
+        <Text variant="bodySmall" color="foregroundDefault">
           {item.nextShiftLabel ?? '근무 시간 미정'}
         </Text>
       </View>
@@ -44,12 +44,14 @@ export function HandoffRecipientRow({ item, selected, onSelect }: HandoffRecipie
         style={[
           styles.check,
           {
-            backgroundColor: selected ? theme.colors.navigationForeground : theme.colors.background,
-            borderColor: selected ? theme.colors.navigationForeground : theme.colors.border,
+            backgroundColor: selected
+              ? theme.colors.surfaceNeutralStrong
+              : theme.colors.backgroundDefault,
+            borderColor: selected ? theme.colors.borderPressed : theme.colors.borderDefault,
           },
         ]}
       >
-        {selected && <Check size={16} color="accentOn" />}
+        {selected && <Check size={16} color="foregroundInverse" />}
       </View>
     </Pressable>
   );

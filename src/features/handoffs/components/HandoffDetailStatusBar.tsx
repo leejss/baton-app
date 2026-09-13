@@ -12,8 +12,8 @@ export function HandoffDetailStatusBar({ label }: HandoffDetailStatusBarProps) {
 
   return (
     <BottomActionBar>
-      <View style={[styles.status, { backgroundColor: theme.colors.surfaceDisabled }]}>
-        <Text weight="semibold" color="textDisabled">
+      <View style={[styles.status, { backgroundColor: theme.colors.surfaceNeutralDisabled }]}>
+        <Text weight="semibold" color="foregroundDisabled">
           {label}
         </Text>
       </View>

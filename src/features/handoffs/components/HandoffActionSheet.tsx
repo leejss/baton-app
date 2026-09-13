@@ -61,7 +61,7 @@ export function HandoffActionSheet({ ref, onDismiss, onDelete, onEdit }: Handoff
   return (
     <BottomSheet visible={visible} onDismiss={handleDismiss}>
       <View style={styles.actions}>
-        <View style={[styles.menu, { backgroundColor: theme.colors.surfaceSunken }]}>
+        <View style={[styles.menu, { backgroundColor: theme.colors.surfaceNeutralSubtle }]}>
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="인수인계 수정"
@@ -71,15 +71,15 @@ export function HandoffActionSheet({ ref, onDismiss, onDelete, onEdit }: Handoff
             <EditFill />
             <Text weight="medium">수정하기</Text>
           </Pressable>
-          <View style={[styles.divider, { backgroundColor: theme.colors.border }]} />
+          <View style={[styles.divider, { backgroundColor: theme.colors.borderDefault }]} />
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="인수인계 삭제"
             onPress={handleDelete}
             style={({ pressed }) => [styles.row, pressed && styles.pressed]}
           >
-            <Trash color="danger" />
-            <Text weight="medium" color="danger">
+            <Trash color="foregroundWarningDefault" />
+            <Text weight="medium" color="foregroundWarningDefault">
               삭제하기
             </Text>
           </Pressable>
@@ -91,7 +91,7 @@ export function HandoffActionSheet({ ref, onDismiss, onDelete, onEdit }: Handoff
           onPress={handleClose}
           style={({ pressed }) => [
             styles.close,
-            { backgroundColor: theme.colors.surfaceSunken },
+            { backgroundColor: theme.colors.surfaceNeutralSubtle },
             pressed && styles.pressed,
           ]}
         >

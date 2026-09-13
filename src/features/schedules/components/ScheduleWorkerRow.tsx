@@ -25,14 +25,17 @@ export function ScheduleWorkerRow({
   const { colors } = useTheme();
   return (
     <View style={styles.row}>
-      <View accessible={false} style={[styles.avatar, { backgroundColor: colors.surfaceSunken }]}>
-        <NavUserLine size={16} color="textTertiary" />
+      <View
+        accessible={false}
+        style={[styles.avatar, { backgroundColor: colors.surfaceNeutralSubtle }]}
+      >
+        <NavUserLine size={16} color="foregroundSubtle" />
       </View>
       <View style={styles.details}>
         <Text weight="semibold" numberOfLines={1}>
           {item.member.name}
         </Text>
-        <Text variant="caption" color="textTertiary">
+        <Text variant="caption" color="foregroundSubtle">
           {item.startTime} - {item.endTime}
           {!item.member.isActive ? ' · 참여 종료' : ''}
         </Text>
@@ -50,13 +53,13 @@ export function ScheduleWorkerRow({
             style={[
               styles.checkbox,
               {
-                borderColor: colors.border,
-                backgroundColor: canEdit ? colors.background : colors.surfaceDisabled,
+                borderColor: colors.borderDefault,
+                backgroundColor: canEdit ? colors.backgroundDefault : colors.surfaceNeutralDisabled,
               },
             ]}
           />
           {!canEdit && (
-            <Text variant="caption" color="textDisabled">
+            <Text variant="caption" color="foregroundDisabled">
               시작됨
             </Text>
           )}
@@ -69,9 +72,9 @@ export function ScheduleWorkerRow({
             onPress={() => onHandoff(item.member.id)}
             style={styles.action}
           >
-            <View style={[styles.handoff, { backgroundColor: colors.accentSubtle }]}>
-              <SendFill size={16} color="accent" />
-              <Text variant="bodySmall" weight="semibold" color="accentText">
+            <View style={[styles.handoff, { backgroundColor: colors.surfaceBlueDefault }]}>
+              <SendFill size={16} color="foregroundBlueSoft" />
+              <Text variant="bodySmall" weight="semibold" color="foregroundBlueDefault">
                 인수인계
               </Text>
             </View>

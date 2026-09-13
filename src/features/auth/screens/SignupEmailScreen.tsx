@@ -204,11 +204,11 @@ export function SignupEmailScreen({ onBack, onNext }: SignupEmailScreenProps) {
 
               {/* 보조 문구는 입력이 아니라 행 전체 아래에 붙는다(시안 `Frame 2117906259`). */}
               {errorMessage !== undefined ? (
-                <Text variant="caption" color="danger">
+                <Text variant="caption" color="foregroundWarningDefault">
                   {errorMessage}
                 </Text>
               ) : isSent ? (
-                <Text variant="caption" color="success">
+                <Text variant="caption" color="foregroundSuccessDefault">
                   {SENT_MESSAGE}
                 </Text>
               ) : null}

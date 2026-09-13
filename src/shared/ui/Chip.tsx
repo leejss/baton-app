@@ -46,7 +46,7 @@ const SIZES = {
 } as const satisfies Record<ChipSize, { text: 'bodySmall' | 'caption'; weight: 'bold' | 'medium' }>;
 
 const TONES: Record<ChipTone, { background: ThemeColorName; label: ThemeColorName }> = {
-  orange: { background: 'tagOrangeSurface', label: 'tagOrangeText' },
+  orange: { background: 'tagSurfaceSoftOrange', label: 'tagForegroundOrange' },
 };
 
 export function Chip({

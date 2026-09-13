@@ -13,21 +13,21 @@ export function SettingsRow({ label, value, description, onPress }: SettingsRowP
   const content = (
     <>
       <View style={styles.copy}>
-        <Text weight="semibold" color="navigationForeground">
+        <Text weight="semibold" color="foregroundStrong">
           {label}
         </Text>
         {description && (
-          <Text variant="caption" weight="medium" color="textDisabled">
+          <Text variant="caption" weight="medium" color="foregroundDisabled">
             {description}
           </Text>
         )}
       </View>
       {value && (
-        <Text color="textSecondary" numberOfLines={1} style={styles.value}>
+        <Text color="foregroundDefault" numberOfLines={1} style={styles.value}>
           {value}
         </Text>
       )}
-      {onPress && <ArrowRightS color="textDisabled" />}
+      {onPress && <ArrowRightS color="foregroundDisabled" />}
     </>
   );
   if (!onPress) return <View style={styles.row}>{content}</View>;

@@ -116,7 +116,9 @@ export function TransferAdminScreen({ purpose }: { purpose: 'manage' | 'leave' |
                   />
                 </View>
               )}
-              ListEmptyComponent={<Text color="textSecondary">권한을 승계할 직원이 없어요.</Text>}
+              ListEmptyComponent={
+                <Text color="foregroundDefault">권한을 승계할 직원이 없어요.</Text>
+              }
             />
           )}
           {stage === 'confirm' && (
@@ -138,15 +140,15 @@ export function TransferAdminScreen({ purpose }: { purpose: 'manage' | 'leave' |
                 <SettingsArtwork kind="complete" />
               </View>
               <View style={styles.manager}>
-                <Text variant="bodySmall" color="textDisabled">
+                <Text variant="bodySmall" color="foregroundDisabled">
                   새로운 관리자
                 </Text>
                 {selected && (
-                  <View style={[styles.managerCard, { borderColor: colors.border }]}>
+                  <View style={[styles.managerCard, { borderColor: colors.borderDefault }]}>
                     <ProfileAvatar profileImage={selected.profileImage} />
                     <View style={styles.primary}>
                       <Text weight="semibold">{selected.displayName} 님</Text>
-                      <Text variant="caption" color="textDisabled">
+                      <Text variant="caption" color="foregroundDisabled">
                         {selected.email}
                       </Text>
                     </View>
@@ -162,7 +164,7 @@ export function TransferAdminScreen({ purpose }: { purpose: 'manage' | 'leave' |
                         ? '회원 탈퇴하기'
                         : '마이페이지로 가기'
                   }
-                  color="textTertiary"
+                  color="foregroundSubtle"
                   onPress={onFinish}
                 />
               </View>

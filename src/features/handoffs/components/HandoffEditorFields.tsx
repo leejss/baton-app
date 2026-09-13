@@ -35,8 +35,8 @@ export function HandoffEditorFields({
         style={[
           styles.card,
           {
-            backgroundColor: theme.colors.background,
-            borderColor: hasError ? theme.colors.danger : theme.colors.border,
+            backgroundColor: theme.colors.backgroundDefault,
+            borderColor: hasError ? theme.colors.borderWarningDefault : theme.colors.borderDefault,
           },
         ]}
       >
@@ -49,10 +49,10 @@ export function HandoffEditorFields({
           onChangeText={onChangeTitle}
           placeholder="제목을 입력해주세요."
           returnKeyType="next"
-          style={styles.titleInput}
+          style={[styles.titleInput, { color: theme.colors.foregroundStrong }]}
           value={title}
         />
-        <View style={[styles.divider, { backgroundColor: theme.colors.surfaceSunken }]} />
+        <View style={[styles.divider, { backgroundColor: theme.colors.surfaceNeutralSubtle }]} />
         <TextInput
           editable={!disabled}
           accessibilityState={{ disabled }}
@@ -62,13 +62,13 @@ export function HandoffEditorFields({
           onBlur={onBlurBody}
           onChangeText={onChangeBody}
           placeholder="인수인계 할 내용을 입력해주세요."
-          style={styles.bodyInput}
+          style={[styles.bodyInput, { color: theme.colors.foregroundStrong }]}
           textAlignVertical="top"
           value={body}
         />
         <Text
           variant="caption"
-          color="textTertiary"
+          color="foregroundSubtle"
           style={styles.counter}
           accessibilityLabel={`내용 ${body.length}자, 최대 200자`}
         >
@@ -76,12 +76,12 @@ export function HandoffEditorFields({
         </Text>
       </View>
       {titleError !== undefined && (
-        <Text variant="caption" color="danger" selectable>
+        <Text variant="caption" color="foregroundWarningDefault" selectable>
           {titleError}
         </Text>
       )}
       {bodyError !== undefined && (
-        <Text variant="caption" color="danger" selectable>
+        <Text variant="caption" color="foregroundWarningDefault" selectable>
           {bodyError}
         </Text>
       )}
@@ -103,7 +103,6 @@ const styles = StyleSheet.create({
   titleInput: {
     ...typography.body.medium,
     padding: 0,
-    color: '#1F2937',
   },
   divider: {
     height: StyleSheet.hairlineWidth,
@@ -114,7 +113,6 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 0,
     paddingTop: 10,
-    color: '#1F2937',
   },
   counter: {
     alignSelf: 'flex-end',

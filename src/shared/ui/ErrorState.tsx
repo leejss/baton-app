@@ -19,7 +19,7 @@ export function ErrorState({ error, onRetry, onBack }: ErrorStateProps) {
       <Text variant="display" weight="bold" style={textStyles.center}>
         문제가 발생했어요
       </Text>
-      <Text color="textSecondary" style={textStyles.center}>
+      <Text color="foregroundDefault" style={textStyles.center}>
         {appError.message}
       </Text>
       {onBack && <Button label="이전 화면으로" onPress={onBack} />}

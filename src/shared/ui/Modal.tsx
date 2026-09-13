@@ -85,14 +85,14 @@ export function Modal({
       statusBarTranslucent
       onRequestClose={onClose}
     >
-      <View style={[styles.overlay, { backgroundColor: colors.overlay }]}>
+      <View style={[styles.overlay, { backgroundColor: colors.overlayDimmed }]}>
         <View
           accessibilityViewIsModal
           accessibilityRole="alert"
           style={[
             styles.card,
             shadows.default,
-            { width: variantSpec.width, backgroundColor: colors.background },
+            { width: variantSpec.width, backgroundColor: colors.backgroundDefault },
           ]}
         >
           {onClose !== undefined && (
@@ -102,9 +102,9 @@ export function Modal({
               onPress={onClose}
               // 24pt라 최소 터치 영역(44)에 못 미친다. 여백으로 채운다.
               hitSlop={(44 - SPEC.closeSize) / 2}
-              style={[styles.close, { backgroundColor: colors.surfaceSunken }]}
+              style={[styles.close, { backgroundColor: colors.surfaceNeutralSubtle }]}
             >
-              <X size={SPEC.closeIconSize} color="textTertiary" />
+              <X size={SPEC.closeIconSize} color="foregroundSubtle" />
             </Pressable>
           )}
 
@@ -115,7 +115,7 @@ export function Modal({
                 {title}
               </Text>
               {description !== undefined && (
-                <Text variant="bodySmall" color="textSecondary" style={styles.description}>
+                <Text variant="bodySmall" color="foregroundDefault" style={styles.description}>
                   {description}
                 </Text>
               )}

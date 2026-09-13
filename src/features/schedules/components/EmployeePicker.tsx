@@ -60,11 +60,11 @@ export function EmployeePicker({
         onPress={() => setOpen(true)}
         style={styles.field}
       >
-        {selected && <NavUserLine size={24} color="textTertiary" />}
+        {selected && <NavUserLine size={24} color="foregroundSubtle" />}
         <Text weight="semibold">{selected?.name ?? '근무자 선택'}</Text>
       </Pressable>
       <BottomSheet visible={open} title="근무자 선택" onDismiss={handleDismiss}>
-        <Text variant="bodySmall" color="textTertiary">
+        <Text variant="bodySmall" color="foregroundSubtle">
           근무를 등록할 직원을 선택해 주세요.
         </Text>
         <TextField
@@ -72,7 +72,7 @@ export function EmployeePicker({
           placeholder="이름으로 검색해 주세요."
           value={search}
           onChangeText={setSearch}
-          leftIcon={<Search color="textDisabled" />}
+          leftIcon={<Search color="foregroundDisabled" />}
         />
         {query.isError ? (
           <ScheduleMessage

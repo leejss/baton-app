@@ -35,23 +35,23 @@ export function SettingsDialog({
     >
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={[styles.overlay, { backgroundColor: colors.overlay }]}
+        style={[styles.overlay, { backgroundColor: colors.overlayDimmed }]}
       >
         <View
           accessibilityViewIsModal
-          style={[styles.card, { backgroundColor: colors.background }]}
+          style={[styles.card, { backgroundColor: colors.backgroundDefault }]}
         >
           <View style={styles.copy}>
             <Text
               variant="subheading"
               weight="semibold"
-              color="navigationForeground"
+              color="foregroundStrong"
               style={styles.center}
             >
               {title}
             </Text>
             {description && (
-              <Text variant="bodySmall" color="textSecondary" style={styles.center}>
+              <Text variant="bodySmall" color="foregroundDefault" style={styles.center}>
                 {description}
               </Text>
             )}

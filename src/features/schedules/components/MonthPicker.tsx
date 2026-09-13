@@ -36,7 +36,7 @@ export function MonthPicker({ visible, month, today, onSelect, onClose }: MonthP
               onSelect(value);
               onClose();
             }}
-            style={[styles.item, month === value && { backgroundColor: colors.accentSubtle }]}
+            style={[styles.item, month === value && { backgroundColor: colors.surfaceBlueDefault }]}
           >
             <Text weight={month === value ? 'semibold' : 'regular'}>
               {formatKoreanMonth(value)}

@@ -42,7 +42,7 @@ export function CalendarMonthHeader({
           <Text variant="heading" weight="semibold">
             {formatKoreanMonth(month)}
           </Text>
-          <ArrowDownS size={20} color="textDisabled" />
+          <ArrowDownS size={20} color="foregroundDisabled" />
         </Pressable>
         {trailing}
       </View>

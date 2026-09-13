@@ -28,11 +28,11 @@ export function MyPageScreen() {
     onError: (error) => setFeedback({ tone: 'error', message: normalizeError(error).message }),
   });
   return (
-    <View style={[styles.root, { backgroundColor: colors.background }]}>
+    <View style={[styles.root, { backgroundColor: colors.backgroundDefault }]}>
       <MainHeader
         title="마이페이지"
         onBack={() => router.replace(ROUTES.home)}
-        backgroundColor={colors.background}
+        backgroundColor={colors.backgroundDefault}
       />
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.avatar}>

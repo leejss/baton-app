@@ -13,7 +13,7 @@ export function NotificationsScreen() {
   const { colors } = useTheme();
 
   return (
-    <View style={[styles.root, { backgroundColor: colors.surface }]}>
+    <View style={[styles.root, { backgroundColor: colors.backgroundSubtle }]}>
       <MainHeader title="알림" onBack={handleBack} showNotification={false} />
       <QueryBoundary>
         <NotificationList />

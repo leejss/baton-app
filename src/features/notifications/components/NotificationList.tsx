@@ -61,7 +61,7 @@ export function NotificationList() {
           />
         }
         ListFooterComponent={
-          <Text variant="bodySmall" color="textTertiary" style={styles.footer}>
+          <Text variant="bodySmall" color="foregroundSubtle" style={styles.footer}>
             알림은 최신순으로 30일까지 보관됩니다.
           </Text>
         }

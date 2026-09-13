@@ -21,16 +21,16 @@ export function DepartureConsent({
   const copy = DEPARTURE_COPY[kind];
   return (
     <View style={styles.root}>
-      <Text variant="bodySmall" weight="medium" color="textDisabled">
+      <Text variant="bodySmall" weight="medium" color="foregroundDisabled">
         {copy.section}
       </Text>
-      <View style={[styles.card, { borderColor: colors.border }]}>
+      <View style={[styles.card, { borderColor: colors.borderDefault }]}>
         {copy.items.map(([title, description]) => (
           <View key={title} style={styles.item}>
-            <Text variant="bodySmall" weight="semibold" color="textSecondary">
+            <Text variant="bodySmall" weight="semibold" color="foregroundDefault">
               {title}
             </Text>
-            <Text variant="caption" weight="medium" color="textDisabled">
+            <Text variant="caption" weight="medium" color="foregroundDisabled">
               {description}
             </Text>
           </View>
@@ -42,17 +42,17 @@ export function DepartureConsent({
         accessibilityState={{ checked: acknowledged, disabled: isPending }}
         disabled={isPending}
         onPress={onToggle}
-        style={[styles.consent, { borderColor: colors.border }]}
+        style={[styles.consent, { borderColor: colors.borderDefault }]}
       >
         <Checkbox isChecked={acknowledged} />
-        <Text variant="caption" color="textDisabled" style={styles.consentText}>
+        <Text variant="caption" color="foregroundDisabled" style={styles.consentText}>
           [필수] 위 내용을 모두 확인 했으며, 이에 동의합니다.
         </Text>
       </Pressable>
       <View style={styles.action}>
         <TextLink
           label={isPending ? '처리 중…' : copy.action}
-          color="textTertiary"
+          color="foregroundSubtle"
           disabled={!acknowledged || isPending}
           onPress={onConfirm}
         />

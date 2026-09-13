@@ -53,13 +53,13 @@ export function DaySchedules({ date, now, isManaging = false, onSelect }: DaySch
   );
 
   return (
-    <View style={[styles.card, { backgroundColor: colors.background }]}>
+    <View style={[styles.card, { backgroundColor: colors.backgroundDefault }]}>
       <QueryRefreshNotice failed={query.isError} onRetry={retry} />
       <View style={styles.titleRow}>
         <IllustIcon name="calendar" />
         <Text variant="title" weight="bold">
           {formatKoreanDate(date)}{' '}
-          <Text variant="title" weight="bold" color="accent">
+          <Text variant="title" weight="bold" color="foregroundBlueSoft">
             총 {model.workerCount}명
           </Text>
         </Text>
@@ -88,7 +88,7 @@ export function DaySchedules({ date, now, isManaging = false, onSelect }: DaySch
           onPress={() => setExpanded(true)}
           style={styles.more}
         >
-          <Text variant="bodySmall" color="textTertiary">
+          <Text variant="bodySmall" color="foregroundSubtle">
             더 보기
           </Text>
         </Pressable>

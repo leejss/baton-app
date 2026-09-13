@@ -7,7 +7,7 @@ import type { ThemeColorName } from '@/theme';
  * `fill`, `stroke`, 원시 색상 문자열을 외부로 열지 않는다.
  *
  * 색을 `ThemeColorName`으로 제한하는 게 이 타입의 핵심이다. 호출부에서
- * `<Icon color="#111827" />`를 못 쓰게 막아야 다크모드가 안 깨진다.
+ * `<Icon color="foregroundStrong" />`처럼 의미 있는 테마 토큰만 받게 해야 일관성이 유지된다.
  */
 export type IconProps = {
   /**

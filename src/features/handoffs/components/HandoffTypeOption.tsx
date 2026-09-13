@@ -32,8 +32,8 @@ export function HandoffTypeOption({
       style={({ pressed }) => [
         styles.root,
         {
-          backgroundColor: theme.colors.background,
-          borderColor: selected ? theme.colors.borderStrong : theme.colors.border,
+          backgroundColor: theme.colors.backgroundDefault,
+          borderColor: selected ? theme.colors.borderPressed : theme.colors.borderDefault,
           borderWidth: selected ? 1.3 : 1,
         },
         pressed && styles.pressed,
@@ -41,10 +41,10 @@ export function HandoffTypeOption({
     >
       <IllustIcon name={HANDOFF_TYPE_ILLUST_ICONS[type]} size={26} />
       <View style={styles.copy}>
-        <Text weight="semibold" style={styles.label}>
+        <Text weight="semibold" color="foregroundStrong">
           {label}
         </Text>
-        <Text variant="bodySmall" weight="medium" style={styles.description}>
+        <Text variant="bodySmall" weight="medium" color="foregroundSubtle">
           {description}
         </Text>
       </View>
@@ -52,8 +52,10 @@ export function HandoffTypeOption({
         style={[
           styles.radio,
           {
-            backgroundColor: selected ? theme.colors.navigationForeground : theme.colors.background,
-            borderColor: selected ? theme.colors.navigationForeground : '#D1D5DB',
+            backgroundColor: selected
+              ? theme.colors.surfaceNeutralStrong
+              : theme.colors.backgroundDefault,
+            borderColor: selected ? theme.colors.borderPressed : theme.colors.borderDefault,
           },
         ]}
       >
@@ -79,9 +81,6 @@ const styles = StyleSheet.create({
   },
   pressed: { opacity: 0.72 },
   copy: { flex: 1, gap: 2 },
-  // TODO(design-system): foreground/strong·subtle 색상이 시맨틱 컬러에 추가되면 원시값을 교체한다.
-  label: { color: '#1F2937' },
-  description: { color: '#9CA3AF' },
   radio: {
     width: 20,
     height: 20,
@@ -89,7 +88,6 @@ const styles = StyleSheet.create({
     borderRadius: radius.full,
     alignItems: 'center',
     justifyContent: 'center',
-    // TODO(design-system): border/default(#D1D5DB)가 시맨틱 컬러에 추가되면 원시 테두리 값을 교체한다.
   },
   radioDot: { width: 6, height: 6, borderRadius: radius.full },
 });

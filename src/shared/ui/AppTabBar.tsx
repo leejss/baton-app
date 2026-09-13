@@ -15,6 +15,7 @@ import {
   Plus,
   type IconProps,
 } from '@/shared/ui/icons';
+import { useTheme, type ThemeColorName } from '@/theme';
 
 export const APP_TAB_NAMES = ['home', 'schedules', 'handoffs', 'my'] as const;
 
@@ -68,10 +69,16 @@ export function AppTabBar({
   onTabPress,
 }: AppTabBarProps) {
   const insets = useSafeAreaInsets();
+  const { colors } = useTheme();
   const bottomPadding = Math.max(insets.bottom, FIGMA_BOTTOM_PADDING);
 
   return (
-    <View style={[styles.root, { paddingBottom: bottomPadding }]}>
+    <View
+      style={[
+        styles.root,
+        { backgroundColor: colors.surfaceNeutralDefault, paddingBottom: bottomPadding },
+      ]}
+    >
       <View style={styles.row}>
         <TabButton
           name="home"
@@ -91,8 +98,8 @@ export function AppTabBar({
           onPress={onComposePress}
           style={styles.composeButton}
         >
-          <View style={styles.composeInner}>
-            <Plus color="accentOn" />
+          <View style={[styles.composeInner, { backgroundColor: colors.surfaceBlueStrong }]}>
+            <Plus color="foregroundInverse" />
           </View>
         </Pressable>
         <TabButton
@@ -115,7 +122,7 @@ export function AppTabBar({
 function TabButton({ isSelected, name, onLongPress, onPress }: TabButtonProps) {
   const { ActiveIcon, InactiveIcon, label } = TAB_ITEMS[name];
   const Icon = isSelected ? ActiveIcon : InactiveIcon;
-  const foregroundColor = isSelected ? 'accent' : 'navigationForeground';
+  const foregroundColor: ThemeColorName = isSelected ? 'foregroundBlueSoft' : 'foregroundStrong';
 
   const handlePress = () => onPress(name);
   const handleLongPress = () => onLongPress(name);
@@ -144,12 +151,10 @@ function TabButton({ isSelected, name, onLongPress, onPress }: TabButtonProps) {
 }
 
 const styles = StyleSheet.create({
-  // TODO(design-system): 아래 값은 Figma node 13:1916이 현재 프로젝트 토큰과 달라 원본을 우선했다. 토큰 동기화가 필요하다.
   root: {
     minHeight: 102,
     paddingHorizontal: 18,
     paddingTop: 4,
-    backgroundColor: '#FFFFFF',
     boxShadow: '0px -2px 3.5px 0px rgba(0, 0, 0, 0.04)',
   },
   row: {
@@ -175,7 +180,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 26,
-    backgroundColor: '#F3F4F6',
   },
   composeInner: {
     width: 46,
@@ -183,6 +187,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 23,
-    backgroundColor: '#2563EB',
   },
 });

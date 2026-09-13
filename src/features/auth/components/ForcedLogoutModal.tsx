@@ -28,7 +28,7 @@ export function ForcedLogoutModal() {
   return (
     <Modal
       isVisible={signOutReason === 'sessionRevoked'}
-      icon={<AlertCircleFill size={MODAL_ICON_SIZE} color="danger" />}
+      icon={<AlertCircleFill size={MODAL_ICON_SIZE} color="foregroundWarningDefault" />}
       title="로그아웃 되었어요"
       description={'다른 기기에서 로그인 되어\n현재 기기의 접속이 종료되었어요.'}
       confirmLabel="로그인 화면으로 이동"

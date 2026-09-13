@@ -14,7 +14,10 @@ export function ProfileAvatar({ profileImage, size = 36 }: ProfileAvatarProps) {
       : ILLUSTRATION_ASSETS.worker;
   return (
     <View
-      style={[styles.root, { width: size, height: size, backgroundColor: colors.surfaceSunken }]}
+      style={[
+        styles.root,
+        { width: size, height: size, backgroundColor: colors.surfaceNeutralSubtle },
+      ]}
     >
       <Image
         source={asset.source}

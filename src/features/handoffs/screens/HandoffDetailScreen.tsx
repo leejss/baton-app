@@ -65,7 +65,7 @@ export function HandoffDetailScreen({
   };
 
   return (
-    <View style={[styles.root, { backgroundColor: theme.colors.background }]}>
+    <View style={[styles.root, { backgroundColor: theme.colors.backgroundDefault }]}>
       <ScreenHeader
         onBack={onBack}
         onHome={onHome}
@@ -77,7 +77,7 @@ export function HandoffDetailScreen({
               onPress={handleManage}
               style={styles.manageButton}
             >
-              <KebabMenu size={13.8} color="navigationForeground" />
+              <KebabMenu size={13.8} color="foregroundStrong" />
             </Pressable>
           )
         }
@@ -103,33 +103,38 @@ export function HandoffDetailScreen({
               <View style={styles.article}>
                 <View style={styles.headingSection}>
                   <View style={styles.headingCopy}>
-                    <Text variant="subheading" weight="semibold" selectable style={styles.title}>
+                    <Text
+                      variant="subheading"
+                      weight="semibold"
+                      color="foregroundStrong"
+                      selectable
+                    >
                       {detail.title}
                     </Text>
                     <View style={styles.meta}>
-                      <Text variant="caption" weight="medium" selectable style={styles.subtleText}>
+                      <Text variant="caption" weight="medium" color="foregroundSubtle" selectable>
                         {detail.dateLabel}
                       </Text>
-                      <Text variant="caption" weight="medium" style={styles.subtleText}>
+                      <Text variant="caption" weight="medium" color="foregroundSubtle">
                         ∙
                       </Text>
-                      <Text variant="caption" weight="medium" selectable style={styles.subtleText}>
+                      <Text variant="caption" weight="medium" color="foregroundSubtle" selectable>
                         {detail.recipientLabel}
                       </Text>
                     </View>
                   </View>
-                  <View style={[styles.divider, { backgroundColor: theme.colors.border }]} />
+                  <View style={[styles.divider, { backgroundColor: theme.colors.borderDefault }]} />
                 </View>
 
                 <View style={styles.bodyCopy}>
                   {detail.body.split('\n').map((paragraph, index) => (
-                    <Text key={index} weight="regular" color="textSecondary" selectable>
+                    <Text key={index} weight="regular" color="foregroundDefault" selectable>
                       {paragraph}
                     </Text>
                   ))}
                 </View>
 
-                <View style={[styles.divider, { backgroundColor: theme.colors.border }]} />
+                <View style={[styles.divider, { backgroundColor: theme.colors.borderDefault }]} />
               </View>
 
               <HandoffDetailAttachments
@@ -205,7 +210,4 @@ const styles = StyleSheet.create({
   bodyCopy: { gap: 5 },
   meta: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   divider: { width: '100%', height: StyleSheet.hairlineWidth },
-  // TODO(design-system): foreground/strong·subtle가 시맨틱 컬러에 추가되면 원시값을 교체한다.
-  title: { color: '#1F2937' },
-  subtleText: { color: '#9CA3AF' },
 });

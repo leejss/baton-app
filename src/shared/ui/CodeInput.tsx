@@ -62,17 +62,17 @@ export function CodeInput({
           const isActive = isFocused && index === activeIndex;
           const borderColor =
             status === 'error'
-              ? colors.dangerBorder
+              ? colors.borderWarningDefault
               : isActive
-                ? colors.borderFocus
+                ? colors.borderPressed
                 : digit === ''
-                  ? colors.border
+                  ? colors.borderDefault
                   : colors.borderStrong;
 
           return (
             <View
               key={index}
-              style={[styles.cell, { borderColor, backgroundColor: colors.background }]}
+              style={[styles.cell, { borderColor, backgroundColor: colors.backgroundDefault }]}
             >
               <Text variant="heading" weight="semibold">
                 {digit}
@@ -99,7 +99,7 @@ export function CodeInput({
       </Pressable>
 
       {timer !== undefined && (
-        <Text variant="body" weight="medium" color="danger" style={styles.timer}>
+        <Text variant="body" weight="medium" color="foregroundWarningDefault" style={styles.timer}>
           {timer}
         </Text>
       )}

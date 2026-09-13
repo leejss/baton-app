@@ -29,8 +29,8 @@ export function InvitationCodeCard({ code, onCopy }: InvitationCodeCardProps) {
   const { colors } = useTheme();
 
   return (
-    <View style={[styles.card, { backgroundColor: colors.accentSoft }]}>
-      <Text variant="bodySmall" weight="semibold" color="textTertiary">
+    <View style={[styles.card, { backgroundColor: colors.surfaceBlueDefault }]}>
+      <Text variant="bodySmall" weight="semibold" color="foregroundSubtle">
         초대코드
       </Text>
 
@@ -39,7 +39,7 @@ export function InvitationCodeCard({ code, onCopy }: InvitationCodeCardProps) {
         <Text
           variant="displayLarge"
           weight="bold"
-          color="accent"
+          color="foregroundBlueSoft"
           accessibilityLabel={`초대코드 ${code.split('').join(' ')}`}
         >
           {code}
@@ -50,7 +50,7 @@ export function InvitationCodeCard({ code, onCopy }: InvitationCodeCardProps) {
           color="blue"
           size="sm"
           onPress={onCopy}
-          leftIcon={<BoxMultipleFill size={SPEC.copyIconSize} color="accentOn" />}
+          leftIcon={<BoxMultipleFill size={SPEC.copyIconSize} color="foregroundInverse" />}
         />
       </View>
     </View>

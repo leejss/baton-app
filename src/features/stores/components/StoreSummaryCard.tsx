@@ -49,7 +49,7 @@ function FieldLabel({ icon, label }: FieldProps) {
   return (
     <View style={styles.label}>
       {icon}
-      <Text variant="bodySmall" weight="semibold" color="textTertiary">
+      <Text variant="bodySmall" weight="semibold" color="foregroundSubtle">
         {label}
       </Text>
     </View>
@@ -66,7 +66,12 @@ export function StoreSummaryCard({
   const { colors } = useTheme();
 
   return (
-    <View style={[styles.card, { borderColor: colors.border, backgroundColor: colors.background }]}>
+    <View
+      style={[
+        styles.card,
+        { borderColor: colors.borderDefault, backgroundColor: colors.backgroundDefault },
+      ]}
+    >
       <Text variant="subheading" weight="bold">
         {storeName}
       </Text>
@@ -74,25 +79,31 @@ export function StoreSummaryCard({
       <View style={styles.body}>
         <View style={styles.column}>
           <FieldLabel
-            icon={<MapPinArea size={SPEC.iconSize} color="textTertiary" />}
+            icon={<MapPinArea size={SPEC.iconSize} color="foregroundSubtle" />}
             label="주소"
           />
           {managerName !== undefined && (
-            <FieldLabel icon={<User size={SPEC.iconSize} color="textTertiary" />} label="관리자" />
+            <FieldLabel
+              icon={<User size={SPEC.iconSize} color="foregroundSubtle" />}
+              label="관리자"
+            />
           )}
-          <FieldLabel icon={<Phone size={SPEC.iconSize} color="textTertiary" />} label="연락처" />
+          <FieldLabel
+            icon={<Phone size={SPEC.iconSize} color="foregroundSubtle" />}
+            label="연락처"
+          />
         </View>
 
         <View style={[styles.column, styles.values]}>
-          <Text variant="bodySmall" color="textSecondary">
+          <Text variant="bodySmall" color="foregroundDefault">
             {address}
           </Text>
           {managerName !== undefined && (
-            <Text variant="bodySmall" color="textSecondary">
+            <Text variant="bodySmall" color="foregroundDefault">
               {managerName}
             </Text>
           )}
-          <Text variant="bodySmall" color="textSecondary">
+          <Text variant="bodySmall" color="foregroundDefault">
             {storeContact}
           </Text>
         </View>
@@ -100,7 +111,7 @@ export function StoreSummaryCard({
 
       {footer !== undefined && (
         <>
-          <View style={[styles.divider, { backgroundColor: colors.border }]} />
+          <View style={[styles.divider, { backgroundColor: colors.borderDefault }]} />
           {footer}
         </>
       )}

@@ -21,17 +21,17 @@ export function EmployeeRow({ member, selected, onSelect }: EmployeeRowProps) {
       onPress={() => onSelect(member.id)}
       style={styles.row}
     >
-      <View style={[styles.avatar, { backgroundColor: colors.surfaceSunken }]}>
-        <NavUserLine size={20} color="textTertiary" />
+      <View style={[styles.avatar, { backgroundColor: colors.surfaceNeutralSubtle }]}>
+        <NavUserLine size={20} color="foregroundSubtle" />
       </View>
       <View style={styles.info}>
         <Text weight="semibold">
           {member.name}{' '}
-          <Text variant="caption" color="textTertiary">
+          <Text variant="caption" color="foregroundSubtle">
             {member.role === 'MANAGER' ? '관리자' : '근로자'}
           </Text>
         </Text>
-        <Text variant="caption" color="textSecondary">
+        <Text variant="caption" color="foregroundDefault">
           {member.email}
         </Text>
       </View>
@@ -39,12 +39,12 @@ export function EmployeeRow({ member, selected, onSelect }: EmployeeRowProps) {
         style={[
           styles.check,
           {
-            borderColor: selected ? colors.accent : colors.border,
-            backgroundColor: selected ? colors.accent : colors.background,
+            borderColor: selected ? colors.surfaceBlueStrong : colors.borderDefault,
+            backgroundColor: selected ? colors.surfaceBlueStrong : colors.backgroundDefault,
           },
         ]}
       >
-        {selected && <Check size={16} color="accentOn" />}
+        {selected && <Check size={16} color="foregroundInverse" />}
       </View>
     </Pressable>
   );

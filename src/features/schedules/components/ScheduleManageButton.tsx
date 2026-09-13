@@ -33,7 +33,7 @@ export function ScheduleManageButton({ date }: { date?: string }) {
         onPress={() => setVisible(true)}
         style={styles.button}
       >
-        <Text color="textSecondary" weight="medium">
+        <Text color="foregroundDefault" weight="medium">
           근무편집
         </Text>
       </Pressable>
@@ -42,32 +42,32 @@ export function ScheduleManageButton({ date }: { date?: string }) {
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="근무등록"
-            style={[styles.option, { borderColor: colors.border }]}
+            style={[styles.option, { borderColor: colors.borderDefault }]}
             onPress={() => navigate(ROUTES.schedules.new(date))}
           >
             <IllustIcon name="workScheduleAdd" size={26} />
             <View style={styles.description}>
               <Text weight="semibold">근무등록</Text>
-              <Text variant="bodySmall" color="textSecondary">
+              <Text variant="bodySmall" color="foregroundDefault">
                 새로운 근무를 추가해요.
               </Text>
             </View>
-            <View style={[styles.radio, { borderColor: colors.border }]} />
+            <View style={[styles.radio, { borderColor: colors.borderDefault }]} />
           </Pressable>
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="근무수정/삭제"
-            style={[styles.option, { borderColor: colors.border }]}
+            style={[styles.option, { borderColor: colors.borderDefault }]}
             onPress={() => navigate(ROUTES.schedules.manage(date))}
           >
             <IllustIcon name="workScheduleEdit" size={26} />
             <View style={styles.description}>
               <Text weight="semibold">근무수정/삭제</Text>
-              <Text variant="bodySmall" color="textSecondary">
+              <Text variant="bodySmall" color="foregroundDefault">
                 기존 근무를 수정해요.
               </Text>
             </View>
-            <View style={[styles.radio, { borderColor: colors.border }]} />
+            <View style={[styles.radio, { borderColor: colors.borderDefault }]} />
           </Pressable>
         </View>
       </BottomSheet>

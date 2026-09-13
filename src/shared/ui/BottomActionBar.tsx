@@ -40,7 +40,7 @@ export function BottomActionBar({ children, above }: BottomActionBarProps) {
         style={[
           styles.container,
           {
-            backgroundColor: colors.background,
+            backgroundColor: colors.backgroundDefault,
             paddingBottom: SPEC.paddingBottom + insets.bottom,
           },
         ]}

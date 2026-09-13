@@ -32,13 +32,13 @@ export function ScheduleOverlay({
       onRequestClose={busy ? undefined : onClose}
       statusBarTranslucent
     >
-      <View style={[styles.overlay, { backgroundColor: colors.overlay }]}>
+      <View style={[styles.overlay, { backgroundColor: colors.overlayDimmed }]}>
         <View
           accessibilityViewIsModal
           style={[
             styles.card,
             {
-              backgroundColor: colors.background,
+              backgroundColor: colors.backgroundDefault,
               maxHeight: height - insets.top - spacing.md,
               paddingBottom: spacing.lg,
             },
@@ -56,7 +56,7 @@ export function ScheduleOverlay({
               onPress={onClose}
               style={styles.close}
             >
-              <X size={20} color="textDisabled" />
+              <X size={20} color="foregroundDisabled" />
             </Pressable>
           </View>
           {children}

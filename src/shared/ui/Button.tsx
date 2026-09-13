@@ -71,25 +71,33 @@ type Skin = {
 
 const SOLID: Record<ButtonColor, Skin> = {
   black: {
-    background: 'surfaceInverse',
-    pressedBackground: 'surfaceInversePressed',
-    label: 'onSurfaceInverse',
+    background: 'surfaceNeutralStrong',
+    pressedBackground: 'surfaceNeutralPressed',
+    label: 'foregroundInverse',
   },
-  blue: { background: 'accent', pressedBackground: 'accentPressed', label: 'accentOn' },
-  red: { background: 'dangerSolid', pressedBackground: 'dangerSolidPressed', label: 'dangerOn' },
+  blue: {
+    background: 'surfaceBlueStrong',
+    pressedBackground: 'surfaceBluePressed',
+    label: 'foregroundInverse',
+  },
+  red: {
+    background: 'surfaceWarningDefault',
+    pressedBackground: 'surfaceWarningPressed',
+    label: 'foregroundInverse',
+  },
 };
 
 /** 시안의 `state=Weak` · `state=Disabled`. 색과 무관하게 공통이라 하나만 둔다. */
 const WEAK: Skin = {
-  background: 'surfaceSunken',
-  pressedBackground: 'surfaceDisabled',
-  label: 'textDisabled',
+  background: 'surfaceNeutralSubtle',
+  pressedBackground: 'surfaceNeutralDisabled',
+  label: 'foregroundDisabled',
 };
 
 const DISABLED: Skin = {
-  background: 'surfaceDisabled',
-  pressedBackground: 'surfaceDisabled',
-  label: 'textDisabled',
+  background: 'surfaceNeutralDisabled',
+  pressedBackground: 'surfaceNeutralDisabled',
+  label: 'foregroundDisabled',
 };
 
 /** 옛 `variant`를 새 축으로 옮긴다. 호출부를 다 고치면 이 함수와 함께 사라진다. */

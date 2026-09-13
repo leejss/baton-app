@@ -42,8 +42,8 @@ const SPEC = {
 } as const;
 
 const TONES: Record<StoreStartBannerTone, { background: ThemeColorName; text: ThemeColorName }> = {
-  solid: { background: 'accent', text: 'accentOn' },
-  soft: { background: 'accentSoft', text: 'accentText' },
+  solid: { background: 'surfaceBlueStrong', text: 'foregroundInverse' },
+  soft: { background: 'surfaceBlueDefault', text: 'foregroundBlueDefault' },
 };
 
 export function StoreStartBanner({

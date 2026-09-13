@@ -147,7 +147,7 @@ export function EmailLoginScreen({
   });
 
   return (
-    <Box background="background" style={[styles.root, { paddingTop: insets.top }]}>
+    <Box background="backgroundDefault" style={[styles.root, { paddingTop: insets.top }]}>
       <AuthHeader onBack={onBack} />
 
       <KeyboardAwareScrollView
@@ -162,7 +162,7 @@ export function EmailLoginScreen({
           <Text variant="display" weight="bold">
             환영합니다.
           </Text>
-          <Text variant="body" weight="medium" color="textSecondary">
+          <Text variant="body" weight="medium" color="foregroundDefault">
             {'Baton을 통해 놓치는 인수인계 없이\n깔끔하게 업무를 전달해요.'}
           </Text>
         </View>
@@ -225,7 +225,7 @@ export function EmailLoginScreen({
                 }
                 subtitle={
                   isLocked ? (
-                    <Text variant="caption" color="danger">
+                    <Text variant="caption" color="foregroundWarningDefault">
                       {`로그인 제한 ${lockout.formatted}`}
                     </Text>
                   ) : (
@@ -237,7 +237,7 @@ export function EmailLoginScreen({
                         onPress={onForgotPassword}
                         hitSlop={spacing.sm}
                       >
-                        <Text variant="caption" color="textTertiary" style={textStyles.right}>
+                        <Text variant="caption" color="foregroundSubtle" style={textStyles.right}>
                           비밀번호를 잊으셨나요?
                         </Text>
                       </Pressable>
@@ -278,7 +278,7 @@ export function EmailLoginScreen({
           </View>
 
           <View style={styles.footer}>
-            <Text variant="bodySmall" weight="medium" color="textSecondary">
+            <Text variant="bodySmall" weight="medium" color="foregroundDefault">
               아직 회원이 아니신가요?
             </Text>
             <Pressable

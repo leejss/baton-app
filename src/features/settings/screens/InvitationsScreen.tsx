@@ -87,15 +87,15 @@ export function InvitationsScreen() {
             <InvitationStoreCard />
             {isValid && (
               <>
-                <View style={[styles.codeCard, { backgroundColor: colors.surfaceSunken }]}>
-                  <Text variant="caption" color="textDisabled">
+                <View style={[styles.codeCard, { backgroundColor: colors.surfaceNeutralSubtle }]}>
+                  <Text variant="caption" color="foregroundDisabled">
                     초대코드
                   </Text>
                   <View style={styles.codeRow}>
                     <Text
                       variant="displayLarge"
                       weight="bold"
-                      color="navigationForeground"
+                      color="foregroundStrong"
                       accessibilityLabel={`초대코드 ${code.code.split('').join(' ')}`}
                     >
                       {code.code}
@@ -104,13 +104,13 @@ export function InvitationsScreen() {
                       label="코드 복사"
                       size="sm"
                       onPress={handleCopy}
-                      leftIcon={<BoxMultipleFill size={16} color="onSurfaceInverse" />}
+                      leftIcon={<BoxMultipleFill size={16} color="foregroundInverse" />}
                     />
                   </View>
                 </View>
                 {/* 두 번째 줄("설정에서 언제든...")은 매장 생성 완료 화면 문구다. 이미 그 설정
                     화면 안이라 자기 자신을 가리키게 되어 뺐다. 기획 확정도 유효기간 안내만이다. */}
-                <Text variant="caption" color="textDisabled" style={styles.center}>
+                <Text variant="caption" color="foregroundDisabled" style={styles.center}>
                   초대 코드는 발급 후 24시간 동안 유효해요.
                 </Text>
               </>

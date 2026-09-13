@@ -68,12 +68,12 @@ function ConfirmNotice() {
   return (
     <View style={styles.notice}>
       <View style={styles.noticeLabel}>
-        <AlertCircleLine size={SPEC.noticeIconSize} color="dangerText" />
-        <Text variant="bodySmall" weight="semibold" color="dangerText">
+        <AlertCircleLine size={SPEC.noticeIconSize} color="foregroundWarningDefault" />
+        <Text variant="bodySmall" weight="semibold" color="foregroundWarningDefault">
           확인해주세요
         </Text>
       </View>
-      <Text variant="caption" color="textSecondary">
+      <Text variant="caption" color="foregroundDefault">
         매장 정보가 맞아야 정상적으로 인수인계를 확인할 수 있어요
       </Text>
     </View>
@@ -122,7 +122,7 @@ export function StoreJoinConfirmScreen({
   };
 
   return (
-    <Box background="background" style={styles.root}>
+    <Box background="backgroundDefault" style={styles.root}>
       <ScreenHeader onBack={onBack} />
 
       <View style={styles.progress}>
@@ -134,7 +134,7 @@ export function StoreJoinConfirmScreen({
           <Text variant="display" weight="bold">
             초대 받은 매장을 확인해주세요
           </Text>
-          <Text variant="body" weight="medium" color="textSecondary">
+          <Text variant="body" weight="medium" color="foregroundDefault">
             참여하기 전에 매장 정보를 확인해주세요.
           </Text>
         </View>
