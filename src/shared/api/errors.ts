@@ -1,3 +1,5 @@
+import { getAbortReason } from '@/shared/api/abort';
+
 /**
  * 앱 전역 에러 표현. UI는 `message` 문자열이 아니라 코드로 분기한다.
  *
@@ -123,7 +125,7 @@ export function normalizeFetchError(error: unknown, signal?: AbortSignal | null)
 
   // Expo는 취소 원인을 FetchError로 감싸기도 하므로 요청 signal을 우선한다.
   const reason = signal?.aborted
-    ? signal.reason
+    ? getAbortReason(signal)
     : error instanceof Error && error.cause instanceof Error
       ? error.cause
       : error;
