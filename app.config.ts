@@ -74,7 +74,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     orientation: 'portrait',
     icon: './assets/images/icon.png',
     scheme: `${APP.scheme}${variantConfig.schemeSuffix}`,
-    userInterfaceStyle: 'automatic',
+    userInterfaceStyle: 'light',
     ios: {
       ...config.ios,
       appleTeamId: '3PVV8DQPL6',
