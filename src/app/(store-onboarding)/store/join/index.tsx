@@ -16,6 +16,7 @@ export default function JoinStoreRoute() {
         setPreview(preview);
         router.push(ROUTES.storeJoin.confirm);
       }}
+      onAlreadyJoined={() => router.replace(ROUTES.home)}
     />
   );
 }

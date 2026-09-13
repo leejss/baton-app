@@ -34,6 +34,10 @@ export default function ConfirmStoreRoute() {
         clear();
         router.replace(ROUTES.storeJoin.index);
       }}
+      onAlreadyJoined={() => {
+        clear();
+        router.replace(ROUTES.home);
+      }}
     />
   );
 }

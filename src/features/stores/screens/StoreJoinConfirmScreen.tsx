@@ -44,6 +44,11 @@ export type StoreJoinConfirmScreenProps = {
   onJoined: () => void;
   /** 코드가 더 이상 유효하지 않아 처음부터 다시 해야 할 때. */
   onInvitationExpired: () => void;
+  /**
+   * 이미 다른 매장에 소속돼 참여할 수 없을 때. 안내를 확인하면 라우트가
+   * **기존 소속 매장 홈**으로 보낸다. 코드 입력 화면과 같은 처리다.
+   */
+  onAlreadyJoined: () => void;
 };
 
 const SPEC = {
@@ -84,6 +89,7 @@ export function StoreJoinConfirmScreen({
   onBack,
   onJoined,
   onInvitationExpired,
+  onAlreadyJoined,
 }: StoreJoinConfirmScreenProps) {
   const join = useJoinStore();
   /**
@@ -100,7 +106,7 @@ export function StoreJoinConfirmScreen({
         onSuccess: onJoined,
         onError: (error) => {
           if (isInvitationInvalid(error)) {
-            Alert.alert('초대 코드가 만료됐어요', '관리자에게 새 코드를 받아 다시 입력해주세요.', [
+            Alert.alert('초대코드를 사용할 수 없어요', '최신 코드를 확인해주세요.', [
               { text: '확인', onPress: onInvitationExpired },
             ]);
             return;
@@ -154,7 +160,10 @@ export function StoreJoinConfirmScreen({
         title="이미 소속된 매장이 있어요"
         description={'현재 다른 매장에 소속되어 있어\n새 매장에 참여할 수 없어요.'}
         confirmLabel="확인"
-        onConfirm={() => setIsAlreadyJoinedVisible(false)}
+        onConfirm={() => {
+          setIsAlreadyJoinedVisible(false);
+          onAlreadyJoined();
+        }}
       />
     </Box>
   );

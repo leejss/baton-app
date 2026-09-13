@@ -39,6 +39,12 @@ export type StoreJoinCodeScreenProps = {
   onBack: () => void;
   /** 코드 검증에 성공했을 때. 라우트가 확인 화면으로 보낸다. */
   onPreviewed: (preview: StoreInvitationPreview) => void;
+  /**
+   * 이미 다른 매장에 소속돼 참여할 수 없을 때. 안내를 확인하면 라우트가
+   * **기존 소속 매장 홈**으로 보낸다 — 다른 매장에 참여하려면 설정에서 직접
+   * 매장을 나가야 한다는 게 정책이라, 이 화면에 남겨두면 막다른 길이 된다.
+   */
+  onAlreadyJoined: () => void;
 };
 
 const SPEC = {
@@ -58,7 +64,11 @@ const SPEC = {
 const RETRY_MESSAGE = '관리자에게 새로운 초대코드를 요청해주세요.';
 const INVALID_MESSAGE = '유효하지 않은 초대코드예요. 코드를 다시 확인해주세요.';
 
-export function StoreJoinCodeScreen({ onBack, onPreviewed }: StoreJoinCodeScreenProps) {
+export function StoreJoinCodeScreen({
+  onBack,
+  onPreviewed,
+  onAlreadyJoined,
+}: StoreJoinCodeScreenProps) {
   const [code, setCode] = useState('');
   const [errorMessage, setErrorMessage] = useState<string | undefined>(undefined);
   const [isAlreadyJoined, setIsAlreadyJoined] = useState(false);
@@ -152,7 +162,10 @@ export function StoreJoinCodeScreen({ onBack, onPreviewed }: StoreJoinCodeScreen
         title="이미 소속된 매장이 있어요"
         description={'현재 다른 매장에 소속되어 있어\n새 매장에 참여할 수 없어요.'}
         confirmLabel="확인"
-        onConfirm={() => setIsAlreadyJoined(false)}
+        onConfirm={() => {
+          setIsAlreadyJoined(false);
+          onAlreadyJoined();
+        }}
       />
     </Box>
   );

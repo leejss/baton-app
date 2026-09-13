@@ -25,11 +25,18 @@ export function InvitationsScreen() {
   const [now, setNow] = useState(Date.now);
   const [confirmReplace, setConfirmReplace] = useState(false);
   const { feedback, setFeedback } = useSettingsFeedback();
-  useEffect(() => {
-    const timer = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(timer);
-  }, []);
   const code = invitation.data;
+  /**
+   * 남은 시간을 화면에 표시하지 않으므로(카운트다운 없음) 매초 깨울 이유가 없다.
+   * 코드 카드를 감춰야 하는 시점은 만료 순간 한 번뿐이라 그때만 다시 그린다.
+   */
+  useEffect(() => {
+    if (!code) return;
+    const remaining = Date.parse(code.expiresAt) - Date.now();
+    if (remaining <= 0) return;
+    const timer = setTimeout(() => setNow(Date.now()), remaining);
+    return () => clearTimeout(timer);
+  }, [code]);
   const isValid = !!code && code.status === 'ACTIVE' && Date.parse(code.expiresAt) > now;
   const handleIssue = () => {
     if (issue.isPending) return;
@@ -38,7 +45,7 @@ export function InvitationsScreen() {
       onSuccess: () => {
         setConfirmReplace(false);
         setNow(Date.now());
-        setFeedback({ tone: 'success', message: '새 초대 코드가 생성 되었습니다.' });
+        setFeedback({ tone: 'success', message: '새 초대 코드가 생성되었습니다.' });
       },
       onError: (error) => {
         setConfirmReplace(false);
@@ -101,10 +108,10 @@ export function InvitationsScreen() {
                     />
                   </View>
                 </View>
+                {/* 두 번째 줄("설정에서 언제든...")은 매장 생성 완료 화면 문구다. 이미 그 설정
+                    화면 안이라 자기 자신을 가리키게 되어 뺐다. 기획 확정도 유효기간 안내만이다. */}
                 <Text variant="caption" color="textDisabled" style={styles.center}>
-                  {
-                    '초대 코드는 발급 후 24시간 동안 유효해요.\n설정에서 언제든 새 코드를 발급할 수 있어요.'
-                  }
+                  초대 코드는 발급 후 24시간 동안 유효해요.
                 </Text>
               </>
             )}

@@ -3,7 +3,6 @@ import { Alert } from 'react-native';
 import { Controller, useForm } from 'react-hook-form';
 import { useShallow } from 'zustand/react/shallow';
 
-import { normalizeError } from '@/shared/api/errors';
 import { Button, TextField } from '@/shared/ui';
 
 import { isAlreadyJoined, useCreateStore } from '@/features/stores/api/store.mutations';
@@ -59,7 +58,8 @@ export function StoreCreateContactScreen({ onBack, onCreated }: StoreCreateConta
           Alert.alert('이미 소속된 매장이 있어요', '현재 매장을 나간 뒤 새 매장을 만들 수 있어요.');
           return;
         }
-        Alert.alert('매장을 만들지 못했어요', normalizeError(error).message);
+        // 서버 사유는 사용자에게 노출하지 않는다(기획 확정 문구). 원인은 로그로만 남는다.
+        Alert.alert('매장을 생성하지 못했어요', '잠시 후 다시 시도해주세요.');
       },
     });
   });
