@@ -8,7 +8,6 @@ import { DaySchedules } from '@/features/schedules/components/DaySchedules';
 import { MonthlyCalendar } from '@/features/schedules/components/MonthlyCalendar';
 import { ScheduleActions } from '@/features/schedules/components/ScheduleActions';
 import { MainHeader } from '@/features/tabs/components/MainHeader';
-import { ScreenHeader } from '@/shared/ui/ScreenHeader';
 import { ScheduleManageButton } from '@/features/schedules/components/ScheduleManageButton';
 import { ScheduleMessage } from '@/features/schedules/components/ScheduleMessage';
 import { useScheduleClock } from '@/features/schedules/hooks/useScheduleClock';
@@ -18,6 +17,7 @@ import {
   shiftMonth,
 } from '@/features/schedules/lib/scheduleDate';
 import { getTodayInSeoul } from '@/shared/lib/date';
+import { Text } from '@/shared/ui';
 import { SCREEN_PADDING_X, spacing, useTheme } from '@/theme';
 
 type SchedulesScreenProps = {
@@ -50,18 +50,24 @@ export function SchedulesScreen({ initialDate, isManaging = false }: SchedulesSc
   const handleBack = () => (router.canGoBack() ? router.back() : router.navigate(ROUTES.home));
   return (
     <View style={[styles.root, { backgroundColor: colors.surfaceNeutralSubtle }]}>
-      {isManaging ? (
-        <ScreenHeader title="근무수정/삭제" titleAlign="left" onBack={handleBack} />
-      ) : (
-        <MainHeader title="근무표" />
-      )}
+      <MainHeader
+        title={isManaging ? '근무수정/삭제' : '근무표'}
+        backgroundColor={isManaging ? colors.backgroundDefault : undefined}
+        onBack={isManaging ? handleBack : undefined}
+      />
       <ScrollView contentInsetAdjustmentBehavior="automatic" contentContainerStyle={styles.scroll}>
         <View style={[styles.calendar, { backgroundColor: colors.backgroundDefault }]}>
           <CalendarMonthHeader
             month={month}
             today={today}
             onChange={handleMonthChange}
-            trailing={!isManaging && <ScheduleManageButton date={selectedDate} />}
+            trailing={
+              isManaging ? (
+                <Text color="foregroundDisabled">근무편집</Text>
+              ) : (
+                <ScheduleManageButton date={selectedDate} />
+              )
+            }
           />
           <MonthlyCalendar
             month={month}
@@ -81,6 +87,7 @@ export function SchedulesScreen({ initialDate, isManaging = false }: SchedulesSc
               date={selectedDate}
               now={now}
               isManaging={isManaging}
+              selectedId={selectedId}
               onSelect={setSelectedId}
             />
           </View>

@@ -1,6 +1,10 @@
-import type { ScheduleSaveResult } from '@/features/schedules/types';
+import { StyleSheet, View } from 'react-native';
+
 import { ScheduleOverlay } from '@/features/schedules/components/ScheduleOverlay';
-import { Button, Text } from '@/shared/ui';
+import type { ScheduleSaveResult } from '@/features/schedules/types';
+import { Button, Modal, Text } from '@/shared/ui';
+import { AlertTriangleFill, CheckSquare } from '@/shared/ui/icons';
+import { spacing } from '@/theme';
 
 type ScheduleSaveFeedbackProps = {
   result?: ScheduleSaveResult;
@@ -25,33 +29,41 @@ export function ScheduleSaveFeedback({
 }: ScheduleSaveFeedbackProps) {
   if (duplicates)
     return (
-      <ScheduleOverlay visible title="이미 등록된 근무가 있어요." onClose={onCancel} busy={busy}>
-        <Text variant="bodySmall">
-          중복 {duplicates.duplicateCount}건은 등록되지 않아요.{'\n'}나머지{' '}
-          {duplicates.registerableCount}건만 등록할까요?
-        </Text>
-        <Button label="중복 제외하고 등록" onPress={onAcceptDuplicates} isLoading={busy} />
-        <Button label="이전으로" variant="secondary" onPress={onCancel} disabled={busy} />
+      <ScheduleOverlay
+        visible
+        variant="warning"
+        title="이미 등록된 근무가 있어요."
+        onClose={onCancel}
+        busy={busy}
+        icon={<AlertTriangleFill size={40} color="foregroundWarningDefault" />}
+        description={`중복 ${duplicates.duplicateCount}건은 등록되지 않아요.\n나머지 ${duplicates.registerableCount}건만 등록할까요?`}
+      >
+        <View style={styles.actions}>
+          <Button label="중복 제외하고 등록" onPress={onAcceptDuplicates} isLoading={busy} />
+          <Button label="이전으로" tone="weak" onPress={onCancel} disabled={busy} />
+        </View>
       </ScheduleOverlay>
     );
   if (!result) return null;
   const failed = result.failed.length;
+  if (!failed)
+    return (
+      <Modal
+        isVisible
+        icon={<CheckSquare size={50} color="surfaceSuccessDefault" />}
+        title={editing ? '근무 수정 완료!' : '근무 등록 완료!'}
+        description={editing ? '근무가 성공적으로 수정됐어요.' : '근무가 성공적으로 등록됐어요.'}
+        confirmLabel="확인"
+        onConfirm={onFinish}
+        onClose={editing && !busy ? onFinish : undefined}
+        confirmDisabled={busy}
+      />
+    );
   const retryable = result.failures.filter((failure) => failure.retryable).length;
   return (
-    <ScheduleOverlay
-      visible
-      title={
-        failed ? '등록하지 못한 근무가 있어요.' : editing ? '근무 수정 완료!' : '근무 등록 완료!'
-      }
-      onClose={failed ? onCancel : onFinish}
-      busy={busy}
-    >
+    <ScheduleOverlay visible title="등록하지 못한 근무가 있어요." onClose={onCancel} busy={busy}>
       <Text variant="bodySmall" accessibilityLiveRegion="polite">
-        {failed
-          ? `${result.created.length}건을 등록했습니다. 등록하지 못한 ${failed}건 중 ${retryable}건을 다시 시도할 수 있습니다.`
-          : editing
-            ? '근무가 성공적으로 수정됐어요.'
-            : `${result.created.length}건의 근무가 등록됐어요.`}
+        {`${result.created.length}건을 등록했습니다. 등록하지 못한 ${failed}건 중 ${retryable}건을 다시 시도할 수 있습니다.`}
         {result.duplicates.length > 0 ? `\n중복 ${result.duplicates.length}건은 제외했습니다.` : ''}
       </Text>
       {retryable > 0 && <Button label="실패한 날짜만 재시도" onPress={onRetry} isLoading={busy} />}
@@ -62,11 +74,13 @@ export function ScheduleSaveFeedback({
         </Text>
       )}
       <Button
-        label={failed ? '입력 내용으로 돌아가기' : '확인'}
-        onPress={failed ? onCancel : onFinish}
-        variant={failed ? 'secondary' : 'primary'}
+        label="입력 내용으로 돌아가기"
+        onPress={onCancel}
+        variant="secondary"
         disabled={busy}
       />
     </ScheduleOverlay>
   );
 }
+
+const styles = StyleSheet.create({ actions: { gap: spacing.sm } });

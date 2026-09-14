@@ -34,6 +34,7 @@ export type ModalProps = {
   description?: string;
   confirmLabel: string;
   onConfirm: () => void;
+  confirmDisabled?: boolean;
   /**
    * 닫기(X)와 안드로이드 뒤로가기. 생략하면 닫기 버튼을 감추고 뒤로가기로도 닫히지 않는다 —
    * 확인 외에 빠져나갈 길이 없어야 하는 경우에 그렇게 쓴다.
@@ -72,6 +73,7 @@ export function Modal({
   description,
   confirmLabel,
   onConfirm,
+  confirmDisabled = false,
   onClose,
 }: ModalProps) {
   const { colors } = useTheme();
@@ -95,34 +97,35 @@ export function Modal({
             { width: variantSpec.width, backgroundColor: colors.backgroundDefault },
           ]}
         >
-          {onClose !== undefined && (
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="닫기"
-              onPress={onClose}
-              // 24pt라 최소 터치 영역(44)에 못 미친다. 여백으로 채운다.
-              hitSlop={(44 - SPEC.closeSize) / 2}
-              style={[styles.close, { backgroundColor: colors.surfaceNeutralSubtle }]}
-            >
-              <X size={SPEC.closeIconSize} color="foregroundSubtle" />
-            </Pressable>
-          )}
+          <View>
+            {onClose !== undefined && (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="닫기"
+                onPress={onClose}
+                // 24pt라 최소 터치 영역(44)에 못 미친다. 여백으로 채운다.
+                hitSlop={(44 - SPEC.closeSize) / 2}
+                style={[styles.close, { backgroundColor: colors.surfaceNeutralSubtle }]}
+              >
+                <X size={SPEC.closeIconSize} color="foregroundSubtle" />
+              </Pressable>
+            )}
 
-          <View style={[styles.content, { gap: variantSpec.contentGap }]}>
-            {icon}
-            <View style={styles.textGroup}>
-              <Text variant="subheading" weight="semibold">
-                {title}
-              </Text>
-              {description !== undefined && (
-                <Text variant="bodySmall" color="foregroundDefault" style={styles.description}>
-                  {description}
+            <View style={[styles.content, { gap: variantSpec.contentGap }]}>
+              {icon}
+              <View style={styles.textGroup}>
+                <Text variant="subheading" weight="semibold">
+                  {title}
                 </Text>
-              )}
+                {description !== undefined && (
+                  <Text variant="bodySmall" color="foregroundDefault" style={styles.description}>
+                    {description}
+                  </Text>
+                )}
+              </View>
             </View>
           </View>
-
-          <Button label={confirmLabel} onPress={onConfirm} />
+          <Button label={confirmLabel} onPress={onConfirm} disabled={confirmDisabled} />
         </View>
       </View>
     </RNModal>

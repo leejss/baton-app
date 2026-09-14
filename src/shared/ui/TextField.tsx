@@ -1,4 +1,4 @@
-import { type ReactNode, useState } from 'react';
+import { type ReactNode, type Ref, useState } from 'react';
 import { Platform, StyleSheet, TextInput, View, type TextInputProps } from 'react-native';
 
 import { Text } from '@/shared/ui/Text';
@@ -27,6 +27,7 @@ type TextFieldState = 'default' | 'focus' | 'filled' | 'error' | 'success' | 'di
 
 export type TextFieldProps = Omit<TextInputProps, 'style' | 'placeholderTextColor' | 'editable'> & {
   label?: string;
+  ref?: Ref<TextInput>;
   /** 라벨 앞에 옅은 "(선택)"을 붙인다. 시안 `Text input`의 선택 입력 표기다. */
   isOptional?: boolean;
   /**
@@ -36,10 +37,13 @@ export type TextFieldProps = Omit<TextInputProps, 'style' | 'placeholderTextColo
   subtitle?: ReactNode;
   status?: TextFieldStatus;
   disabled?: boolean;
+  readOnly?: boolean;
   leftIcon?: ReactNode;
   rightIcon?: ReactNode;
   /** 남은 인증 시간. 시안 `Timer` 슬롯으로, 오른쪽 끝에 우측 정렬로 붙는다. */
   timer?: string;
+  /** Figma 검색·근무 시간 입력 배리언트. */
+  appearance?: 'default' | 'search' | 'time';
 };
 
 const SPEC = {
@@ -129,14 +133,17 @@ function resolveState({
 }
 
 export function TextField({
+  ref,
   label,
   isOptional = false,
   subtitle,
   status = 'none',
   disabled = false,
+  readOnly = false,
   leftIcon,
   rightIcon,
   timer,
+  appearance = 'default',
   value,
   onFocus,
   onBlur,
@@ -154,9 +161,13 @@ export function TextField({
   const tone = PALETTE[state];
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, appearance === 'time' && styles.timeContainer]}>
       {label !== undefined && (
-        <Text variant="title" weight="semibold" color="foregroundDefault">
+        <Text
+          variant={appearance === 'time' ? 'caption' : 'title'}
+          weight={appearance === 'time' ? 'regular' : 'semibold'}
+          color="foregroundDefault"
+        >
           {isOptional && (
             <Text variant="title" weight="semibold" color="foregroundSubtle">
               {'(선택) '}
@@ -170,16 +181,30 @@ export function TextField({
         style={[
           styles.input,
           { borderColor: colors[tone.border], backgroundColor: colors[tone.background] },
+          appearance === 'search' &&
+            state === 'default' && {
+              backgroundColor: colors.surfaceNeutralSubtle,
+              borderColor: colors.borderWeak,
+            },
+          appearance === 'time' && {
+            backgroundColor: colors.backgroundDefault,
+            borderColor: isFocused || status !== 'none' ? colors[tone.border] : colors.borderSubtle,
+          },
         ]}
       >
         {leftIcon}
 
         <TextInput
+          ref={ref}
           // 라벨이 별도 Text라 스크린 리더가 입력과 묶어주지 못한다. 직접 연결한다.
           accessibilityLabel={isOptional && label !== undefined ? `(선택) ${label}` : label}
-          style={[styles.textInput, { color: colors[tone.value] }]}
+          style={[
+            styles.textInput,
+            appearance === 'time' && styles.timeInput,
+            { color: colors[tone.value] },
+          ]}
           placeholderTextColor={colors.foregroundSubtle}
-          editable={!disabled}
+          editable={!disabled && !readOnly}
           value={value}
           onFocus={(event) => {
             setIsFocused(true);
@@ -215,6 +240,12 @@ export function TextField({
 export const TEXT_FIELD_ICON_SIZE = SPEC.iconSize;
 
 const styles = StyleSheet.create({
+  // Figma 1097:38926: 라벨 간격 6, 시간 값 18/Medium.
+  timeContainer: { gap: 6 },
+  timeInput: {
+    fontFamily: typography.title.medium.fontFamily,
+    fontSize: typography.title.medium.fontSize,
+  },
   container: { gap: SPEC.gap },
   input: {
     /** 시안은 52 고정. 폰트 스케일이 커져도 글자가 잘리지 않게 minHeight로 쓴다. */

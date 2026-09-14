@@ -3,7 +3,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { ROUTES } from '@/shared/lib/routes';
 import { ScheduleEditorLoader } from '@/features/schedules/components/ScheduleEditorLoader';
-import { ScreenHeader } from '@/shared/ui/ScreenHeader';
+import { MainHeader } from '@/features/tabs/components/MainHeader';
 import { normalizeRegistrationDate } from '@/features/schedules/lib/scheduleDate';
 import { getTodayInSeoul } from '@/shared/lib/date';
 import { useTheme } from '@/theme';
@@ -25,9 +25,9 @@ export function ScheduleEditorScreen({ scheduleId, initialDate }: ScheduleEditor
         : 0;
   return (
     <View style={[styles.root, { backgroundColor: colors.surfaceNeutralSubtle }]}>
-      <ScreenHeader
-        title={scheduleId ? '근무수정' : '근무등록'}
-        titleAlign="left"
+      <MainHeader
+        title="근무등록"
+        backgroundColor={colors.backgroundDefault}
         onBack={() => (router.canGoBack() ? router.back() : router.replace(ROUTES.schedules.index))}
       />
       <ScheduleEditorLoader

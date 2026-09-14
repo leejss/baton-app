@@ -3,6 +3,7 @@ import { useMainContext } from '@/features/stores/hooks/useMainContext';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
+import { StyleSheet, View } from 'react-native';
 
 import { ROUTES } from '@/shared/lib/routes';
 import { invalidateScheduleViews } from '@/features/schedules/api/schedule.mutations';
@@ -12,7 +13,9 @@ import { ScheduleOverlay } from '@/features/schedules/components/ScheduleOverlay
 import { canEditSchedule } from '@/features/schedules/lib/schedulePolicy';
 import { isAppError } from '@/shared/api/errors';
 import { formatKoreanDate } from '@/shared/lib/formatters';
-import { Button, Text } from '@/shared/ui';
+import { Button, Modal, MODAL_ICON_SIZE, Text } from '@/shared/ui';
+import { CalendarSearch, Clock, EditFill, Trash } from '@/shared/ui/icons';
+import { spacing } from '@/theme';
 
 type ScheduleActionsProps = {
   id: number;
@@ -59,25 +62,49 @@ export function ScheduleActions({ id, now, onClose }: ScheduleActionsProps) {
       onClose();
     }
   };
+  if (deleted)
+    return (
+      <Modal
+        isVisible
+        icon={<Trash size={MODAL_ICON_SIZE} color="foregroundDefault" />}
+        title="삭제 완료"
+        description="근무가 성공적으로 삭제됐어요."
+        confirmLabel="확인"
+        onConfirm={handleClose}
+        onClose={mutation.isPending ? undefined : handleClose}
+        confirmDisabled={mutation.isPending}
+      />
+    );
+  const details = item && (
+    <View style={styles.details}>
+      {[
+        { label: '근무일', value: formatKoreanDate(item.date), Icon: CalendarSearch },
+        { label: '근무시간', value: `${item.startTime} - ${item.endTime}`, Icon: Clock },
+      ].map(({ label, value, Icon }) => (
+        <View key={label} style={styles.detailRow}>
+          <View style={styles.detailLabel}>
+            <Icon size={14} color="foregroundSubtle" />
+            <Text variant="bodySmall" weight="semibold" color="foregroundSubtle">
+              {label}
+            </Text>
+          </View>
+          <Text variant="bodySmall" color="foregroundDefault" style={styles.detailValue}>
+            {value}
+          </Text>
+        </View>
+      ))}
+    </View>
+  );
   return (
     <ScheduleOverlay
       visible
-      title={
-        deleted
-          ? '근무 삭제 완료!'
-          : confirming
-            ? '근무를 삭제할까요?'
-            : (item?.member.name ?? '근무 일정')
-      }
+      variant="details"
+      title={confirming ? '근무를 삭제할까요?' : (item?.member.name ?? '근무 일정')}
+      description={!missing && !query.isError ? details : undefined}
       onClose={handleClose}
       busy={mutation.isPending}
     >
-      {deleted ? (
-        <>
-          <Text>근무가 성공적으로 삭제됐어요.</Text>
-          <Button label="확인" onPress={handleClose} />
-        </>
-      ) : missing ? (
+      {missing ? (
         <>
           <Text>이미 삭제되었거나 존재하지 않는 근무 일정입니다.</Text>
           <Button label="근무표로 돌아가기" onPress={handleClose} />
@@ -90,11 +117,7 @@ export function ScheduleActions({ id, now, onClose }: ScheduleActionsProps) {
       ) : !item ? (
         <ScheduleMessage message="근무 일정을 불러오는 중입니다." />
       ) : (
-        <>
-          <Text variant="bodySmall" color="foregroundDefault">
-            근무일　{formatKoreanDate(item.date)}
-            {'\n'}근무시간　{item.startTime} - {item.endTime}
-          </Text>
+        <View style={styles.actions}>
           {mutation.isError && (
             <Text
               accessibilityLiveRegion="polite"
@@ -131,6 +154,12 @@ export function ScheduleActions({ id, now, onClose }: ScheduleActionsProps) {
             <>
               <Button
                 label="수정"
+                leftIcon={
+                  <EditFill
+                    size={26}
+                    color={canEdit ? 'foregroundInverse' : 'foregroundDisabled'}
+                  />
+                }
                 disabled={!canEdit}
                 onPress={() => {
                   onClose();
@@ -139,14 +168,24 @@ export function ScheduleActions({ id, now, onClose }: ScheduleActionsProps) {
               />
               <Button
                 label="삭제"
-                variant="secondary"
+                tone="weak"
+                leftIcon={<Trash size={26} color="foregroundSubtle" />}
                 disabled={!canEdit}
                 onPress={() => setConfirming(true)}
               />
             </>
           )}
-        </>
+        </View>
       )}
     </ScheduleOverlay>
   );
 }
+
+const styles = StyleSheet.create({
+  actions: { gap: spacing.sm },
+  details: { gap: spacing.xs },
+  detailRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
+  // Figma 1097:43247: 14px 아이콘 + 4px 간격 + 근무시간 라벨(49px).
+  detailLabel: { width: 67, flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
+  detailValue: { flex: 1 },
+});

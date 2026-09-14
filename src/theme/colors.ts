@@ -44,6 +44,7 @@ const colors = {
   borderStrong: palette.gray300, // border/strong
   borderDefault: palette.gray300, // border/default
   borderSubtle: palette.gray100, // border/subtle
+  borderWeak: palette.gray200, // border/weak (Figma VariableID:619:14985)
   borderPressed: palette.gray950, // border/pressed
   borderWarningDefault: palette.red500, // border/warning/default
   borderSuccessDefault: palette.green500, // border/success/default

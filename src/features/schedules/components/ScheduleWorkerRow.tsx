@@ -2,14 +2,16 @@ import { StyleSheet, View } from 'react-native';
 
 import type { ScheduleItem } from '@/features/schedules/types';
 import { Pressable, Text } from '@/shared/ui';
-import { SendFill, NavUserLine } from '@/shared/ui/icons';
-import { radius, spacing, useTheme } from '@/theme';
+import { EmployeeAvatar } from '@/features/schedules/components/EmployeeAvatar';
+import { Check, SendFill } from '@/shared/ui/icons';
+import { radius, useTheme } from '@/theme';
 
 type ScheduleWorkerRowProps = {
   item: ScheduleItem;
   canHandoff: boolean;
   isManaging?: boolean;
   canEdit?: boolean;
+  selected?: boolean;
   onHandoff: (id: number) => void;
   onSelect: (id: number) => void;
 };
@@ -19,18 +21,14 @@ export function ScheduleWorkerRow({
   canHandoff,
   isManaging,
   canEdit,
+  selected = false,
   onHandoff,
   onSelect,
 }: ScheduleWorkerRowProps) {
   const { colors } = useTheme();
   return (
     <View style={styles.row}>
-      <View
-        accessible={false}
-        style={[styles.avatar, { backgroundColor: colors.surfaceNeutralSubtle }]}
-      >
-        <NavUserLine size={16} color="foregroundSubtle" />
-      </View>
+      <EmployeeAvatar />
       <View style={styles.details}>
         <Text weight="semibold" numberOfLines={1}>
           {item.member.name}
@@ -44,7 +42,7 @@ export function ScheduleWorkerRow({
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={`${item.member.name} ${item.startTime} 근무 선택`}
-          accessibilityState={{ disabled: !canEdit }}
+          accessibilityState={{ disabled: !canEdit, selected }}
           disabled={!canEdit}
           onPress={() => onSelect(item.id)}
           style={styles.action}
@@ -53,11 +51,17 @@ export function ScheduleWorkerRow({
             style={[
               styles.checkbox,
               {
-                borderColor: colors.borderDefault,
-                backgroundColor: canEdit ? colors.backgroundDefault : colors.surfaceNeutralDisabled,
+                borderColor: selected ? colors.surfaceBlueStrong : colors.borderDefault,
+                backgroundColor: selected
+                  ? colors.surfaceBlueStrong
+                  : canEdit
+                    ? colors.backgroundDefault
+                    : colors.surfaceNeutralDisabled,
               },
             ]}
-          />
+          >
+            {selected && <Check size={14} color="foregroundInverse" />}
+          </View>
           {!canEdit && (
             <Text variant="caption" color="foregroundDisabled">
               시작됨
@@ -89,7 +93,7 @@ const styles = StyleSheet.create({
     minHeight: 48,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.sm,
+    gap: 6,
   },
   details: {
     flex: 1,
@@ -97,15 +101,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     alignItems: 'center',
-    gap: spacing.xs,
-  },
-  // TODO(design-system): Figma 1097:36712의 아바타 24px·pill 6px 간격을 sync한다. 역할 이미지가 없는 경우 기존 사용자 glyph를 사용한다.
-  avatar: {
-    width: 24,
-    height: 24,
-    borderRadius: radius.full,
-    alignItems: 'center',
-    justifyContent: 'center',
+    gap: 6,
   },
   action: {
     minHeight: 44,
@@ -121,11 +117,12 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: radius.full,
   },
+  // Figma 1097:43192: 체크 표시 18px, 모서리 6px.
   checkbox: {
-    width: 20,
-    height: 20,
+    width: 18,
+    height: 18,
     borderWidth: 1,
-    borderRadius: radius.sm,
+    borderRadius: 6,
     alignItems: 'center',
     justifyContent: 'center',
   },

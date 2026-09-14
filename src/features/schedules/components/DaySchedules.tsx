@@ -21,11 +21,18 @@ type DaySchedulesProps = {
   date: string;
   now: Date;
   isManaging?: boolean;
+  selectedId?: number;
   onSelect: (id: number) => void;
 };
 const keyExtractor = (item: ScheduleItem) => String(item.id);
 
-export function DaySchedules({ date, now, isManaging = false, onSelect }: DaySchedulesProps) {
+export function DaySchedules({
+  date,
+  now,
+  isManaging = false,
+  selectedId,
+  onSelect,
+}: DaySchedulesProps) {
   const context = useMainContext();
   const query = useQuery(scheduleQueries.month(context.storeId ?? 0, date.slice(0, 7)));
   const [expanded, setExpanded] = useState(false);
@@ -44,6 +51,7 @@ export function DaySchedules({ date, now, isManaging = false, onSelect }: DaySch
   const renderItem = ({ item }: ListRenderItemInfo<ScheduleItem>) => (
     <ScheduleWorkerRow
       item={item}
+      selected={item.id === selectedId}
       canHandoff={item.member.isActive && item.member.id !== context.userId}
       isManaging={isManaging}
       canEdit={canEditSchedule(item, context.canManage ?? false, now)}
