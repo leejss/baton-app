@@ -109,7 +109,7 @@ describe('관리자 근무 등록·수정', () => {
       expect(screen.getByText('2026년 9월')).toBeOnTheScreen();
       expect(screen.getByLabelText('다음')).toBeDisabled();
       await fireEvent.press(screen.getByLabelText('9월 15일 화, 근무 0건'));
-      expect(screen.getByText(/2026-09-15 ~ 2026-09-15 · 1일 선택/)).toBeOnTheScreen();
+      expect(screen.getByText(/근무 1일 선택/)).toBeOnTheScreen();
       expect(screen.getByLabelText('다음')).toBeEnabled();
     },
   );
@@ -221,6 +221,9 @@ describe('관리자 근무 등록·수정', () => {
     await enterTime();
     await fireEvent.press(screen.getByLabelText('등록'));
     await screen.findByText('이미 등록된 근무가 있어요.');
+    expect(
+      screen.getByText('중복 1건은 등록되지 않아요.\n나머지 1건만 등록할까요?'),
+    ).toBeOnTheScreen();
     await fireEvent.press(screen.getByLabelText('이전으로'));
     expect(screen.getByDisplayValue('09:00')).toBeOnTheScreen();
     expect(screen.getByText('이서연')).toBeOnTheScreen();
@@ -231,7 +234,8 @@ describe('관리자 근무 등록·수정', () => {
     await screen.findByText('이미 등록된 근무가 있어요.');
     await fireEvent.press(screen.getByLabelText('중복 제외하고 등록'));
     expect(await screen.findByText('근무 등록 완료!')).toBeOnTheScreen();
-    expect(screen.getByText(/중복 1건은 제외했습니다/)).toBeOnTheScreen();
+    expect(screen.getByText('근무가 성공적으로 등록됐어요.')).toBeOnTheScreen();
+    expect(screen.queryByLabelText('근무 등록 완료! 닫기')).toBeNull();
     expect(create.mock.calls.map(([, request]) => request.acceptNonDuplicates)).toEqual([
       false,
       false,
@@ -362,6 +366,9 @@ describe('관리자 근무 등록·수정', () => {
     await fireEvent.press(screen.getByLabelText('다음'));
     await fireEvent.press(screen.getByLabelText('수정 완료'));
     expect(await screen.findByText('근무 수정 완료!')).toBeOnTheScreen();
+    expect(screen.getByText('근무가 성공적으로 수정됐어요.')).toBeOnTheScreen();
+    await fireEvent.press(screen.getByLabelText('닫기'));
+    expect(mockDismissTo).toHaveBeenCalled();
     const items = monthlyScheduleSchema.parse(await source.month(101, '2026-09')).schedules;
     expect(items).toHaveLength(1);
     expect(items[0]).toMatchObject({

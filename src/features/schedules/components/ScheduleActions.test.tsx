@@ -1,3 +1,5 @@
+import 'react-native-gesture-handler/jestSetup';
+
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { afterEach, describe, expect, it, jest } from '@jest/globals';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react-native';
@@ -8,6 +10,11 @@ import { monthlyScheduleSchema } from '@/features/schedules/api/schedule.schema'
 import { ScheduleActions } from '@/test/ScheduleScreens';
 import { MOCK_STORE_MEMBERS } from '@/test/fixtures/members';
 
+jest.mock('react-native-worklets', () => jest.requireActual('react-native-worklets/src/mock'));
+jest.mock('react-native-reanimated', () => jest.requireActual('react-native-reanimated/mock'));
+jest.mock('@expo/ui/community/bottom-sheet', () =>
+  jest.requireActual('@/shared/ui/__mocks__/expoBottomSheet'),
+);
 jest.mock('react-native-keyboard-controller', () =>
   jest.requireActual('react-native-keyboard-controller/jest'),
 );
@@ -61,7 +68,7 @@ describe('근무 삭제', () => {
     await fireEvent.press(await screen.findByLabelText('삭제'));
     expect(remove).not.toHaveBeenCalled();
     await fireEvent.press(screen.getByLabelText('삭제 확인'));
-    expect(await screen.findByText('근무 삭제 완료!')).toBeOnTheScreen();
+    expect(await screen.findByText('삭제 완료')).toBeOnTheScreen();
     expect(remove).toHaveBeenCalledTimes(1);
     expect(monthlyScheduleSchema.parse(await source.month(101, '2026-09')).schedules).toHaveLength(
       0,
@@ -81,6 +88,6 @@ describe('근무 삭제', () => {
     expect(await screen.findByText('연결을 확인해주세요.')).toBeOnTheScreen();
     expect(screen.getByLabelText('취소')).toBeEnabled();
     await fireEvent.press(screen.getByLabelText('삭제 확인'));
-    expect(await screen.findByText('근무 삭제 완료!')).toBeOnTheScreen();
+    expect(await screen.findByText('삭제 완료')).toBeOnTheScreen();
   });
 });
