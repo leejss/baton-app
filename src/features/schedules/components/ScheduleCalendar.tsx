@@ -39,7 +39,7 @@ export function ScheduleCalendar({
 }: ScheduleCalendarProps) {
   const [width, setWidth] = useState(0);
   const { fontScale } = useWindowDimensions();
-  const rowHeight = Math.max(60, Math.ceil(fontScale * 28) + 24);
+  const minimumDateRowHeight = Math.max(60, Math.ceil(fontScale * 28) + 24);
   const allDates = calendarDates(month);
   const selectedIndex = allDates.indexOf(range?.start || selectedDate || today);
   // 여러 주에 걸친 범위는 축약해서 숨기지 않는다.
@@ -50,8 +50,27 @@ export function ScheduleCalendar({
   const dates = canCompact
     ? allDates.slice(Math.floor(selectedIndex / 7) * 7, Math.floor(selectedIndex / 7) * 7 + 7)
     : allDates;
+  const weekCount = Math.ceil(dates.length / 7);
+  const rowHeights = Array.from({ length: weekCount }, (_, index) => {
+    if (weekCount === 1) return minimumDateRowHeight;
+    if (index === 0) return minimumDateRowHeight + 4;
+    if (index === weekCount - 1) return Math.max(46, minimumDateRowHeight - 14);
+    return minimumDateRowHeight;
+  });
   const anchor = useSharedValue(-1);
   const last = useSharedValue(-1);
+  const getDateIndexAt = (x: number, y: number) => {
+    'worklet';
+    if (x < 0 || x >= width || y < 0) return -1;
+
+    let rowTop = 0;
+    for (let rowIndex = 0; rowIndex < rowHeights.length; rowIndex += 1) {
+      const rowHeight = rowHeights[rowIndex];
+      if (y < rowTop + rowHeight) return rowIndex * 7 + Math.floor(x / (width / 7));
+      rowTop += rowHeight;
+    }
+    return -1;
+  };
   const selectRange = (first: number, end: number) => {
     const a = dates[first];
     const b = dates[end];
@@ -64,13 +83,13 @@ export function ScheduleCalendar({
     .enabled(mode === 'range' && width > 0)
     .activateAfterLongPress(220)
     .onStart((event) => {
-      anchor.value = Math.floor(event.y / rowHeight) * 7 + Math.floor(event.x / (width / 7));
+      anchor.value = getDateIndexAt(event.x, event.y);
       last.value = anchor.value;
-      scheduleOnRN(selectRange, anchor.value, anchor.value);
+      if (anchor.value >= 0) scheduleOnRN(selectRange, anchor.value, anchor.value);
     })
     .onUpdate((event) => {
-      if (event.x < 0 || event.x >= width || event.y < 0) return;
-      const index = Math.floor(event.y / rowHeight) * 7 + Math.floor(event.x / (width / 7));
+      const index = getDateIndexAt(event.x, event.y);
+      if (index < 0) return;
       if (index !== last.value) {
         last.value = index;
         scheduleOnRN(selectRange, anchor.value, index);
@@ -105,22 +124,37 @@ export function ScheduleCalendar({
           onLayout={(event) => setWidth(event.nativeEvent.layout.width)}
           style={styles.grid}
         >
-          {dates.map((date) => (
-            <CalendarDay
-              key={date}
-              date={date}
-              today={date === today}
-              selected={range ? date >= range.start && date <= range.end : date === selectedDate}
-              outside={!date.startsWith(month)}
-              disabled={
-                mode === 'readonly' || !date.startsWith(month) || Boolean(minDate && date < minDate)
-              }
-              muted={Boolean(minDate && date < minDate)}
-              count={counts[date] ?? 0}
-              rowHeight={rowHeight}
-              onSelect={onSelect}
-            />
-          ))}
+          {Array.from({ length: weekCount }, (_, rowIndex) => {
+            const week = dates.slice(rowIndex * 7, rowIndex * 7 + 7);
+            return (
+              <View
+                key={`week-${rowIndex}`}
+                style={[styles.weekRow, { height: rowHeights[rowIndex] }]}
+              >
+                {week.map((date) => (
+                  <CalendarDay
+                    key={date}
+                    date={date}
+                    today={date === today}
+                    selected={
+                      range ? date >= range.start && date <= range.end : date === selectedDate
+                    }
+                    selectionVariant="strong"
+                    outside={!date.startsWith(month)}
+                    disabled={
+                      mode === 'readonly' ||
+                      !date.startsWith(month) ||
+                      Boolean(minDate && date < minDate)
+                    }
+                    muted={Boolean(minDate && date < minDate)}
+                    count={counts[date] ?? 0}
+                    rowHeight={rowHeights[rowIndex]}
+                    onSelect={onSelect}
+                  />
+                ))}
+              </View>
+            );
+          })}
         </View>
       </GestureDetector>
     </View>
@@ -128,8 +162,8 @@ export function ScheduleCalendar({
 }
 
 const styles = StyleSheet.create({
-  // TODO(design-system): Figma 캘린더의 요일 행 높이 22px·아래 여백 14px와 날짜 행 최소 60px를 sync한다.
   weekdays: { flexDirection: 'row', paddingBottom: 14 },
   weekday: { width: `${100 / 7}%`, alignItems: 'center', minHeight: 22 },
-  grid: { flexDirection: 'row', flexWrap: 'wrap' },
+  grid: { width: '100%' },
+  weekRow: { width: '100%', flexDirection: 'row' },
 });

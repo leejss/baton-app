@@ -20,6 +20,21 @@ const baseItem: HandoffCardModel = {
 };
 
 describe('HandoffCard', () => {
+  it('상세를 열 수 있는 수신 카드를 누르면 본문 열기를 호출한다', async () => {
+    const onPress = jest.fn();
+    await render(
+      <HandoffCard
+        item={{ ...baseItem, direction: 'received', canManage: false }}
+        onPress={onPress}
+        onManagePress={jest.fn()}
+      />,
+    );
+
+    fireEvent.press(screen.getByLabelText('업무 처리, 마감 정산 확인, 확인 전'));
+
+    expect(onPress).toHaveBeenCalledWith('handoff-1');
+  });
+
   it('관리 가능한 발신 카드에는 수정 및 삭제 메뉴를 표시한다', async () => {
     const onManagePress = jest.fn();
     await render(<HandoffCard item={baseItem} onPress={jest.fn()} onManagePress={onManagePress} />);

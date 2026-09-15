@@ -6,12 +6,18 @@ import { KebabMenu } from '@/shared/ui/icons';
 import { SCREEN_PADDING_X, useTheme } from '@/theme';
 
 type HandoffCardProps = {
+  isReceivedScope?: boolean;
   item: HandoffCardModel;
   onPress: (handoffId: string) => void;
   onManagePress: (handoffId: string) => void;
 };
 
-export function HandoffCard({ item, onPress, onManagePress }: HandoffCardProps) {
+export function HandoffCard({
+  isReceivedScope = false,
+  item,
+  onPress,
+  onManagePress,
+}: HandoffCardProps) {
   const theme = useTheme();
   const handlePress = () => onPress(item.id);
   const handleManagePress = (event: GestureResponderEvent) => {
@@ -28,12 +34,16 @@ export function HandoffCard({ item, onPress, onManagePress }: HandoffCardProps) 
       onPress={handlePress}
       style={({ pressed }) => [
         styles.root,
+        isReceivedScope && styles.receivedRoot,
         { backgroundColor: theme.colors.backgroundDefault },
         pressed && styles.pressed,
       ]}
     >
       <View style={styles.mainContent}>
-        <IllustIcon name={item.direction} />
+        <IllustIcon
+          name={item.direction}
+          style={item.direction === 'received' ? styles.receivedIcon : undefined}
+        />
 
         <View style={styles.textContent}>
           <Text variant="caption" weight="medium" color="foregroundSubtle">
@@ -80,6 +90,9 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     // TODO(design-system): Figma 732:17886의 우측 14px·세로 13px·radius 16을 토큰과 동기화한다.
   },
+  receivedRoot: {
+    minHeight: 90,
+  },
   pressed: { opacity: 0.72 },
   mainContent: {
     flex: 1,
@@ -87,6 +100,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
+  },
+  receivedIcon: {
+    transform: [{ scaleX: -1 }],
   },
   textContent: {
     flex: 1,

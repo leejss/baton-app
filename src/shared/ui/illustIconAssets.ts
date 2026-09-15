@@ -66,14 +66,14 @@ export const ILLUST_ICON_ASSETS = {
   sent: {
     source: require('@/assets/images/illust-icons/sent.svg'),
     frameSize: 26,
-    imageWidth: 26,
-    imageHeight: 26,
+    imageWidth: 22,
+    imageHeight: 17,
   },
   received: {
     source: require('@/assets/images/illust-icons/received.svg'),
     frameSize: 26,
-    imageWidth: 26,
-    imageHeight: 26,
+    imageWidth: 22,
+    imageHeight: 17,
   },
   handoffReceived: {
     source: require('@/assets/images/illust-icons/handoff-received.svg'),

@@ -43,6 +43,7 @@ export function HomeShiftRow({ item, onCreateHandoff }: HomeShiftRowProps) {
         <Pressable
           accessibilityLabel={`${item.name}님에게 인수인계 작성`}
           accessibilityRole="button"
+          hitSlop={6}
           onPress={handlePress}
           style={({ pressed }) => [styles.touchTarget, pressed && styles.pressed]}
         >
@@ -60,7 +61,7 @@ export function HomeShiftRow({ item, onCreateHandoff }: HomeShiftRowProps) {
 
 const styles = StyleSheet.create({
   root: {
-    minHeight: 44,
+    height: 32,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -88,7 +89,7 @@ const styles = StyleSheet.create({
   },
   touchTarget: {
     minWidth: 92,
-    minHeight: 44,
+    minHeight: 32,
     alignItems: 'center',
     justifyContent: 'center',
     flexShrink: 0,

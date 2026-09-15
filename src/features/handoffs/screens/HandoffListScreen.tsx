@@ -91,7 +91,7 @@ export function HandoffListScreen({
           onPress={onCreate}
           style={styles.writeButton}
         >
-          <Text variant="bodySmall" weight="semibold">
+          <Text variant="body" weight="medium" color="foregroundDefault">
             글쓰기
           </Text>
         </Pressable>

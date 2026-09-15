@@ -3,6 +3,7 @@ import { FlashList, type ListRenderItemInfo } from '@shopify/flash-list';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StyleSheet, View } from 'react-native';
 
 import { notificationQueries } from '@/features/notifications/api/notification.queries';
@@ -14,8 +15,16 @@ import { SCREEN_PADDING_X, spacing } from '@/theme';
 
 const keyExtractor = (notification: Notification) => notification.id;
 
+const FEEDBACK = {
+  /** Figma node 1254:26619 Notification Layout의 내부 상하 패딩. */
+  paddingVertical: 14,
+  /** 홈 인디케이터와 알림 사이의 시안 여백. */
+  bottomGap: 4,
+} as const;
+
 export function NotificationList() {
   const context = useMainContext();
+  const insets = useSafeAreaInsets();
   const scope = {
     storeId: context.membership.store.id,
     userId: context.profile.id,
@@ -67,7 +76,10 @@ export function NotificationList() {
         }
       />
       {(message || isRefetchError) && (
-        <View style={styles.feedback}>
+        <View
+          pointerEvents="box-none"
+          style={[styles.feedback, { bottom: insets.bottom + FEEDBACK.bottomGap }]}
+        >
           <Snackbar
             title={message ?? '알림을 새로 불러오지 못했어요.'}
             actionLabel={message ? '닫기' : '다시 시도'}
@@ -91,5 +103,12 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.sm,
     textAlign: 'center',
   },
-  feedback: { paddingHorizontal: SCREEN_PADDING_X, paddingBottom: spacing.md },
+  feedback: {
+    position: 'absolute',
+    right: 0,
+    bottom: 0,
+    left: 0,
+    paddingHorizontal: SCREEN_PADDING_X,
+    paddingVertical: FEEDBACK.paddingVertical,
+  },
 });

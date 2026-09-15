@@ -48,10 +48,11 @@ export function WeekScheduleCard({
       <Pressable
         accessibilityLabel={`${title} 월간 근무표 보기`}
         accessibilityRole="button"
+        hitSlop={9}
         onPress={handleDetailsPress}
         style={({ pressed }) => [styles.titleButton, pressed && styles.pressed]}
       >
-        <IllustIcon name="calendar" />
+        <IllustIcon name="calendar" size={22} />
         <Text variant="title" weight="semibold">
           {title}
         </Text>
@@ -65,7 +66,9 @@ export function WeekScheduleCard({
           ))}
         </View>
 
-        <View style={[styles.divider, { backgroundColor: theme.colors.borderDefault }]} />
+        <View style={styles.divider}>
+          <View style={[styles.dividerLine, { backgroundColor: theme.colors.borderSubtle }]} />
+        </View>
 
         <QueryBoundary query={summaryQuery}>
           <QueryRefreshNotice
@@ -98,11 +101,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
     paddingBottom: 26,
     borderRadius: 24,
-    gap: 6,
+    gap: spacing.lg,
     overflow: 'hidden',
   },
   titleButton: {
-    minHeight: 44,
+    height: 26,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
@@ -111,13 +114,20 @@ const styles = StyleSheet.create({
     gap: 22,
   },
   week: {
-    minHeight: 44,
+    height: 40,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
   divider: {
     width: '100%',
+    height: 0,
+  },
+  dividerLine: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    left: 0,
     height: 1,
   },
   shifts: {

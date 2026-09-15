@@ -2,7 +2,7 @@ import { logger } from '@/shared/lib/logger';
 import { markNotificationRead } from '@/features/notifications/api/notification.api';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigation, useRouter } from 'expo-router';
-import { useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { ROUTES } from '@/shared/lib/routes';
 import { toNotification } from '@/features/notifications/api/mappers';
@@ -11,6 +11,8 @@ import type { Notification, NotificationScope } from '@/features/notifications/t
 import { scheduleQueries } from '@/features/schedules/api/schedule.queries';
 import { isAppError, normalizeError } from '@/shared/api/errors';
 
+const MESSAGE_AUTO_DISMISS_MS = 2000;
+
 export function useOpenNotification(scope: NotificationScope) {
   const router = useRouter();
   const navigation = useNavigation();
@@ -18,6 +20,12 @@ export function useOpenNotification(scope: NotificationScope) {
   const opening = useRef(false);
   const [openingId, setOpeningId] = useState<string>();
   const [message, setMessage] = useState<string>();
+  const clearMessage = useCallback(() => setMessage(undefined), []);
+  useEffect(() => {
+    if (message === undefined) return;
+    const timer = setTimeout(clearMessage, MESSAGE_AUTO_DISMISS_MS);
+    return () => clearTimeout(timer);
+  }, [clearMessage, message]);
   const refreshInbox = () =>
     queryClient.invalidateQueries({
       queryKey: notificationQueries.list(scope).queryKey,
@@ -84,6 +92,6 @@ export function useOpenNotification(scope: NotificationScope) {
     open,
     openingId,
     message,
-    clearMessage: () => setMessage(undefined),
+    clearMessage,
   };
 }

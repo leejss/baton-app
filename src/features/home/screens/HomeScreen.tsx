@@ -33,7 +33,7 @@ export function HomeScreen({ initialDate = getTodayInSeoul() }: HomeScreenProps)
         contentContainerStyle={styles.scrollContent}
       >
         <View style={styles.content}>
-          <Text weight="semibold" style={styles.greeting}>
+          <Text weight="bold" style={styles.greeting}>
             {context.profile.displayName}님
           </Text>
 
@@ -78,9 +78,9 @@ const styles = StyleSheet.create({
     gap: 22,
   },
   greeting: {
-    // Figma node 732:17465의 22px Bold는 토큰/폰트가 없어 Semibold로 대체한다.
+    // Figma node 732:17465의 22px Bold / 26px line box를 따른다.
     fontSize: 22,
-    lineHeight: 32,
+    lineHeight: 26,
   },
   cards: {
     gap: spacing.md,

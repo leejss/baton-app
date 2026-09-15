@@ -1,3 +1,4 @@
+import { Image } from 'expo-image';
 import { StyleSheet, View } from 'react-native';
 
 import { formatKoreanDate } from '@/shared/lib/formatters';
@@ -13,6 +14,7 @@ type CalendarDayProps = {
   muted?: boolean;
   count: number;
   rowHeight: number;
+  selectionVariant?: 'subtle' | 'strong';
   onSelect: (date: string) => void;
 };
 
@@ -25,9 +27,11 @@ export function CalendarDay({
   muted,
   count,
   rowHeight,
+  selectionVariant = 'strong',
   onSelect,
 }: CalendarDayProps) {
   const { colors } = useTheme();
+  const hasStrongSelection = selected && selectionVariant === 'strong';
   return (
     <Pressable
       accessibilityRole="button"
@@ -40,14 +44,17 @@ export function CalendarDay({
       <View
         style={[
           styles.circle,
-          today && [styles.today, { backgroundColor: colors.surfaceBlueSubtle }],
-          selected && { backgroundColor: colors.surfaceBlueStrong },
+          (today || selected) && {
+            backgroundColor: hasStrongSelection
+              ? colors.surfaceBlueStrong
+              : colors.surfaceBlueSubtle,
+          },
         ]}
       >
         <Text
           weight="medium"
           color={
-            selected
+            hasStrongSelection
               ? 'foregroundInverse'
               : outside || muted
                 ? 'foregroundDisabled'
@@ -57,17 +64,34 @@ export function CalendarDay({
           {Number(date.slice(8))}
         </Text>
       </View>
-      <View accessible={false} importantForAccessibility="no" style={styles.dots}>
-        {Array.from({ length: Math.min(count, 3) }, (_, index) => (
-          <View key={index} style={[styles.dot, { backgroundColor: colors.surfaceBlueStrong }]} />
-        ))}
-      </View>
+      {count > 0 && (
+        <View accessible={false} importantForAccessibility="no" style={styles.dots}>
+          {Array.from({ length: Math.min(count, 3) }, (_, index) => (
+            <View
+              key={index}
+              style={[styles.dot, { backgroundColor: colors.foregroundBlueSoft }]}
+            />
+          ))}
+          {count >= 3 && (
+            <View style={styles.more}>
+              <Image
+                source={require('@/assets/images/schedules/calendar-more.svg')}
+                contentFit="fill"
+                accessible={false}
+                accessibilityElementsHidden
+                importantForAccessibility="no"
+                style={styles.moreIcon}
+              />
+            </View>
+          )}
+        </View>
+      )}
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  root: { width: `${100 / 7}%`, alignItems: 'center', paddingTop: 2, gap: 6 },
+  root: { width: `${100 / 7}%`, alignItems: 'center', paddingTop: 2, gap: 8 },
   circle: {
     minWidth: 32,
     minHeight: 32,
@@ -76,6 +100,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   today: {},
-  dots: { height: 4, flexDirection: 'row', gap: 2 },
+  dots: { height: 4, flexDirection: 'row', alignItems: 'center', gap: 2, overflow: 'visible' },
   dot: { width: 4, height: 4, borderRadius: radius.full },
+  more: { width: 4, height: 4 },
+  moreIcon: { position: 'absolute', top: -0.1, left: -0.1, width: 4.2, height: 4.2 },
 });

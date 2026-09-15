@@ -18,6 +18,7 @@ export function WeekDayButton({ day, onSelect }: WeekDayButtonProps) {
       accessibilityLabel={day.accessibilityLabel}
       accessibilityRole="button"
       accessibilityState={{ selected: day.isSelected }}
+      hitSlop={2}
       onPress={handlePress}
       style={({ pressed }) => [styles.touchTarget, pressed && styles.pressed]}
     >
@@ -44,7 +45,7 @@ const styles = StyleSheet.create({
   touchTarget: {
     flex: 1,
     minWidth: 36,
-    minHeight: 44,
+    minHeight: 40,
     alignItems: 'center',
     justifyContent: 'center',
   },

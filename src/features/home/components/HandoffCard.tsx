@@ -64,7 +64,7 @@ export function HandoffCard({ date, onDetailsPress, storeId }: HandoffCardProps)
         style={[styles.card, shadows.default, { backgroundColor: theme.colors.backgroundDefault }]}
       >
         <View style={styles.titleRow}>
-          <IllustIcon name="home" />
+          <IllustIcon name="home" size={22} />
           <View style={styles.titleTextRow}>
             <Text variant="title" weight="semibold">
               새 인수인계
@@ -136,6 +136,7 @@ export function HandoffCard({ date, onDetailsPress, storeId }: HandoffCardProps)
                 <Pressable
                   accessibilityLabel="전체 인수인계 자세히 보기"
                   accessibilityRole="button"
+                  hitSlop={12}
                   onPress={onDetailsPress}
                   style={({ pressed }) => [styles.detailsButton, pressed && styles.pressed]}
                 >
@@ -195,7 +196,7 @@ const styles = StyleSheet.create({
     gap: 11,
   },
   emptyText: {
-    minHeight: 44,
+    minHeight: 56,
     textAlign: 'center',
     textAlignVertical: 'center',
   },
@@ -213,7 +214,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   detailsButton: {
-    minHeight: 44,
+    height: 20,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',

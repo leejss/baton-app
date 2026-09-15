@@ -41,9 +41,9 @@ export function HandoffScopeTabs({ value, onChange }: HandoffScopeTabsProps) {
             ]}
           >
             <Text
-              variant="bodySmall"
-              weight="medium"
-              color={selected ? 'foregroundInverse' : 'foregroundStrong'}
+              variant="body"
+              weight="semibold"
+              color={selected ? 'foregroundInverse' : 'foregroundDefault'}
             >
               {item.label}
             </Text>
