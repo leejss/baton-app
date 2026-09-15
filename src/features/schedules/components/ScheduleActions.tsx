@@ -45,6 +45,7 @@ export function ScheduleActions({ id, now, onClose }: ScheduleActionsProps) {
       }
     },
     onSuccess: async () => {
+      logger.info('근무 삭제 완료');
       setDeleted(true);
       client.removeQueries({
         queryKey: scheduleQueries.detail(context.storeId, id).queryKey,

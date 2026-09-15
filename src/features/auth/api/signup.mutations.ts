@@ -71,5 +71,6 @@ export function useSignUp() {
     },
     mutationFn: (params: SignUpParams | SocialSignUpParams) =>
       'socialSignupToken' in params ? signUpWithSocial(params) : signUpWithEmail(params),
+    onSuccess: () => logger.info('회원가입 완료'),
   });
 }

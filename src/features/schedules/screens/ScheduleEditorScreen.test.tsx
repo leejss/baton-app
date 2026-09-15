@@ -9,6 +9,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { createMockScheduleDataSource } from '@/test/fixtures/schedules';
 import { monthlyScheduleSchema } from '@/features/schedules/api/schedule.schema';
 import { ScheduleEditorScreen } from '@/test/ScheduleScreens';
+import { logger } from '@/shared/lib/logger';
 import { MOCK_STORE_MEMBERS } from '@/test/fixtures/members';
 
 jest.mock('@expo/ui/community/bottom-sheet', () =>
@@ -117,6 +118,7 @@ describe('관리자 근무 등록·수정', () => {
   it.each(['팝업', '입력 화면'])(
     '%s에서 혼합 실패를 재시도하면 저장 오류 날짜만 전송하고 성공·시작 경과 결과를 보존한다',
     async (location) => {
+      const info = jest.spyOn(logger, 'info').mockImplementation(() => {});
       const source = createMockScheduleDataSource({
         schedules: [],
         failDatesOnce: ['2026-09-09'],
@@ -132,6 +134,12 @@ describe('관리자 근무 등록·수정', () => {
           '1건을 등록했습니다. 등록하지 못한 2건 중 1건을 다시 시도할 수 있습니다.',
         ),
       ).toBeOnTheScreen();
+      expect(info).toHaveBeenCalledWith('근무 일부 등록 완료', {
+        created_count: 1,
+        failed_count: 2,
+        duplicate_count: 0,
+      });
+      expect(info).not.toHaveBeenCalledWith('근무 등록 완료', expect.anything());
       if (location === '입력 화면') {
         await fireEvent.press(screen.getByLabelText('입력 내용으로 돌아가기'));
         expect(screen.getByLabelText('출근 시간')).toHaveProp('editable', false);
@@ -152,10 +160,16 @@ describe('관리자 근무 등록·수정', () => {
       ]);
       const items = monthlyScheduleSchema.parse(await source.month(101, '2026-09')).schedules;
       expect(items.map((item) => item.workDate)).toEqual(['2026-09-08', '2026-09-09']);
+      expect(info).toHaveBeenLastCalledWith('근무 재등록 결과', {
+        created_count: 1,
+        failed_count: 0,
+        duplicate_count: 0,
+      });
     },
   );
 
   it('재시도 전에 시작 시각이 지나면 서버 결과에 따라 재시도 불가로 전환한다', async () => {
+    const info = jest.spyOn(logger, 'info').mockImplementation(() => {});
     const source = createMockScheduleDataSource({ schedules: [], failDatesOnce: ['2026-09-07'] });
     const create = jest.spyOn(source, 'create');
     await mount(<ScheduleEditorScreen source={source} initialDate="2026-09-07" />);
@@ -171,6 +185,7 @@ describe('관리자 근무 등록·수정', () => {
       ),
     ).toBeOnTheScreen();
     expect(create).toHaveBeenCalledTimes(2);
+    expect(info).not.toHaveBeenCalled();
     expect(monthlyScheduleSchema.parse(await source.month(101, '2026-09')).schedules).toHaveLength(
       0,
     );

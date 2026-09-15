@@ -93,6 +93,7 @@ export const useAuthStore = create<AuthStore>()((set, get) => ({
     await signOutFromKakao();
     await secureStorage.remove(SESSION_KEY);
     set({ status: 'signedOut', session: null, signOutReason: reason ?? null });
+    if (reason === undefined) logger.info('로그아웃 완료');
   },
 
   clearSignOutReason: () => set({ signOutReason: null }),

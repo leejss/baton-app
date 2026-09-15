@@ -89,6 +89,22 @@ export function useScheduleEditor({ context, initialDate, item }: EditorOptions)
       saving.current = false;
     },
     onSuccess: async (result) => {
+      if (item) {
+        logger.info('근무 수정 완료');
+      } else if (result.created.length > 0) {
+        logger.info(
+          saveResult?.failed.length
+            ? '근무 재등록 결과'
+            : result.failed.length > 0 || result.duplicates.length > 0
+              ? '근무 일부 등록 완료'
+              : '근무 등록 완료',
+          {
+            created_count: result.created.length,
+            failed_count: result.failed.length,
+            duplicate_count: result.duplicates.length,
+          },
+        );
+      }
       setSaveResult((previous) => ({
         created: [...new Set([...(previous?.created ?? []), ...result.created])],
         duplicates: [...new Set([...(previous?.duplicates ?? []), ...result.duplicates])],

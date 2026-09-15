@@ -36,5 +36,6 @@ export function useResetPassword() {
     },
     mutationFn: (params: { email: string; emailVerificationToken: string; newPassword: string }) =>
       resetPassword(params),
+    onSuccess: () => logger.info('비밀번호 재설정 완료'),
   });
 }

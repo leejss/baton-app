@@ -34,7 +34,10 @@ export function useCreateStore() {
       logger.error('매장 생성 실패', error);
     },
     mutationFn: (params: CreateStoreParams) => createStore(params),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: storeQueries.all() }),
+    onSuccess: () => {
+      logger.info('매장 생성 완료');
+      return queryClient.invalidateQueries({ queryKey: storeQueries.all() });
+    },
   });
 }
 
@@ -58,7 +61,10 @@ export function useJoinStore() {
       logger.error('매장 참여 실패', error);
     },
     mutationFn: ({ invitationCode }: { invitationCode: string }) => joinStore(invitationCode),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: storeQueries.all() }),
+    onSuccess: () => {
+      logger.info('매장 참여 완료');
+      return queryClient.invalidateQueries({ queryKey: storeQueries.all() });
+    },
   });
 }
 
@@ -71,7 +77,11 @@ export function useIssueInvitationCode(storeId: number) {
       logger.error('매장 초대 코드 재발급 실패', error);
     },
     mutationFn: () => issueInvitationCode(storeId),
-    onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: storeQueries.invitationCode(storeId).queryKey }),
+    onSuccess: () => {
+      logger.info('매장 초대 코드 재발급 완료');
+      return queryClient.invalidateQueries({
+        queryKey: storeQueries.invitationCode(storeId).queryKey,
+      });
+    },
   });
 }

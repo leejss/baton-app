@@ -15,7 +15,10 @@ export function useUpdateDisplayName() {
       logger.error('이름 변경 실패', error);
     },
     mutationFn: (displayName: string) => updateDisplayName(displayName),
-    onSuccess: () => queryClient.invalidateQueries(),
+    onSuccess: () => {
+      logger.info('이름 변경 완료');
+      return queryClient.invalidateQueries();
+    },
   });
 }
 
@@ -50,6 +53,7 @@ export function useWithdraw() {
     },
     mutationFn: () => withdraw(),
     onSuccess: async () => {
+      logger.info('회원 탈퇴 완료');
       await queryClient.cancelQueries();
       await signOut('withdrawn');
       queryClient.clear();

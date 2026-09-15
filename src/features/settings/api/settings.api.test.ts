@@ -15,7 +15,7 @@ jest.mock('@/shared/config/api', () => ({
 }));
 jest.mock('@/shared/lib/logger', () => ({
   registerLogUserReader: jest.fn(),
-  logger: { warn: jest.fn(), debug: jest.fn(), error: jest.fn() },
+  logger: { info: jest.fn(), warn: jest.fn(), debug: jest.fn(), error: jest.fn() },
 }));
 jest.mock('expo-router', () => ({ router: { replace: jest.fn() } }));
 

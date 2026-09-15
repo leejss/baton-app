@@ -29,7 +29,7 @@ jest.mock('@/features/auth/store/authStore', () => ({
 }));
 jest.mock('@/shared/lib/logger', () => ({
   registerLogUserReader: jest.fn(),
-  logger: { warn: jest.fn(), debug: jest.fn(), error: jest.fn() },
+  logger: { info: jest.fn(), warn: jest.fn(), debug: jest.fn(), error: jest.fn() },
 }));
 const mockReplace = jest.fn();
 const mockPush = jest.fn();

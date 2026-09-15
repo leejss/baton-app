@@ -48,6 +48,7 @@ export function useLeaveCurrentStore(storeId: number, userId: number) {
     },
     mutationFn: () => leaveCurrentStore(storeId, userId),
     onSuccess: async () => {
+      logger.info('매장 소속 종료 완료');
       await client.cancelQueries();
       await client.invalidateQueries({ refetchType: 'none' });
       router.replace(ROUTES.settings.result('left'));
@@ -63,6 +64,7 @@ export function useTransferManager(storeId: number, onTransferred: () => void) {
     },
     mutationFn: (userId: number) => transferManager(storeId, userId),
     onSuccess: async () => {
+      logger.info('관리자 권한 이전 완료');
       onTransferred();
       await client.invalidateQueries();
     },

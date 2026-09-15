@@ -39,7 +39,10 @@ export function handoffMutations(client: QueryClient, storeId: number) {
       mutationOptions({
         mutationKey: ['handoffs', 'create'],
         mutationFn: (input: HandoffCreateRequestDto) => createHandoff(storeId, input),
-        onSuccess,
+        onSuccess: () => {
+          logger.info('인수인계 등록 완료');
+          return onSuccess();
+        },
         onError: (error) => {
           logger.error('인수인계 등록 실패', error);
           return onError(error);
@@ -49,7 +52,10 @@ export function handoffMutations(client: QueryClient, storeId: number) {
       mutationOptions({
         mutationKey: ['handoffs', 'update'],
         mutationFn: (input: HandoffUpdateRequestDto) => updateHandoff(id, input),
-        onSuccess,
+        onSuccess: () => {
+          logger.info('인수인계 수정 완료');
+          return onSuccess();
+        },
         onError: (error) => {
           logger.error('인수인계 수정 실패', error);
           return onError(error);
@@ -60,6 +66,7 @@ export function handoffMutations(client: QueryClient, storeId: number) {
         mutationKey: ['handoffs', 'delete'],
         mutationFn: removeHandoff,
         onSuccess: async (_data, id) => {
+          logger.info('인수인계 삭제 완료');
           client.removeQueries({
             queryKey: handoffQueries.detail(storeId, id).queryKey,
             exact: true,
@@ -99,7 +106,10 @@ export function handoffMutations(client: QueryClient, storeId: number) {
             throw error;
           }
         },
-        onSuccess,
+        onSuccess: () => {
+          logger.info('인수인계 확인 처리 완료');
+          return onSuccess();
+        },
         onError: (error) => {
           logger.error('인수인계 확인 처리 실패', error);
           return onError(error);

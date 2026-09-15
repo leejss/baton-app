@@ -18,6 +18,7 @@ export function useAttachmentUploads({ attachments, onAdd, onUpdate, onRemove }:
     onError: (error) => {
       logger.error('첨부 사진 업로드 실패', error);
     },
+    onSuccess: () => logger.info('첨부 사진 업로드 완료'),
     mutationKey: ['attachments', 'upload'],
     mutationFn: async (file: LocalAttachment) => {
       const task = { controller: new AbortController(), file, removed: false };

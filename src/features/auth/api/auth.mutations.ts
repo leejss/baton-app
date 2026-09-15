@@ -39,6 +39,7 @@ export function useKakaoSignIn() {
     onSuccess: async (outcome) => {
       if (outcome.status === 'signedIn') {
         await signIn(outcome.session);
+        logger.info('카카오 로그인 완료');
       }
     },
   });
@@ -64,6 +65,7 @@ export function useAppleSignIn() {
     onSuccess: async (outcome) => {
       if (outcome.status === 'signedIn') {
         await signIn(outcome.session);
+        logger.info('Apple 로그인 완료');
       }
     },
   });
@@ -90,6 +92,7 @@ export function useEmailSignIn() {
     onSuccess: async (outcome) => {
       if (outcome.status === 'signedIn') {
         await signIn(outcome.session);
+        logger.info('이메일 로그인 완료');
       }
     },
   });
