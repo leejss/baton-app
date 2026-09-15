@@ -1,3 +1,4 @@
+import { logger } from '@/shared/lib/logger';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { hasServerErrorCode } from '@/shared/api/errors';
@@ -29,6 +30,9 @@ export function useCreateStore() {
   const queryClient = useQueryClient();
 
   return useMutation({
+    onError: (error) => {
+      logger.error('매장 생성 실패', error);
+    },
     mutationFn: (params: CreateStoreParams) => createStore(params),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: storeQueries.all() }),
   });
@@ -37,6 +41,9 @@ export function useCreateStore() {
 /** 초대 코드 검증(STORE-02). 결과로 참여 대상 매장 정보를 받는다. */
 export function usePreviewStoreInvitation() {
   return useMutation({
+    onError: (error) => {
+      logger.error('매장 초대 코드 확인 실패', error);
+    },
     mutationFn: ({ invitationCode }: { invitationCode: string }) =>
       previewStoreInvitation(invitationCode),
   });
@@ -47,6 +54,9 @@ export function useJoinStore() {
   const queryClient = useQueryClient();
 
   return useMutation({
+    onError: (error) => {
+      logger.error('매장 참여 실패', error);
+    },
     mutationFn: ({ invitationCode }: { invitationCode: string }) => joinStore(invitationCode),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: storeQueries.all() }),
   });
@@ -57,6 +67,9 @@ export function useIssueInvitationCode(storeId: number) {
   const queryClient = useQueryClient();
 
   return useMutation({
+    onError: (error) => {
+      logger.error('매장 초대 코드 재발급 실패', error);
+    },
     mutationFn: () => issueInvitationCode(storeId),
     onSuccess: () =>
       queryClient.invalidateQueries({ queryKey: storeQueries.invitationCode(storeId).queryKey }),

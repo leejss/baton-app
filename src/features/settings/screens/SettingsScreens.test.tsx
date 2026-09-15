@@ -27,7 +27,10 @@ jest.mock('@/features/auth/store/authStore', () => ({
   useAuthStore: (selector: (value: { signOut: () => Promise<void> }) => unknown) =>
     selector({ signOut: jest.fn<() => Promise<void>>().mockResolvedValue(undefined) }),
 }));
-jest.mock('@/shared/lib/logger', () => ({ logger: { warn: jest.fn(), debug: jest.fn() } }));
+jest.mock('@/shared/lib/logger', () => ({
+  registerLogUserReader: jest.fn(),
+  logger: { warn: jest.fn(), debug: jest.fn(), error: jest.fn() },
+}));
 const mockReplace = jest.fn();
 const mockPush = jest.fn();
 jest.mock('expo-router', () => ({

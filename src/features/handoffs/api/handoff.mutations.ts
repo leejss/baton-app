@@ -1,3 +1,4 @@
+import { logger } from '@/shared/lib/logger';
 import { mutationOptions, type QueryClient } from '@tanstack/react-query';
 import {
   createHandoff,
@@ -39,14 +40,20 @@ export function handoffMutations(client: QueryClient, storeId: number) {
         mutationKey: ['handoffs', 'create'],
         mutationFn: (input: HandoffCreateRequestDto) => createHandoff(storeId, input),
         onSuccess,
-        onError,
+        onError: (error) => {
+          logger.error('인수인계 등록 실패', error);
+          return onError(error);
+        },
       }),
     update: (id: string) =>
       mutationOptions({
         mutationKey: ['handoffs', 'update'],
         mutationFn: (input: HandoffUpdateRequestDto) => updateHandoff(id, input),
         onSuccess,
-        onError,
+        onError: (error) => {
+          logger.error('인수인계 수정 실패', error);
+          return onError(error);
+        },
       }),
     remove: () =>
       mutationOptions({
@@ -59,7 +66,10 @@ export function handoffMutations(client: QueryClient, storeId: number) {
           });
           await invalidateHandoffViews(client, storeId);
         },
-        onError,
+        onError: (error) => {
+          logger.error('인수인계 삭제 실패', error);
+          return onError(error);
+        },
       }),
     confirm: () =>
       mutationOptions({
@@ -90,7 +100,10 @@ export function handoffMutations(client: QueryClient, storeId: number) {
           }
         },
         onSuccess,
-        onError,
+        onError: (error) => {
+          logger.error('인수인계 확인 처리 실패', error);
+          return onError(error);
+        },
       }),
   };
 }

@@ -1,3 +1,4 @@
+import { logger } from '@/shared/lib/logger';
 import { useMutation } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
@@ -25,7 +26,10 @@ export function MyPageScreen() {
   const signOut = useAuthStore((state) => state.signOut);
   const logout = useMutation({
     mutationFn: () => signOut(),
-    onError: (error) => setFeedback({ tone: 'error', message: normalizeError(error).message }),
+    onError: (error) => {
+      logger.error('로그아웃 실패', error);
+      return setFeedback({ tone: 'error', message: normalizeError(error).message });
+    },
   });
   return (
     <View style={[styles.root, { backgroundColor: colors.backgroundDefault }]}>

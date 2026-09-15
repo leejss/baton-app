@@ -1,3 +1,4 @@
+import { logger } from '@/shared/lib/logger';
 import { removeSchedule } from '@/features/schedules/api/schedule.api';
 import { useMainContext } from '@/features/stores/hooks/useMainContext';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -37,6 +38,7 @@ export function ScheduleActions({ id, now, onClose }: ScheduleActionsProps) {
     mutationKey: ['schedules', 'delete'],
     mutationFn: () => removeSchedule(context.storeId ?? 0, id),
     onError: async (error) => {
+      logger.error('근무 삭제 실패', error);
       if (isAppError(error) && [403, 404, 409].includes(error.status ?? 0)) {
         setConfirming(false);
         await invalidateScheduleViews(client, context.storeId);

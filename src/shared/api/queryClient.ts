@@ -25,7 +25,11 @@ export function createQueryClient(): QueryClient {
       onError: (error) => reportError(error),
     }),
     mutationCache: new MutationCache({
-      onError: (error) => reportError(error),
+      // 개별 onError의 메시지가 먼저 기록되도록 마지막에 기본 보고를 한다.
+      // 이미 logger로 기록한 오류는 공통 중복 제거가 걸러준다.
+      onSettled: (_data, error) => {
+        if (error !== null) reportError(error);
+      },
     }),
     defaultOptions: {
       queries: {

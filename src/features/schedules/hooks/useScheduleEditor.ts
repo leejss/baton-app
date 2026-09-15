@@ -1,3 +1,4 @@
+import { logger } from '@/shared/lib/logger';
 import { updateSchedule } from '@/features/schedules/api/schedule.api';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigation, useRouter } from 'expo-router';
@@ -80,7 +81,10 @@ export function useScheduleEditor({ context, initialDate, item }: EditorOptions)
           : undefined,
       );
     },
-    onError: (error) => refreshScheduleConflict(client, context.storeId, error),
+    onError: (error) => {
+      logger.error(item ? '근무 수정 실패' : '근무 등록 실패', error);
+      return refreshScheduleConflict(client, context.storeId, error);
+    },
     onSettled: () => {
       saving.current = false;
     },

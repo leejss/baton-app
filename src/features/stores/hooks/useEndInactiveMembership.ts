@@ -1,7 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 
-import { normalizeError } from '@/shared/api/errors';
 import { logger } from '@/shared/lib/logger';
 
 import { useAuthStore } from '@/features/auth/store/authStore';
@@ -26,8 +25,7 @@ export function useEndInactiveMembership() {
   const { mutate, isIdle } = useMutation({
     mutationFn: (storeId: number) => leaveStore(storeId),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: storeQueries.all() }),
-    onError: (error) =>
-      logger.warn('비활성 매장 소속 종료 실패', { code: normalizeError(error).code }),
+    onError: (error) => logger.warn('비활성 매장 소속 종료 실패', error),
   });
 
   useEffect(() => {

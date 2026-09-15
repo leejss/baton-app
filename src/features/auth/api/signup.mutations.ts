@@ -1,3 +1,4 @@
+import { logger } from '@/shared/lib/logger';
 import { useMutation } from '@tanstack/react-query';
 
 import { hasServerErrorCode } from '@/shared/api/errors';
@@ -40,6 +41,9 @@ export function isSocialSignupTokenInvalid(error: unknown): boolean {
  */
 export function useRequestSignupCode() {
   return useMutation({
+    onError: (error) => {
+      logger.error('회원가입 인증 코드 발송 실패', error);
+    },
     mutationFn: ({ email }: { email: string }) =>
       requestVerificationCode(email, { purpose: 'SIGN_UP' }),
   });
@@ -47,6 +51,9 @@ export function useRequestSignupCode() {
 
 export function useVerifySignupCode() {
   return useMutation({
+    onError: (error) => {
+      logger.error('회원가입 인증 코드 확인 실패', error);
+    },
     mutationFn: ({ email, code }: { email: string; code: string }) =>
       verifyCode(email, code, { purpose: 'SIGN_UP' }),
   });
@@ -59,6 +66,9 @@ export function useVerifySignupCode() {
  */
 export function useSignUp() {
   return useMutation({
+    onError: (error) => {
+      logger.error('회원가입 실패', error);
+    },
     mutationFn: (params: SignUpParams | SocialSignUpParams) =>
       'socialSignupToken' in params ? signUpWithSocial(params) : signUpWithEmail(params),
   });

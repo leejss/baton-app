@@ -1,3 +1,4 @@
+import { logger } from '@/shared/lib/logger';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import {
@@ -42,6 +43,9 @@ export async function leaveCurrentStore(storeId: number, userId: number) {
 export function useLeaveCurrentStore(storeId: number, userId: number) {
   const client = useQueryClient();
   return useMutation({
+    onError: (error) => {
+      logger.error('매장 소속 종료 실패', error);
+    },
     mutationFn: () => leaveCurrentStore(storeId, userId),
     onSuccess: async () => {
       await client.cancelQueries();
@@ -54,6 +58,9 @@ export function useLeaveCurrentStore(storeId: number, userId: number) {
 export function useTransferManager(storeId: number, onTransferred: () => void) {
   const client = useQueryClient();
   return useMutation({
+    onError: (error) => {
+      logger.error('관리자 권한 이전 실패', error);
+    },
     mutationFn: (userId: number) => transferManager(storeId, userId),
     onSuccess: async () => {
       onTransferred();

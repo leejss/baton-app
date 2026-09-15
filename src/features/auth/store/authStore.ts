@@ -2,7 +2,7 @@ import { create } from 'zustand';
 
 import { registerAuthBridge, type RefreshedTokens } from '@/shared/api/client';
 import { isAppError } from '@/shared/api/errors';
-import { logger } from '@/shared/lib/logger';
+import { logger, registerLogUserReader } from '@/shared/lib/logger';
 import { secureStorage } from '@/shared/lib/secureStorage';
 
 import { signOutFromServer } from '@/features/auth/api/auth.api';
@@ -125,3 +125,5 @@ registerAuthBridge({
     await useAuthStore.getState().signOut('sessionRevoked');
   },
 });
+
+registerLogUserReader(() => useAuthStore.getState().session?.user ?? null);

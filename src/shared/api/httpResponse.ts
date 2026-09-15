@@ -8,7 +8,7 @@ export function normalizeApiRoute(path: string): string {
 /** JSON 파싱 전 원문을 한 번만 읽는다. S3의 비JSON 실패 응답도 같은 함수를 쓴다. */
 export async function readHttpResponse(
   response: Response,
-  request: Pick<HttpDiagnostics, 'method' | 'route'>,
+  request: Omit<HttpDiagnostics, 'durationMs' | 'contentType' | 'response'>,
   startedAt: number,
   signal?: AbortSignal | null,
 ): Promise<{ http: HttpDiagnostics; readError?: AppError }> {
@@ -19,7 +19,7 @@ export async function readHttpResponse(
   };
   let readError: AppError | undefined;
   try {
-    http.raw = await response.text();
+    http.response = await response.text();
   } catch (error) {
     readError = normalizeFetchError(error, signal);
   }
@@ -32,6 +32,6 @@ export async function readHttpResponse(
     });
   }
   // non-2xx는 HTTP 상태와 기존 처리 흐름을 유지하고 본문 읽기 실패를 cause로 연결한다.
-  // 읽기 실패는 raw 없음, 빈 응답은 raw: ''로 구분한다.
+  // 읽기 실패는 response 없음, 빈 응답은 response: ''로 구분한다.
   return { http, readError };
 }

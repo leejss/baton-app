@@ -11,7 +11,8 @@ jest.mock('@/shared/config/api', () => ({
   assertApiConfigured: jest.fn(),
 }));
 jest.mock('@/shared/lib/logger', () => ({
-  logger: { warn: jest.fn(), debug: jest.fn() },
+  registerLogUserReader: jest.fn(),
+  logger: { warn: jest.fn(), debug: jest.fn(), error: jest.fn() },
 }));
 jest.mock('@/shared/lib/deviceId', () => ({ getDeviceId: jest.fn() }));
 jest.mock('@/features/auth/lib/kakaoAuth', () => ({

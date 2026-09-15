@@ -1,3 +1,6 @@
+import { normalizeError } from '@/shared/api/errors';
+import { errorLogAttributes, wasErrorLogged } from '@/shared/lib/errorLog';
+import { sanitizeLogText } from '@/shared/lib/logSanitizer';
 import PostHog from 'posthog-react-native';
 
 import { appInfo } from '@/shared/lib/appInfo';
@@ -9,19 +12,6 @@ type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
 const SENSITIVE_ATTRIBUTE_PATTERN =
   /(^|[._-])(authorization|password|passcode|secret|token|api[_-]?key|email|phone|user[_-]?name|full[_-]?name|display[_-]?name|first[_-]?name|last[_-]?name|otp|verification[_-]?code|auth[_-]?code|card|cvv|billing|request[_-]?body|response[_-]?body|content)([._-]|$)/i;
-const EMAIL_PATTERN = /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi;
-const BEARER_TOKEN_PATTERN = /\bBearer\s+\S+/gi;
-const CREDENTIAL_PATTERN =
-  /\b(api[_-]?key|access[_-]?token|refresh[_-]?token|password|secret)["']?\s*[:=]\s*["']?[^\s,"'}]+/gi;
-
-function redactMessage(message: string): string {
-  return message
-    .replace(EMAIL_PATTERN, '[REDACTED_EMAIL]')
-    .replace(BEARER_TOKEN_PATTERN, 'Bearer [REDACTED]')
-    .replace(CREDENTIAL_PATTERN, '$1=[REDACTED]')
-    .slice(0, 4096);
-}
-
 function sanitizeAttributes(attributes: LogAttributes | undefined): Record<string, LogAttribute> {
   if (attributes === undefined) {
     return {};
@@ -30,14 +20,18 @@ function sanitizeAttributes(attributes: LogAttributes | undefined): Record<strin
   return Object.fromEntries(
     Object.entries(attributes)
       .filter(([key, value]) => {
-        if (key === 'raw') return typeof value === 'string';
+        if (key === 'user_id' || key === 'user_email') return false;
+        if (key === 'response' || key === 'request') return typeof value === 'string';
         if (key === 'response_content_type') return true;
         return !SENSITIVE_ATTRIBUTE_PATTERN.test(key.replace(/([a-z])([A-Z])/g, '$1_$2'));
       })
       .map(([key, value]) => [
         key,
-        // 예약 필드 raw는 서버 응답 원문이다. 마스킹·절단을 하지 않는다.
-        key !== 'raw' && typeof value === 'string' ? redactMessage(value) : value,
+        // response는 원문, request는 공통 HTTP 계층에서 이미 마스킹·절단한 JSON이다.
+        // request를 일반 텍스트로 재정제하면 JSON의 키와 따옴표가 손상된다.
+        key !== 'response' && key !== 'request' && typeof value === 'string'
+          ? sanitizeLogText(value)
+          : value,
       ]),
   );
 }
@@ -103,44 +97,89 @@ function writeConsole(
   console[level](message, attributes);
 }
 
-function write(level: LogLevel, message: string, attributes?: LogAttributes): void {
-  const safeMessage = redactMessage(message);
-  const safeAttributes = sanitizeAttributes(attributes);
+type LogUser = { id: number | string; email: string } | null;
+let readUser: () => LogUser = () => null;
+
+/** 인증 모듈이 조회 함수를 등록한다. 로그를 쓸 때만 세션을 읽는다. */
+export function registerLogUserReader(reader: () => LogUser): void {
+  readUser = reader;
+}
+
+function userAttributes() {
+  let user: LogUser = null;
   try {
-    writeConsole(level, safeMessage, safeAttributes);
+    user = readUser();
   } catch {
-    // 개발 콘솔 실패가 원격 수집을 막지 않는다.
+    /* 세션 조회 실패가 로깅을 막지 않는다. */
   }
-  if (level !== 'warn' && level !== 'error') return;
+  return { user_id: user ? String(user.id) : null, user_email: user?.email ?? null };
+}
+
+function isAttributes(value: unknown): value is LogAttributes {
+  return (
+    value !== null &&
+    typeof value === 'object' &&
+    !(value instanceof Error) &&
+    !Array.isArray(value) &&
+    Object.values(value).every(
+      (item) => item === null || ['string', 'number', 'boolean'].includes(typeof item),
+    )
+  );
+}
+
+function write(
+  level: LogLevel,
+  message: string,
+  errorOrAttributes?: unknown,
+  attributes?: LogAttributes,
+): void {
   try {
-    getPostHogClient()?.logger[level](safeMessage, safeAttributes);
+    const failure =
+      errorOrAttributes !== undefined && !isAttributes(errorOrAttributes)
+        ? normalizeError(errorOrAttributes)
+        : undefined;
+    // 개발용 debug는 원격 오류의 최종 보고를 소비하지 않는다.
+    if (failure && level !== 'debug' && (wasErrorLogged(failure) || failure.code === 'canceled'))
+      return;
+    const text = failure
+      ? [message.trim(), failure.message.trim()].filter(Boolean).join(': ') ||
+        (failure.http ? 'API 요청 처리 중 오류가 발생했습니다.' : '알 수 없는 문제가 발생했어요.')
+      : message;
+    const safeMessage = sanitizeLogText(text);
+    const safeAttributes = {
+      ...sanitizeAttributes(isAttributes(errorOrAttributes) ? errorOrAttributes : attributes),
+      ...(failure ? sanitizeAttributes(errorLogAttributes(failure)) : {}),
+      ...userAttributes(),
+    };
+    try {
+      writeConsole(level, safeMessage, safeAttributes);
+    } catch {
+      /* 콘솔 실패와 원격 전송을 분리한다. */
+    }
+    if (level !== 'debug') getPostHogClient()?.logger[level](safeMessage, safeAttributes);
   } catch {
-    // 로거 실패는 재보고하지 않는다.
+    // 정제·SDK 실패는 원래 작업으로 전파하거나 재보고하지 않는다.
   }
 }
 
 export const logger = {
-  debug(message: string, attributes?: LogAttributes): void {
-    write('debug', message, attributes);
+  debug(message: string, errorOrAttributes?: unknown, attributes?: LogAttributes): void {
+    write('debug', message, errorOrAttributes, attributes);
   },
-
-  info(message: string, attributes?: LogAttributes): void {
-    write('info', message, attributes);
+  info(message: string, errorOrAttributes?: unknown, attributes?: LogAttributes): void {
+    write('info', message, errorOrAttributes, attributes);
   },
-
-  warn(message: string, attributes?: LogAttributes): void {
-    write('warn', message, attributes);
+  warn(message: string, errorOrAttributes?: unknown, attributes?: LogAttributes): void {
+    write('warn', message, errorOrAttributes, attributes);
   },
-
-  error(message: string, attributes?: LogAttributes): void {
-    write('error', message, attributes);
+  error(message: string, errorOrAttributes?: unknown, attributes?: LogAttributes): void {
+    write('error', message, errorOrAttributes, attributes);
   },
-
   async flush(): Promise<void> {
     try {
       await getPostHogClient()?.flushLogs();
     } catch {
-      // 앱 생명주기와 오류 처리를 방해하지 않는다.
+      /* 앱 생명주기를 방해하지 않는다. */
     }
   },
 };

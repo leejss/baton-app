@@ -1,3 +1,4 @@
+import { logger } from '@/shared/lib/logger';
 import { markNotificationRead } from '@/features/notifications/api/notification.api';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigation, useRouter } from 'expo-router';
@@ -23,6 +24,9 @@ export function useOpenNotification(scope: NotificationScope) {
       exact: true,
     });
   const read = useMutation({
+    onError: (error) => {
+      logger.error('알림 읽음 처리 실패', error);
+    },
     mutationKey: ['notifications', 'read'],
     mutationFn: async (id: string) => {
       try {

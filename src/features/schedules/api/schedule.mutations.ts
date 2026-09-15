@@ -2,7 +2,6 @@ import { handoffQueries } from '@/features/handoffs/api/handoff.queries';
 import { notificationQueries } from '@/features/notifications/api/notification.queries';
 import { storeQueries } from '@/features/stores/api/store.queries';
 import { logger } from '@/shared/lib/logger';
-import { reportError } from '@/shared/lib/reportError';
 import { createSchedules } from '@/features/schedules/api/schedule.api';
 import type { QueryClient } from '@tanstack/react-query';
 import { homeQueries } from '@/features/home/api/home.queries';
@@ -65,7 +64,7 @@ export async function saveScheduleDates(
             (error.code === 'network' || error.code === 'timeout' || (error.status ?? 0) >= 500),
         })),
       );
-      reportError(error);
+      logger.error('실패한 근무 재등록 실패', error);
     }
   }
   if (result.failures.length > 0) {
