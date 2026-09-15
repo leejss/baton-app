@@ -1,6 +1,7 @@
 import { FlashList, type ListRenderItemInfo } from '@shopify/flash-list';
 import { useQuery } from '@tanstack/react-query';
 import { useRef, useState } from 'react';
+import { EmployeeAvatar } from '@/features/schedules/components/EmployeeAvatar';
 import { StyleSheet, View, useWindowDimensions } from 'react-native';
 
 import { scheduleQueries } from '@/features/schedules/api/schedule.queries';
@@ -9,7 +10,7 @@ import { ScheduleMessage } from '@/features/schedules/components/ScheduleMessage
 import { BottomSheet } from '@/shared/ui/BottomSheet';
 import type { ScheduleMember } from '@/features/schedules/types';
 import { Button, Pressable, Text, TextField } from '@/shared/ui';
-import { Search, NavUserLine } from '@/shared/ui/icons';
+import { Search } from '@/shared/ui/icons';
 import { spacing } from '@/theme';
 
 type EmployeePickerProps = {
@@ -32,6 +33,12 @@ export function EmployeePicker({
 }: EmployeePickerProps) {
   const [open, setOpen] = useState(initiallyOpen);
   const [search, setSearch] = useState('');
+  const [previousInitiallyOpen, setPreviousInitiallyOpen] = useState(initiallyOpen);
+  // 날짜 단계에서 이전을 누르면 선택 시트를 다시 연다.
+  if (previousInitiallyOpen !== initiallyOpen) {
+    setPreviousInitiallyOpen(initiallyOpen);
+    if (initiallyOpen) setOpen(true);
+  }
   const pendingDone = useRef<(() => void) | null>(null);
   const { height } = useWindowDimensions();
   const query = useQuery(scheduleQueries.members(storeId));
@@ -60,19 +67,22 @@ export function EmployeePicker({
         onPress={() => setOpen(true)}
         style={styles.field}
       >
-        {selected && <NavUserLine size={24} color="textTertiary" />}
+        {selected && <EmployeeAvatar />}
         <Text weight="semibold">{selected?.name ?? '근무자 선택'}</Text>
       </Pressable>
-      <BottomSheet visible={open} title="근무자 선택" onDismiss={handleDismiss}>
-        <Text variant="bodySmall" color="textTertiary">
-          근무를 등록할 직원을 선택해 주세요.
-        </Text>
+      <BottomSheet
+        visible={open}
+        title="근무자 선택"
+        description="근무를 등록할 직원을 선택해 주세요."
+        onDismiss={handleDismiss}
+      >
         <TextField
+          appearance="search"
           accessibilityLabel="직원 이름 검색"
           placeholder="이름으로 검색해 주세요."
           value={search}
           onChangeText={setSearch}
-          leftIcon={<Search color="textDisabled" />}
+          leftIcon={<Search color="foregroundDisabled" />}
         />
         {query.isError ? (
           <ScheduleMessage
@@ -85,7 +95,7 @@ export function EmployeePicker({
         ) : candidates.length === 0 ? (
           <ScheduleMessage message="직원 검색 결과가 없습니다." />
         ) : (
-          <View style={{ height: Math.min(320, height * 0.35), flexShrink: 1 }}>
+          <View style={{ height: Math.min(318, height * 0.38), flexShrink: 1 }}>
             <FlashList
               data={candidates}
               renderItem={renderItem}
@@ -94,20 +104,31 @@ export function EmployeePicker({
             />
           </View>
         )}
-        <Button
-          label="다음"
-          accessibilityLabel="근무자 선택 완료"
-          disabled={!selected?.isActive || query.isError}
-          onPress={() => {
-            pendingDone.current = onDone ?? null;
-            setOpen(false);
-          }}
-        />
+        <View style={styles.actions}>
+          <View style={styles.previous}>
+            <Button label="이전" accessibilityLabel="근무자 선택 이전" tone="weak" disabled />
+          </View>
+          <View style={styles.next}>
+            <Button
+              label="다음"
+              accessibilityLabel="근무자 선택 완료"
+              disabled={!selected?.isActive || query.isError}
+              onPress={() => {
+                pendingDone.current = onDone ?? null;
+                setOpen(false);
+              }}
+            />
+          </View>
+        </View>
       </BottomSheet>
     </>
   );
 }
 const styles = StyleSheet.create({
+  // Figma 1097:39100 하단 액션: 89px 이전 버튼, 간격 10, 하단 24.
+  actions: { flexDirection: 'row', gap: 10, paddingBottom: spacing.lg },
+  previous: { width: 89 },
+  next: { flex: 1 },
   // Figma의 하단 직원 표시를 재선택 버튼으로 사용하며 터치 영역은 최소 44px로 확보한다.
   field: {
     minHeight: 44,

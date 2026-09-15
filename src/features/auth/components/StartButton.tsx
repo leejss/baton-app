@@ -43,11 +43,19 @@ export function StartButton({
     provider === 'kakao'
       ? { backgroundColor: socialBrand.kakaoYellow }
       : provider === 'apple'
-        ? { backgroundColor: colors.textPrimary }
-        : { backgroundColor: colors.background, borderWidth: 1, borderColor: colors.borderStrong };
+        ? { backgroundColor: colors.surfaceNeutralStrong }
+        : {
+            backgroundColor: colors.backgroundDefault,
+            borderWidth: 1,
+            borderColor: colors.borderStrong,
+          };
 
   const labelColor =
-    provider === 'kakao' ? 'staticBlack' : provider === 'apple' ? 'staticWhite' : 'textSecondary';
+    provider === 'kakao'
+      ? 'staticBlack'
+      : provider === 'apple'
+        ? 'staticWhite'
+        : 'foregroundDefault';
 
   return (
     <Pressable

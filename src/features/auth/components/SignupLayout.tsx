@@ -68,7 +68,7 @@ export function SignupLayout({
   const insets = useSafeAreaInsets();
 
   return (
-    <Box background="background" style={[styles.root, { paddingTop: insets.top }]}>
+    <Box background="backgroundDefault" style={[styles.root, { paddingTop: insets.top }]}>
       {backdrop !== undefined && (
         <View style={styles.backdrop} pointerEvents="none">
           {backdrop}

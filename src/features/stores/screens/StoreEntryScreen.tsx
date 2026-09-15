@@ -35,7 +35,7 @@ const SPEC = {
 
 export function StoreEntryScreen({ onBack, onJoin, onCreate }: StoreEntryScreenProps) {
   return (
-    <Box background="background" style={styles.root}>
+    <Box background="backgroundDefault" style={styles.root}>
       <ScreenHeader onBack={onBack} />
 
       <View style={styles.content}>
@@ -43,7 +43,7 @@ export function StoreEntryScreen({ onBack, onJoin, onCreate }: StoreEntryScreenP
           <Text variant="display" weight="bold">
             어떻게 시작하시겠어요?
           </Text>
-          <Text variant="body" weight="medium" color="textSecondary">
+          <Text variant="body" weight="medium" color="foregroundDefault">
             매장을 만들거나, 초대 받은 매장에 참여해주세요.
           </Text>
         </View>

@@ -11,8 +11,8 @@ import { radius, useTheme } from '@/theme';
  * OFF면 사용자가 특정 행동을 완료해야 사라진다." 사라지는 시점은 호출부가 정한다 —
  * 이 컴포넌트는 그리기만 한다.
  *
- * 배경은 회색 반투명(`toastBackground`) 위에 iOS 블러가 얹힌 모습인데, 블러는 네이티브
- * 모듈 없이 못 그려서 반투명만 옮겼다. 전경은 테마와 무관하게 흰색이다.
+ * 배경은 Figma `tag/surface/fill/neutral`을 52% 불투명도로 표시한다. 배경 레이어에만
+ * 불투명도를 적용하여 전경은 테마와 무관하게 흰색으로 유지한다.
  *
  * `Snackbar`(danger 톤, 액션 버튼)와 다른 컴포넌트다. 이쪽은 안내, 그쪽은 경고.
  */
@@ -27,8 +27,6 @@ const SPEC = {
   gap: 8,
   iconSize: 24,
   minHeight: 32,
-  /** 시안: 메시지 텍스트 불투명도 88%. */
-  messageOpacity: 0.88,
   maxWidth: 420,
 } as const;
 
@@ -36,15 +34,14 @@ export function Toast({ message }: ToastProps) {
   const { colors } = useTheme();
 
   return (
-    <View
-      accessibilityRole="alert"
-      accessibilityLiveRegion="polite"
-      style={[styles.container, { backgroundColor: colors.toastBackground }]}
-    >
-      <CheckSquare size={SPEC.iconSize} color="staticWhite" />
-      <Text variant="body" weight="semibold" color="staticWhite" style={styles.message}>
-        {message}
-      </Text>
+    <View accessibilityRole="alert" accessibilityLiveRegion="polite" style={styles.container}>
+      <View style={[styles.background, { backgroundColor: colors.tagSurfaceFillNeutral }]} />
+      <View style={styles.content}>
+        <CheckSquare size={SPEC.iconSize} color="staticWhite" />
+        <Text variant="body" weight="semibold" color="staticWhite" style={styles.message}>
+          {message}
+        </Text>
+      </View>
     </View>
   );
 }
@@ -63,8 +60,21 @@ const styles = StyleSheet.create({
     gap: SPEC.gap,
     overflow: 'hidden',
   },
+  background: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+    opacity: 0.52,
+  },
+  content: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPEC.gap,
+  },
   message: {
     flex: 1,
-    opacity: SPEC.messageOpacity,
   },
 });

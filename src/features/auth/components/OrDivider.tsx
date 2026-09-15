@@ -10,7 +10,7 @@ export function OrDivider({ label }: { label: string }) {
   return (
     <View style={styles.container}>
       <View style={[styles.line, { backgroundColor: colors.borderStrong }]} />
-      <Text variant="bodySmall" weight="medium" color="textTertiary">
+      <Text variant="bodySmall" weight="medium" color="foregroundSubtle">
         {label}
       </Text>
       <View style={[styles.line, { backgroundColor: colors.borderStrong }]} />

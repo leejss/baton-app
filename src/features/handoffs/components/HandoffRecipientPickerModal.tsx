@@ -34,14 +34,14 @@ export function HandoffRecipientPickerModal({
     />
   );
   const separator = () => (
-    <View style={[styles.separator, { backgroundColor: theme.colors.border }]} />
+    <View style={[styles.separator, { backgroundColor: theme.colors.borderDefault }]} />
   );
 
   return (
     <Modal animationType="slide" visible={visible} onRequestClose={onClose}>
       <View
         accessibilityViewIsModal
-        style={[styles.root, { backgroundColor: theme.colors.background }]}
+        style={[styles.root, { backgroundColor: theme.colors.backgroundDefault }]}
       >
         <ScreenHeader title="받는 사람 선택" onBack={onClose} />
         <FlashList

@@ -1,7 +1,7 @@
 /**
  * 원시(primitive) 토큰.
  *
- * 출처: Figma `Baton-Design System` / `primitives` 섹션 (node 9:44).
+ * 출처: Figma `최종 디자인 시스템` / `primitives` 컬렉션.
  * 여기 있는 값은 "이름 없는 재료"다. 컴포넌트가 직접 import 하지 않는다 —
  * 반드시 `colors.ts`의 시맨틱 레이어를 거쳐 `useTheme().colors`로만 접근한다.
  *
@@ -57,13 +57,8 @@ export const palette = {
   gray900: '#111827',
   gray950: '#030712',
 
-  /**
-   * ⚠️ 디자인 시스템 `surface/blue/default`. 라운드 버튼의 연한 파랑 배경이다.
-   * `blue50`(#EFF6FF)과 2단위밖에 차이 나지 않아 사실상 중복으로 보인다 —
-   * 시안 값을 그대로 옮겨 두었고 디자인 확인이 필요하다. 확인되면 둘 중 하나로 합친다.
-   */
-  blue25: '#F1F6FF',
-  blue50: '#EFF6FF',
+  /** Figma primitives `blue/50`. `#EFF6FF`는 semantic tag 색으로 별도 관리한다. */
+  blue50: '#F1F6FF',
   blue100: '#DBEAFE',
   blue200: '#BFDBFE',
   blue300: '#93C5FD',
@@ -144,7 +139,7 @@ export const MAX_CONTENT_WIDTH = 800;
 
 /**
  * 외부 서비스의 고정 브랜드 색. 우리 디자인 시스템이 아니므로 Figma primitives에 없고,
- * 다크모드에서도 바뀌지 않으며, 시맨틱 컬러로 승격시키지도 않는다.
+ * 앱 모드와 무관하게 고정되며, 시맨틱 컬러로 승격시키지도 않는다.
  * 각 사의 브랜드 가이드가 정한 값이라 우리가 조정할 수 없다.
  */
 export const socialBrand = {

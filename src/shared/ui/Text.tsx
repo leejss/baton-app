@@ -28,7 +28,7 @@ export function Text({
   style,
   variant = 'body',
   weight = 'regular',
-  color = 'textPrimary',
+  color = 'foregroundStrong',
   ...rest
 }: AppTextProps) {
   const theme = useTheme();

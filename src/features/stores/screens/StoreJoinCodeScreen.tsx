@@ -104,7 +104,7 @@ export function StoreJoinCodeScreen({
   };
 
   return (
-    <Box background="background" style={styles.root}>
+    <Box background="backgroundDefault" style={styles.root}>
       <ScreenHeader onBack={onBack} />
 
       <View style={styles.progress}>
@@ -116,7 +116,7 @@ export function StoreJoinCodeScreen({
           <Text variant="display" weight="bold">
             초대 코드를 입력해주세요
           </Text>
-          <Text variant="body" weight="medium" color="textSecondary">
+          <Text variant="body" weight="medium" color="foregroundDefault">
             {'관리자에게 받은 초대 코드로 근무 매장에\n합류할 수 있어요.'}
           </Text>
         </View>
@@ -131,7 +131,12 @@ export function StoreJoinCodeScreen({
             autoFocus
           />
           {hasError && (
-            <Text variant="caption" weight="medium" color="dangerText" style={styles.error}>
+            <Text
+              variant="caption"
+              weight="medium"
+              color="foregroundWarningDefault"
+              style={styles.error}
+            >
               {errorMessage}
             </Text>
           )}

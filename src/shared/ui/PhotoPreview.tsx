@@ -44,7 +44,7 @@ export function PhotoPreview({
         accessibilityRole="button"
         accessibilityLabel={`${label} 전체보기`}
         onPress={() => setOpen(true)}
-        style={[styles.frame, { borderColor: colors.border }]}
+        style={[styles.frame, { borderColor: colors.borderDefault }]}
       >
         {failed || !uri ? (
           <Text variant="caption">사진 조회 실패</Text>
@@ -61,7 +61,7 @@ export function PhotoPreview({
         )}
       </Pressable>
       <Modal visible={open} animationType="fade" onRequestClose={() => setOpen(false)}>
-        <View style={[styles.viewer, { backgroundColor: colors.background }]}>
+        <View style={[styles.viewer, { backgroundColor: colors.backgroundDefault }]}>
           <Button label="사진 닫기" onPress={() => setOpen(false)} />
           {failed || !uri ? (
             <>

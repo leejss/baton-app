@@ -26,16 +26,20 @@ export function DeleteHandoffDialog({
       statusBarTranslucent
       onRequestClose={onCancel}
     >
-      <View style={[styles.overlay, { backgroundColor: theme.colors.overlay }]}>
+      <View style={[styles.overlay, { backgroundColor: theme.colors.overlayDimmed }]}>
         <View
           accessibilityViewIsModal
-          style={[styles.dialog, shadows.strong, { backgroundColor: theme.colors.background }]}
+          style={[
+            styles.dialog,
+            shadows.strong,
+            { backgroundColor: theme.colors.backgroundDefault },
+          ]}
         >
           <View style={styles.copy}>
             <Text variant="title" weight="semibold" style={styles.centerText}>
               인수인계를 삭제할까요?
             </Text>
-            <Text color="textSecondary" style={styles.centerText}>
+            <Text color="foregroundDefault" style={styles.centerText}>
               삭제한 인수인계는 되돌릴 수 없어요.
             </Text>
           </View>
@@ -46,7 +50,7 @@ export function DeleteHandoffDialog({
               accessibilityLabel="삭제 취소"
               disabled={isDeleting}
               onPress={onCancel}
-              style={[styles.button, { backgroundColor: theme.colors.surfaceSunken }]}
+              style={[styles.button, { backgroundColor: theme.colors.surfaceNeutralSubtle }]}
             >
               <Text weight="medium">취소</Text>
             </Pressable>
@@ -56,9 +60,9 @@ export function DeleteHandoffDialog({
               accessibilityState={{ disabled: isDeleting, busy: isDeleting }}
               disabled={isDeleting}
               onPress={onConfirm}
-              style={[styles.button, { backgroundColor: theme.colors.danger }]}
+              style={[styles.button, { backgroundColor: theme.colors.surfaceWarningDefault }]}
             >
-              <Text weight="medium" color="dangerOn">
+              <Text weight="medium" color="foregroundInverse">
                 {isDeleting ? '삭제 중' : '삭제'}
               </Text>
             </Pressable>

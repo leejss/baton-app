@@ -3,6 +3,7 @@ import { StyleSheet, View } from 'react-native';
 import type { HandoffTypeDto } from '@/features/handoffs/api/handoff.schema';
 import { HANDOFF_TYPE_ILLUST_ICONS } from '@/features/handoffs/lib/handoffTypeIllustIcons';
 import { IllustIcon, Text } from '@/shared/ui';
+import { useTheme } from '@/theme';
 
 type HandoffTypeBadgeProps = {
   label: string;
@@ -10,10 +11,12 @@ type HandoffTypeBadgeProps = {
 };
 
 export function HandoffTypeBadge({ label, type }: HandoffTypeBadgeProps) {
+  const { colors } = useTheme();
+
   return (
-    <View style={styles.root}>
+    <View style={[styles.root, { backgroundColor: colors.surfaceBlueDefault }]}>
       <IllustIcon name={HANDOFF_TYPE_ILLUST_ICONS[type]} size={16} />
-      <Text variant="bodySmall" weight="semibold" color="accent">
+      <Text variant="bodySmall" weight="semibold" color="foregroundBlueSoft">
         {label}
       </Text>
     </View>
@@ -31,8 +34,6 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
     gap: 4,
     borderRadius: 42,
-    backgroundColor: '#F1F6FF',
     overflow: 'hidden',
-    // TODO(design-system): Figma 732:22073의 blue surface·10px 여백·42px radius를 토큰화한다.
   },
 });

@@ -59,7 +59,7 @@ export function HandoffTypeSelectScreen({
   };
 
   return (
-    <View style={[styles.root, { backgroundColor: theme.colors.background }]}>
+    <View style={[styles.root, { backgroundColor: theme.colors.backgroundDefault }]}>
       <ScreenHeader onClose={handleExit} />
       <ScrollView
         contentInsetAdjustmentBehavior="automatic"
@@ -67,7 +67,7 @@ export function HandoffTypeSelectScreen({
         keyboardShouldPersistTaps="handled"
         style={styles.scroll}
       >
-        <Text variant="subheading" weight="semibold" style={styles.heading}>
+        <Text variant="subheading" weight="semibold" color="foregroundStrong">
           어떤 내용을 전달해야하나요?
         </Text>
         <View style={styles.options}>
@@ -101,6 +101,4 @@ const styles = StyleSheet.create({
     // TODO(design-system): Figma 732:21450의 28/20px 간격을 레이아웃 토큰으로 동기화한다.
   },
   options: { gap: 16 },
-  // TODO(design-system): foreground/strong가 시맨틱 컬러에 추가되면 원시값을 교체한다.
-  heading: { color: '#1F2937' },
 });

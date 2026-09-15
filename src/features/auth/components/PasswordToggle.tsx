@@ -23,7 +23,7 @@ export function PasswordToggle({ isVisible, onToggle }: PasswordToggleProps) {
       onPress={onToggle}
       hitSlop={10}
     >
-      <EyeOffLine size={TEXT_FIELD_ICON_SIZE} color="textTertiary" />
+      <EyeOffLine size={TEXT_FIELD_ICON_SIZE} color="foregroundSubtle" />
     </Pressable>
   );
 }

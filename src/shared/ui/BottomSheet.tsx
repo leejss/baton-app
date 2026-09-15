@@ -12,6 +12,8 @@ export type BottomSheetProps = {
   visible: boolean;
   children: ReactNode;
   title?: string;
+  /** 근무자 선택 시안의 설명과 상단 배치. */
+  description?: string;
   dismissible?: boolean;
   /** 닫기 전환이 끝난 뒤 호출된다. 여기서 visible을 false로 갱신한다. */
   onDismiss: () => void;
@@ -22,6 +24,7 @@ export function BottomSheet({
   visible,
   children,
   title,
+  description,
   dismissible = true,
   onDismiss,
 }: BottomSheetProps) {
@@ -46,7 +49,7 @@ export function BottomSheet({
   return (
     <BottomSheetModal
       ref={sheetRef}
-      backgroundStyle={{ backgroundColor: colors.background }}
+      backgroundStyle={{ backgroundColor: colors.backgroundDefault }}
       enablePanDownToClose={dismissible}
       handleComponent={null}
       onDismiss={onDismiss}
@@ -54,33 +57,48 @@ export function BottomSheet({
       <BottomSheetView
         style={[
           styles.content,
+          description !== undefined && styles.selectionContent,
           {
-            backgroundColor: colors.background,
+            backgroundColor: colors.backgroundDefault,
             // fit-to-content 측정 중에는 백분율 너비의 기준이 없으므로 숫자로 전달한다.
             width,
             maxHeight: height - insets.top - spacing.md,
           },
         ]}
       >
+        {description !== undefined && (
+          <View style={[styles.handle, { backgroundColor: colors.borderDefault }]} />
+        )}
         {title && (
           <View style={styles.heading}>
-            <Text
-              accessibilityRole="header"
-              variant="subheading"
-              weight="semibold"
-              style={styles.title}
-            >
-              {title}
-            </Text>
+            <View style={[styles.title, description !== undefined && styles.descriptionGroup]}>
+              <Text accessibilityRole="header" variant="subheading" weight="semibold">
+                {title}
+              </Text>
+              {description !== undefined && (
+                <Text variant="bodySmall" color="foregroundSubtle">
+                  {description}
+                </Text>
+              )}
+            </View>
             <Pressable
               accessibilityRole="button"
               accessibilityLabel={`${title} 닫기`}
               accessibilityState={{ disabled: !dismissible }}
               disabled={!dismissible}
               onPress={handleClose}
-              style={styles.close}
+              style={[styles.close, description !== undefined && styles.selectionClose]}
             >
-              <X size={20} color="textDisabled" />
+              <View
+                style={
+                  description !== undefined && [
+                    styles.closeCircle,
+                    { backgroundColor: colors.surfaceNeutralSubtle },
+                  ]
+                }
+              >
+                <X size={description !== undefined ? 16 : 20} color="foregroundDisabled" />
+              </View>
             </Pressable>
           </View>
         )}
@@ -91,6 +109,25 @@ export function BottomSheet({
 }
 
 const styles = StyleSheet.create({
+  // Figma 1097:39086의 화면 전용 치수.
+  selectionContent: { paddingTop: 46, paddingHorizontal: 20, gap: 25 },
+  descriptionGroup: { gap: 6 },
+  handle: {
+    position: 'absolute',
+    top: 8,
+    alignSelf: 'center',
+    width: 60,
+    height: 4,
+    borderRadius: 12,
+  },
+  selectionClose: { position: 'absolute', top: -36, right: -10 },
+  closeCircle: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   content: {
     paddingHorizontal: spacing.md,
     // 기존 인수인계 시트의 여백을 유지한다. TODO(design-system): 20px를 토큰과 동기화한다.

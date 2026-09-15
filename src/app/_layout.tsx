@@ -1,8 +1,8 @@
 import { SessionQueryProvider } from '@/shared/providers/SessionQueryProvider';
-import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
+import { DefaultTheme, Stack, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
-import { StyleSheet, useColorScheme } from 'react-native';
+import { StyleSheet } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 
@@ -23,7 +23,6 @@ export function ErrorBoundary({ error, retry }: { error: Error; retry: () => Pro
 }
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
   const authStatus = useAuthStore((state) => state.status);
   const restoreSession = useAuthStore((state) => state.restore);
 
@@ -36,7 +35,7 @@ export default function RootLayout() {
     <GestureHandlerRootView style={styles.root}>
       <KeyboardProvider>
         <SessionQueryProvider>
-          <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+          <ThemeProvider value={DefaultTheme}>
             <Stack screenOptions={{ headerShown: false }}>
               <Stack.Screen name="index" />
               <Stack.Screen name="(auth)" />

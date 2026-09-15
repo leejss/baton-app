@@ -148,7 +148,7 @@ export function HandoffEditContent({ ref, handoffId, onBack, onSaved }: HandoffE
   if (isAppError(detailQuery.error) && [403, 404].includes(detailQuery.error.status ?? 0))
     return <ErrorState error={detailQuery.error} onBack={onBack} />;
   return (
-    <View style={[styles.root, { backgroundColor: theme.colors.surfaceSunken }]}>
+    <View style={[styles.root, { backgroundColor: theme.colors.surfaceNeutralSubtle }]}>
       <KeyboardAwareScrollView
         bottomOffset={spacing.md}
         contentInsetAdjustmentBehavior="automatic"
@@ -157,7 +157,7 @@ export function HandoffEditContent({ ref, handoffId, onBack, onSaved }: HandoffE
         style={styles.scroll}
       >
         {(handoff.status !== 'UNCONFIRMED' || handoff.sender.userId !== context.userId) && (
-          <Text color="dangerText">
+          <Text color="foregroundWarningDefault">
             수정할 수 없는 인수인계입니다. 이전 화면으로 돌아가 최신 상태를 확인해주세요.
           </Text>
         )}
@@ -165,7 +165,7 @@ export function HandoffEditContent({ ref, handoffId, onBack, onSaved }: HandoffE
           <Text variant="heading" weight="semibold">
             전달할 내용을 수정해 주세요
           </Text>
-          <Text variant="bodySmall" color="textSecondary">
+          <Text variant="bodySmall" color="foregroundDefault">
             {getHandoffTypeLabel(handoff.type)} · 유형은 변경할 수 없어요
           </Text>
         </View>

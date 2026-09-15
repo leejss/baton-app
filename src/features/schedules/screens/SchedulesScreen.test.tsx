@@ -90,13 +90,13 @@ describe('근무표 화면의 로컬 조회 경계', () => {
     expect(await screen.findByText('해당 날짜에 등록된 근무 일정이 없습니다.')).toBeOnTheScreen();
     expect(screen.getByText('근무수정/삭제')).toBeOnTheScreen();
     expect(screen.getByLabelText('뒤로 가기')).toBeOnTheScreen();
-    expect(screen.queryByLabelText(/^알림/)).not.toBeOnTheScreen();
+    expect(screen.getByLabelText(/^알림/)).toBeOnTheScreen();
   });
   it('월간 조회가 대기 중이어도 헤더·월 선택·날짜 선택을 유지한다', async () => {
     const source = createMockScheduleDataSource({ now });
     jest.spyOn(source, 'month').mockImplementation(() => new Promise<never>(() => {}));
     await mount(<SchedulesScreen source={source} initialDate="2026-09-15" />);
-    expect(screen.getByText('근무표')).toBeOnTheScreen();
+    expect(await screen.findByText('근무표')).toBeOnTheScreen();
     expect(screen.queryByLabelText('뒤로 가기')).not.toBeOnTheScreen();
     expect(screen.getByLabelText('조회 월 선택')).toBeOnTheScreen();
     await fireEvent.press(screen.getByLabelText('9월 16일 수, 근무 0건'));
@@ -108,13 +108,13 @@ describe('근무표 화면의 로컬 조회 경계', () => {
   it('실패한 월을 유지하면서 월 선택과 재시도를 제공한다', async () => {
     const source = createMockScheduleDataSource({ now, failMonth: true });
     await mount(<SchedulesScreen source={source} initialDate="2026-09-15" />);
-    expect(await screen.findByText('근무표를 불러오지 못했습니다.')).toBeOnTheScreen();
+    expect((await screen.findAllByText('근무표를 불러오지 못했습니다.')).length).toBeGreaterThan(0);
     expect(screen.getByText('2026년 9월')).toBeOnTheScreen();
     await fireEvent.press(screen.getByLabelText('조회 월 선택'));
     await fireEvent.press(screen.getByLabelText('2026년 10월'));
     await fireEvent(screen.getByLabelText('조회 월 선택 닫기'), 'onDismiss');
     expect(screen.getByText('2026년 10월')).toBeOnTheScreen();
-    expect(await screen.findByText('근무표를 불러오지 못했습니다.')).toBeOnTheScreen();
+    expect((await screen.findAllByText('근무표를 불러오지 못했습니다.')).length).toBeGreaterThan(0);
   });
   it('직원에게 편집 진입을 숨기고 빈 날짜의 달력은 유지한다', async () => {
     const source = createMockScheduleDataSource({

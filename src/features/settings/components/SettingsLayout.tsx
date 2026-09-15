@@ -32,11 +32,16 @@ export function SettingsLayout({
     <>
       {title && (
         <View style={styles.headline}>
-          <Text variant="heading" weight="bold" color="navigationForeground" style={styles.center}>
+          <Text variant="heading" weight="bold" color="foregroundStrong" style={styles.center}>
             {title}
           </Text>
           {description && (
-            <Text variant="bodySmall" weight="medium" color="textSecondary" style={styles.center}>
+            <Text
+              variant="bodySmall"
+              weight="medium"
+              color="foregroundDefault"
+              style={styles.center}
+            >
               {description}
             </Text>
           )}
@@ -46,7 +51,7 @@ export function SettingsLayout({
     </>
   );
   return (
-    <View style={[styles.root, { backgroundColor: colors.background }]}>
+    <View style={[styles.root, { backgroundColor: colors.backgroundDefault }]}>
       <ScreenHeader
         title={headerTitle}
         titleAlign={headerTitle ? 'center' : 'left'}

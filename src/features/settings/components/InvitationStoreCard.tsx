@@ -13,16 +13,16 @@ export function InvitationStoreCard() {
     ['연락처', store.storeContact],
   ];
   return (
-    <View style={[styles.card, { borderColor: colors.border }]}>
-      <Text weight="semibold" color="navigationForeground">
+    <View style={[styles.card, { borderColor: colors.borderDefault }]}>
+      <Text weight="semibold" color="foregroundStrong">
         {store.storeName} {store.branchName}
       </Text>
       {fields.map(([label, value]) => (
         <View key={label} style={styles.row}>
-          <Text variant="bodySmall" color="textDisabled" style={styles.label}>
+          <Text variant="bodySmall" color="foregroundDisabled" style={styles.label}>
             {label}
           </Text>
-          <Text variant="bodySmall" color="textSecondary" style={styles.value}>
+          <Text variant="bodySmall" color="foregroundDefault" style={styles.value}>
             {value}
           </Text>
         </View>

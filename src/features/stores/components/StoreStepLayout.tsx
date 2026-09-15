@@ -41,7 +41,7 @@ export function StoreStepLayout({
   action,
 }: StoreStepLayoutProps) {
   return (
-    <Box background="background" style={styles.root}>
+    <Box background="backgroundDefault" style={styles.root}>
       <ScreenHeader onBack={onBack} />
 
       <View style={styles.progress}>
@@ -58,7 +58,7 @@ export function StoreStepLayout({
           <Text variant="display" weight="bold">
             {title}
           </Text>
-          <Text variant="body" weight="medium" color="textSecondary">
+          <Text variant="body" weight="medium" color="foregroundDefault">
             {description}
           </Text>
         </View>

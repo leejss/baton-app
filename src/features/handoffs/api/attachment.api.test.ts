@@ -101,3 +101,24 @@ it('새 사진은 필수 헤더로 전송하며 API 인증 헤더를 넣지 않�
   expect(headers.get('if-none-match')).toBe('*');
   expect(headers.has('authorization')).toBe(false);
 });
+
+it('AbortSignal.throwIfAborted가 없는 런타임에서도 새 사진을 업로드한다', async () => {
+  jest
+    .mocked(post)
+    .mockResolvedValueOnce({
+      attachmentId: 501,
+      uploadUrl: 'https://storage.example/upload',
+      requiredHeaders: { 'Content-Type': 'image/jpeg', 'If-None-Match': '*' },
+    })
+    .mockResolvedValueOnce(verified);
+  jest
+    .mocked(fetch)
+    .mockResolvedValue({ ok: true, status: 200 } as Awaited<ReturnType<typeof fetch>>);
+
+  const signal = new AbortController().signal;
+  Object.defineProperty(signal, 'throwIfAborted', { value: undefined });
+
+  await expect(
+    uploadAttachment({ ...file, attachmentId: undefined }, () => {}, signal),
+  ).resolves.toBeUndefined();
+});

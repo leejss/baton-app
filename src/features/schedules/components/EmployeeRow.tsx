@@ -1,9 +1,10 @@
 import { StyleSheet, View } from 'react-native';
+import { EmployeeAvatar } from '@/features/schedules/components/EmployeeAvatar';
 
 import type { ScheduleMember } from '@/features/schedules/types';
 import { Pressable, Text } from '@/shared/ui';
-import { Check, NavUserLine } from '@/shared/ui/icons';
-import { radius, spacing, useTheme } from '@/theme';
+import { Check } from '@/shared/ui/icons';
+import { radius, useTheme } from '@/theme';
 
 type EmployeeRowProps = {
   member: ScheduleMember;
@@ -21,53 +22,45 @@ export function EmployeeRow({ member, selected, onSelect }: EmployeeRowProps) {
       onPress={() => onSelect(member.id)}
       style={styles.row}
     >
-      <View style={[styles.avatar, { backgroundColor: colors.surfaceSunken }]}>
-        <NavUserLine size={20} color="textTertiary" />
-      </View>
+      <EmployeeAvatar size={34} />
       <View style={styles.info}>
-        <Text weight="semibold">
+        <Text
+          variant="title"
+          weight="semibold"
+          color={selected ? 'foregroundStrong' : 'foregroundSubtle'}
+        >
           {member.name}{' '}
-          <Text variant="caption" color="textTertiary">
+          <Text variant="caption" color="foregroundSubtle">
             {member.role === 'MANAGER' ? '관리자' : '근로자'}
           </Text>
-        </Text>
-        <Text variant="caption" color="textSecondary">
-          {member.email}
         </Text>
       </View>
       <View
         style={[
           styles.check,
           {
-            borderColor: selected ? colors.accent : colors.border,
-            backgroundColor: selected ? colors.accent : colors.background,
+            borderColor: selected ? colors.surfaceBlueStrong : colors.borderDefault,
+            backgroundColor: selected ? colors.surfaceBlueStrong : colors.backgroundDefault,
           },
         ]}
       >
-        {selected && <Check size={16} color="accentOn" />}
+        {selected && <Check size={16} color="foregroundInverse" />}
       </View>
     </Pressable>
   );
 }
 const styles = StyleSheet.create({
-  // TODO(design-system): Figma 직원 선택 행의 34px 아바타·22px 선택 표시와 최소 행 높이를 sync한다.
+  // Figma 1097:39094: 아바타 34, 선택 표시 22.5, 행 간격 포함 64.
   row: {
     minHeight: 64,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.sm,
+    gap: 12,
   },
   info: { flex: 1 },
-  avatar: {
-    width: 34,
-    height: 34,
-    borderRadius: radius.full,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   check: {
-    width: 22,
-    height: 22,
+    width: 22.5,
+    height: 22.5,
     borderWidth: 1,
     borderRadius: radius.sm,
     alignItems: 'center',

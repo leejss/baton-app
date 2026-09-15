@@ -16,7 +16,7 @@ export function SettingsSection({
   return (
     <View style={styles.section}>
       {title && (
-        <Text variant="bodySmall" weight="semibold" color="textDisabled">
+        <Text variant="bodySmall" weight="semibold" color="foregroundDisabled">
           {title}
         </Text>
       )}
@@ -25,7 +25,7 @@ export function SettingsSection({
           styles.card,
           spacing === 'spacious' && styles.spacious,
           spacing === 'compact' && styles.compact,
-          { borderColor: colors.border },
+          { borderColor: colors.borderDefault },
         ]}
       >
         {children}

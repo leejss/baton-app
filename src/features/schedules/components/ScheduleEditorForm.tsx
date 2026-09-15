@@ -1,10 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
-import {
-  KeyboardAwareScrollView,
-  KeyboardStickyView,
-  useKeyboardState,
-} from 'react-native-keyboard-controller';
+import { KeyboardAwareScrollView, useKeyboardState } from 'react-native-keyboard-controller';
 
 import { CalendarMonthHeader } from '@/features/schedules/components/CalendarMonthHeader';
 import { EmployeePicker } from '@/features/schedules/components/EmployeePicker';
@@ -37,6 +33,10 @@ export function ScheduleEditorForm(props: ScheduleEditorFormProps) {
   const today = getTodayInSeoul(now);
   const [month, setMonth] = useState((item?.date ?? initialDate ?? today).slice(0, 7));
   const keyboardOpen = useKeyboardState((state) => state.isVisible);
+  const isEnteringTime = step === 2 && keyboardOpen;
+  useEffect(() => {
+    if (step === 2) form.setFocus('startTime');
+  }, [step, form]);
   const [outOfRange, setOutOfRange] = useState(false);
   const start = values.startDate ?? '';
   const end = values.endDate ?? '';
@@ -79,8 +79,13 @@ export function ScheduleEditorForm(props: ScheduleEditorFormProps) {
         bottomOffset={120}
         contentContainerStyle={styles.scroll}
       >
-        <View style={[styles.calendar, { backgroundColor: colors.background }]}>
-          <CalendarMonthHeader month={month} today={today} onChange={handleMonthChange} />
+        <View style={[styles.calendar, { backgroundColor: colors.backgroundDefault }]}>
+          <CalendarMonthHeader
+            month={month}
+            today={today}
+            onChange={handleMonthChange}
+            trailing={<Text color="foregroundDisabled">근무편집</Text>}
+          />
           <MonthlyCalendar
             month={month}
             today={today}
@@ -100,44 +105,43 @@ export function ScheduleEditorForm(props: ScheduleEditorFormProps) {
           <ScheduleMessage message="현재 월 기준 과거 12개월부터 미래 3개월까지 조회할 수 있습니다." />
         )}
         <View style={styles.fields}>
-          {step === 1 && (
-            <Text variant="bodySmall" color="textSecondary">
-              {item
-                ? '변경할 근무 날짜 한 개를 선택해주세요.'
-                : '날짜를 길게 누른 뒤 드래그하거나 시작일과 종료일을 눌러 선택해주세요.'}
-              {dates.length ? `\n${start} ~ ${end} · ${dates.length}일 선택` : ''}
-            </Text>
-          )}
-          {step >= 2 && (
-            <ScheduleTimeFields
-              control={form.control}
-              disabled={locked}
-              onChange={editor.clearFailedAttempt}
-            />
-          )}
+          <ScheduleTimeFields
+            control={form.control}
+            disabled={locked}
+            readOnly={step !== 2}
+            onChange={editor.clearFailedAttempt}
+          />
           {(form.formState.errors.root ||
             form.formState.errors.employeeId ||
             form.formState.errors.startDate) && (
-            <Text accessibilityLiveRegion="polite" variant="bodySmall" color="dangerText">
+            <Text
+              accessibilityLiveRegion="polite"
+              variant="bodySmall"
+              color="foregroundWarningDefault"
+            >
               {form.formState.errors.root?.message ??
                 form.formState.errors.employeeId?.message ??
                 form.formState.errors.startDate?.message}
             </Text>
           )}
           {mutation.isError && !editor.duplicates && (
-            <Text accessibilityLiveRegion="polite" variant="bodySmall" color="dangerText">
+            <Text
+              accessibilityLiveRegion="polite"
+              variant="bodySmall"
+              color="foregroundWarningDefault"
+            >
               {mutation.error.message}
             </Text>
           )}
           {saveResult?.failed.length ? (
-            <Text variant="bodySmall" color="dangerText">
+            <Text variant="bodySmall" color="foregroundWarningDefault">
               재시도할 날짜: {saveResult.failed.join(', ')}
             </Text>
           ) : null}
         </View>
       </KeyboardAwareScrollView>
-      <KeyboardStickyView enabled={step === 2}>
-        <BottomActionBar>
+      <BottomActionBar>
+        <View style={isEnteringTime ? styles.hidden : undefined}>
           <View style={styles.summary}>
             <EmployeePicker
               storeId={context.storeId}
@@ -147,49 +151,51 @@ export function ScheduleEditorForm(props: ScheduleEditorFormProps) {
               onDone={step === 0 ? editor.handleNext : undefined}
               disabled={locked}
             />
-            {step === 3 && (
+            {step > 0 && (
               <Text variant="bodySmall">
-                근무{' '}
-                <Text color="accent" weight="semibold">
+                · 근무{' '}
+                <Text color="foregroundBlueSoft" weight="semibold">
                   {dates.length}일
                 </Text>{' '}
-                선택 · 하루{' '}
-                <Text color="accent" weight="semibold">
-                  {formatTimeRangeDuration(values.startTime ?? '', values.endTime ?? '')}
+                선택 ·{' '}
+                <Text color="foregroundBlueSoft" weight="semibold">
+                  {values.startTime && values.endTime && values.endTime > values.startTime
+                    ? formatTimeRangeDuration(values.startTime, values.endTime)
+                    : '0시간'}
                 </Text>{' '}
                 근무
               </Text>
             )}
           </View>
-          <View style={styles.actions}>
-            <View style={styles.previous}>
-              <Button
-                label="이전"
-                variant="secondary"
-                disabled={step === 0 || locked}
-                onPress={() => editor.setStep(step - 1)}
-              />
-            </View>
-            <View style={styles.next}>
-              <Button
-                label={
-                  step < 3
-                    ? '다음'
-                    : saveResult?.failed.length
-                      ? '실패한 날짜만 재시도'
-                      : item
-                        ? '수정 완료'
-                        : '등록'
-                }
-                variant={step === 3 ? 'accent' : 'primary'}
-                isLoading={mutation.isPending}
-                disabled={Boolean(disabled)}
-                onPress={editor.handleNext}
-              />
-            </View>
+        </View>
+        <View style={styles.actions}>
+          <View style={[styles.previous, isEnteringTime && styles.hidden]}>
+            <Button
+              label="이전"
+              variant="secondary"
+              disabled={step === 0 || locked}
+              onPress={() => editor.setStep(step - 1)}
+            />
           </View>
-        </BottomActionBar>
-      </KeyboardStickyView>
+          <View style={styles.next}>
+            <Button
+              label={
+                step < 3
+                  ? '다음'
+                  : saveResult?.failed.length
+                    ? '실패한 날짜만 재시도'
+                    : item
+                      ? '수정 완료'
+                      : '등록'
+              }
+              variant={step === 3 ? 'accent' : 'primary'}
+              isLoading={mutation.isPending}
+              disabled={Boolean(disabled)}
+              onPress={editor.handleNext}
+            />
+          </View>
+        </View>
+      </BottomActionBar>
       <ScheduleSaveFeedback
         result={editor.showResult ? saveResult : undefined}
         editing={Boolean(item)}
@@ -205,24 +211,31 @@ export function ScheduleEditorForm(props: ScheduleEditorFormProps) {
       />
       <ScheduleOverlay
         visible={Boolean(editor.leave)}
-        title="작성을 그만할까요?"
+        variant="alert"
+        title="작성 중인 내용이 있어요."
+        description={
+          saveResult?.created.length
+            ? '이미 등록된 근무는 유지됩니다. 등록하지 못한 날짜의 입력은 사라져요.'
+            : '지금 화면을 벗어나면\n입력한 내용이 모두 사라져요.'
+        }
         onClose={() => editor.setLeave(undefined)}
       >
-        <Text variant="bodySmall">
-          {saveResult?.created.length
-            ? '이미 등록된 근무는 유지됩니다. 등록하지 못한 날짜의 입력은 사라져요.'
-            : '작성 중인 내용은 저장되지 않아요.'}
-        </Text>
-        <Button label="계속 작성" onPress={() => editor.setLeave(undefined)} />
-        <Button
-          label="나가기"
-          variant="secondary"
-          onPress={() => {
-            const leave = editor.leave;
-            editor.setLeave(undefined);
-            leave?.();
-          }}
-        />
+        <View style={styles.leaveActions}>
+          <View style={styles.next}>
+            <Button label="돌아가기" tone="weak" onPress={() => editor.setLeave(undefined)} />
+          </View>
+          <View style={styles.next}>
+            <Button
+              label="나가기"
+              color="red"
+              onPress={() => {
+                const leave = editor.leave;
+                editor.setLeave(undefined);
+                leave?.();
+              }}
+            />
+          </View>
+        </View>
       </ScheduleOverlay>
     </View>
   );
@@ -237,9 +250,12 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.lg,
   },
   fields: { padding: SCREEN_PADDING_X, gap: spacing.md },
+  // Figma 1097:41488의 버튼 간격 7.
+  leaveActions: { flexDirection: 'row', gap: 7 },
   actions: { flexDirection: 'row', gap: 10 },
-  previous: { flex: 1 },
-  next: { flex: 3 },
+  hidden: { display: 'none' },
+  previous: { width: 89 },
+  next: { flex: 1 },
   summary: {
     flexDirection: 'row',
     flexWrap: 'wrap',

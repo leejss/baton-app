@@ -128,7 +128,7 @@ export function HandoffContentScreen({
   });
 
   return (
-    <View style={[styles.root, { backgroundColor: theme.colors.background }]}>
+    <View style={[styles.root, { backgroundColor: theme.colors.backgroundDefault }]}>
       <ScreenHeader
         onBack={() => {
           if (!createMutation.isPending) onBack();
@@ -144,12 +144,12 @@ export function HandoffContentScreen({
         <View style={styles.content}>
           {recipientsQuery.isError && (
             <>
-              <Text color="dangerText">수신자 목록을 불러오지 못했습니다.</Text>
+              <Text color="foregroundWarningDefault">수신자 목록을 불러오지 못했습니다.</Text>
               <Button label="수신자 다시 조회" onPress={() => void recipientsQuery.refetch()} />
             </>
           )}
           <View style={styles.mainSection}>
-            <Text variant="subheading" weight="semibold" style={styles.heading}>
+            <Text variant="subheading" weight="semibold" color="foregroundStrong">
               어떤 내용을 전달해야하나요?
             </Text>
 
@@ -175,7 +175,7 @@ export function HandoffContentScreen({
           </View>
 
           <View style={styles.recipientSection}>
-            <Text variant="bodySmall" weight="semibold" style={styles.sectionLabel}>
+            <Text variant="bodySmall" weight="semibold" color="foregroundSubtle">
               받는 사람
             </Text>
             <HandoffRecipientCard
@@ -215,8 +215,5 @@ const styles = StyleSheet.create({
   content: { width: '100%', gap: 32 },
   mainSection: { gap: 20 },
   recipientSection: { gap: 11 },
-  // TODO(design-system): Figma 732:21494의 foreground/strong·subtle 색상을 시맨틱 컬러에 추가한다.
-  heading: { color: '#1F2937' },
-  sectionLabel: { color: '#9CA3AF' },
   // TODO(design-system): 작성 화면의 28/32/20/11px 간격을 레이아웃 토큰으로 동기화한다.
 });

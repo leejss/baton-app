@@ -25,7 +25,7 @@ export function HandoffPresetRecipientNext({
   return (
     <>
       <View style={styles.message}>
-        <Text variant="bodySmall" color="textSecondary">
+        <Text variant="bodySmall" color="foregroundDefault">
           {selected
             ? `받는 사람: ${selected.member.displayName}`
             : query.isPending

@@ -74,7 +74,7 @@ function PendingFallback() {
   return (
     <View style={styles.container}>
       {online ? (
-        <ActivityIndicator color={theme.colors.textSecondary} />
+        <ActivityIndicator color={theme.colors.foregroundDefault} />
       ) : (
         <Text>네트워크 연결을 기다리고 있습니다.</Text>
       )}

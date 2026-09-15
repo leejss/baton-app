@@ -2,6 +2,7 @@ import { API_URL, assertApiConfigured } from '@/shared/config/api';
 import { z, type ZodType } from 'zod';
 
 import { logRequestStart } from '@/shared/api/devNetworkLog';
+import { withAbortTimeout } from '@/shared/api/abort';
 import { AppError, normalizeFetchError, type HttpDiagnostics } from '@/shared/api/errors';
 import { normalizeApiRoute, readHttpResponse } from '@/shared/api/httpResponse';
 import { reportError } from '@/shared/lib/reportError';
@@ -83,11 +84,6 @@ type RequestOptions = {
 
 type Method = 'GET' | 'POST' | 'PATCH' | 'DELETE';
 
-function withTimeout(signal?: AbortSignal): AbortSignal {
-  const timeout = AbortSignal.timeout(TIMEOUT_MS);
-  return signal === undefined ? timeout : AbortSignal.any([signal, timeout]);
-}
-
 /** `Retry-After`는 초 단위 정수다. 계약이 HTTP-date 형식은 쓰지 않는다. */
 function readRetryAfter(response: Response): number | null {
   const raw = response.headers.get('Retry-After');
@@ -148,28 +144,33 @@ async function fetchOnce(
   const route = normalizeApiRoute(path);
   const log = logRequestStart(method, path, isAuthorized, startedAt);
   // 직렬화와 signal 생성 실패는 fetch의 네트워크 오류가 아니다.
+  const timedSignal = withAbortTimeout(options.signal, TIMEOUT_MS);
   const init: RequestInit = {
     method,
     headers,
     body: body === undefined ? undefined : JSON.stringify(body),
-    signal: withTimeout(options.signal),
+    signal: timedSignal.signal,
   };
 
-  let response: Response;
   try {
-    response = await fetch(`${API_URL}${path}`, init);
-  } catch (error) {
-    const normalized = normalizeFetchError(error, init.signal);
-    const failure = new AppError(normalized.code, normalized.message, {
-      cause: normalized,
-      http: { method, route, durationMs: Date.now() - startedAt },
-    });
-    log.failed(failure);
-    throw failure;
+    let response: Response;
+    try {
+      response = await fetch(`${API_URL}${path}`, init);
+    } catch (error) {
+      const normalized = normalizeFetchError(error, init.signal);
+      const failure = new AppError(normalized.code, normalized.message, {
+        cause: normalized,
+        http: { method, route, durationMs: Date.now() - startedAt },
+      });
+      log.failed(failure);
+      throw failure;
+    }
+    const bodyResult = await readHttpResponse(response, { method, route }, startedAt, init.signal);
+    log.succeeded(response);
+    return { response, ...bodyResult };
+  } finally {
+    timedSignal.cleanup();
   }
-  const bodyResult = await readHttpResponse(response, { method, route }, startedAt, init.signal);
-  log.succeeded(response);
-  return { response, ...bodyResult };
 }
 
 /**

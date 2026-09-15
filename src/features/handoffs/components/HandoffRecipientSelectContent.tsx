@@ -45,11 +45,11 @@ export function HandoffRecipientSelectContent({ onConfirm }: HandoffRecipientSel
     />
   );
   const separator = () => (
-    <View style={[styles.separator, { backgroundColor: theme.colors.border }]} />
+    <View style={[styles.separator, { backgroundColor: theme.colors.borderDefault }]} />
   );
 
   return (
-    <View style={[styles.root, { backgroundColor: theme.colors.background }]}>
+    <View style={[styles.root, { backgroundColor: theme.colors.backgroundDefault }]}>
       <FlashList
         data={data}
         contentInsetAdjustmentBehavior="automatic"

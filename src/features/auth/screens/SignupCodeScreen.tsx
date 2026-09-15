@@ -133,7 +133,7 @@ export function SignupCodeScreen({ onBack, onNext }: SignupCodeScreenProps) {
           onSubmitEditing={submit}
         />
         {message !== null && (
-          <Text variant="caption" color="danger" style={styles.message}>
+          <Text variant="caption" color="foregroundWarningDefault" style={styles.message}>
             {message}
           </Text>
         )}

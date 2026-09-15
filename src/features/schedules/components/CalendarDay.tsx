@@ -40,20 +40,26 @@ export function CalendarDay({
       <View
         style={[
           styles.circle,
-          today && styles.today,
-          selected && { backgroundColor: colors.accent },
+          today && [styles.today, { backgroundColor: colors.surfaceBlueSubtle }],
+          selected && { backgroundColor: colors.surfaceBlueStrong },
         ]}
       >
         <Text
           weight="medium"
-          color={selected ? 'accentOn' : outside || muted ? 'textDisabled' : 'textPrimary'}
+          color={
+            selected
+              ? 'foregroundInverse'
+              : outside || muted
+                ? 'foregroundDisabled'
+                : 'foregroundStrong'
+          }
         >
           {Number(date.slice(8))}
         </Text>
       </View>
       <View accessible={false} importantForAccessibility="no" style={styles.dots}>
         {Array.from({ length: Math.min(count, 3) }, (_, index) => (
-          <View key={index} style={[styles.dot, { backgroundColor: colors.accent }]} />
+          <View key={index} style={[styles.dot, { backgroundColor: colors.surfaceBlueStrong }]} />
         ))}
       </View>
     </Pressable>
@@ -62,7 +68,6 @@ export function CalendarDay({
 
 const styles = StyleSheet.create({
   root: { width: `${100 / 7}%`, alignItems: 'center', paddingTop: 2, gap: 6 },
-  // TODO(design-system): Figma 1097:36402의 32px 날짜 원·2/6px 간격·오늘 #DBEAFE 배경을 시맨틱 토큰과 sync한다.
   circle: {
     minWidth: 32,
     minHeight: 32,
@@ -70,7 +75,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  today: { backgroundColor: '#DBEAFE' },
+  today: {},
   dots: { height: 4, flexDirection: 'row', gap: 2 },
   dot: { width: 4, height: 4, borderRadius: radius.full },
 });

@@ -11,10 +11,10 @@ export function MemberRow({ member, isSelected, onSelect }: MemberRowProps) {
     return (
       <View style={styles.employee}>
         <ProfileAvatar profileImage={member.profileImage} />
-        <Text variant="title" weight="semibold" color="navigationForeground">
+        <Text variant="title" weight="semibold" color="foregroundStrong">
           {member.displayName}
         </Text>
-        <Text variant="caption" color="textDisabled" style={styles.email}>
+        <Text variant="caption" color="foregroundDisabled" style={styles.email}>
           {member.email}
         </Text>
       </View>
@@ -25,24 +25,27 @@ export function MemberRow({ member, isSelected, onSelect }: MemberRowProps) {
       accessibilityLabel={`${member.displayName}, ${member.email}`}
       accessibilityState={{ checked: isSelected }}
       onPress={() => onSelect(member.userId)}
-      style={[styles.choice, { borderColor: isSelected ? colors.textDisabled : colors.border }]}
+      style={[
+        styles.choice,
+        { borderColor: isSelected ? colors.foregroundDisabled : colors.borderDefault },
+      ]}
     >
       <View
         style={[
           styles.radio,
           {
-            borderColor: isSelected ? colors.surfaceInverse : colors.border,
-            backgroundColor: isSelected ? colors.surfaceInverse : colors.background,
+            borderColor: isSelected ? colors.surfaceNeutralStrong : colors.borderDefault,
+            backgroundColor: isSelected ? colors.surfaceNeutralStrong : colors.backgroundDefault,
           },
         ]}
       >
-        {isSelected && <View style={[styles.dot, { backgroundColor: colors.onSurfaceInverse }]} />}
+        {isSelected && <View style={[styles.dot, { backgroundColor: colors.foregroundInverse }]} />}
       </View>
       <View style={styles.details}>
-        <Text weight="semibold" color="navigationForeground">
+        <Text weight="semibold" color="foregroundStrong">
           {member.displayName}
         </Text>
-        <Text variant="bodySmall" color="textDisabled">
+        <Text variant="bodySmall" color="foregroundDisabled">
           {member.email}
         </Text>
       </View>

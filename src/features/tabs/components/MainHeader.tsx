@@ -44,10 +44,10 @@ export function MainHeader({
   const headerBackgroundColor =
     backgroundColor ??
     (onBack !== undefined
-      ? theme.colors.surface
+      ? theme.colors.backgroundSubtle
       : title !== undefined
-        ? theme.colors.background
-        : undefined);
+        ? theme.colors.backgroundDefault
+        : theme.colors.surfaceBlueDefault);
 
   return (
     <View style={[styles.root, { paddingTop: insets.top, backgroundColor: headerBackgroundColor }]}>
@@ -86,8 +86,8 @@ export function MainHeader({
               style={[
                 styles.storeTag,
                 {
-                  backgroundColor: theme.colors.background,
-                  borderColor: theme.colors.surfaceSunken,
+                  backgroundColor: theme.colors.backgroundDefault,
+                  borderColor: theme.colors.surfaceNeutralSubtle,
                 },
               ]}
             >
@@ -123,11 +123,11 @@ export function MainHeader({
               onPress={() => router.navigate(ROUTES.notifications)}
               style={({ pressed }) => [styles.notificationButton, pressed && styles.pressed]}
             >
-              <NavNotification color="navigationForeground" />
+              <NavNotification color="foregroundStrong" />
               {count > 0 && (
-                <View style={[styles.badge, { backgroundColor: theme.colors.accent }]}>
+                <View style={[styles.badge, { backgroundColor: theme.colors.surfaceBlueStrong }]}>
                   <Text
-                    color="accentOn"
+                    color="foregroundInverse"
                     variant="caption"
                     weight="semibold"
                     style={styles.badgeText}
@@ -145,10 +145,8 @@ export function MainHeader({
 }
 
 const styles = StyleSheet.create({
-  // TODO(design-system): Figma node 732:17460의 홈 배경, 62px 헤더와 10px 간격을 토큰으로 동기화한다.
   root: {
     minHeight: 62,
-    backgroundColor: '#F1F6FF',
   },
   inner: {
     width: '100%',
