@@ -1,3 +1,4 @@
+import { logger } from '@/shared/lib/logger';
 import { updateSchedule } from '@/features/schedules/api/schedule.api';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigation, useRouter } from 'expo-router';
@@ -80,11 +81,30 @@ export function useScheduleEditor({ context, initialDate, item }: EditorOptions)
           : undefined,
       );
     },
-    onError: (error) => refreshScheduleConflict(client, context.storeId, error),
+    onError: (error) => {
+      logger.error(item ? '근무 수정 실패' : '근무 등록 실패', error);
+      return refreshScheduleConflict(client, context.storeId, error);
+    },
     onSettled: () => {
       saving.current = false;
     },
     onSuccess: async (result) => {
+      if (item) {
+        logger.info('근무 수정 완료');
+      } else if (result.created.length > 0) {
+        logger.info(
+          saveResult?.failed.length
+            ? '근무 재등록 결과'
+            : result.failed.length > 0 || result.duplicates.length > 0
+              ? '근무 일부 등록 완료'
+              : '근무 등록 완료',
+          {
+            created_count: result.created.length,
+            failed_count: result.failed.length,
+            duplicate_count: result.duplicates.length,
+          },
+        );
+      }
       setSaveResult((previous) => ({
         created: [...new Set([...(previous?.created ?? []), ...result.created])],
         duplicates: [...new Set([...(previous?.duplicates ?? []), ...result.duplicates])],

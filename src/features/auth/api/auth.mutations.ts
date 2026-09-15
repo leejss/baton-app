@@ -1,3 +1,4 @@
+import { logger } from '@/shared/lib/logger';
 import { useMutation } from '@tanstack/react-query';
 
 import { isAppError } from '@/shared/api/errors';
@@ -28,6 +29,9 @@ export function useKakaoSignIn() {
   const signIn = useAuthStore((state) => state.signIn);
 
   return useMutation({
+    onError: (error) => {
+      logger.error('카카오 로그인 실패', error);
+    },
     mutationFn: async () => {
       const kakaoAccessToken = await signInWithKakao();
       return authenticateWithKakao(kakaoAccessToken);
@@ -35,6 +39,7 @@ export function useKakaoSignIn() {
     onSuccess: async (outcome) => {
       if (outcome.status === 'signedIn') {
         await signIn(outcome.session);
+        logger.info('카카오 로그인 완료');
       }
     },
   });
@@ -50,6 +55,9 @@ export function useAppleSignIn() {
   const signIn = useAuthStore((state) => state.signIn);
 
   return useMutation({
+    onError: (error) => {
+      logger.error('Apple 로그인 실패', error);
+    },
     mutationFn: async () => {
       const credential = await signInWithApple();
       return authenticateWithApple(credential);
@@ -57,6 +65,7 @@ export function useAppleSignIn() {
     onSuccess: async (outcome) => {
       if (outcome.status === 'signedIn') {
         await signIn(outcome.session);
+        logger.info('Apple 로그인 완료');
       }
     },
   });
@@ -70,6 +79,9 @@ export function useEmailSignIn() {
   const signIn = useAuthStore((state) => state.signIn);
 
   return useMutation({
+    onError: (error) => {
+      logger.error('이메일 로그인 실패', error);
+    },
     mutationFn: ({
       email,
       password,
@@ -80,6 +92,7 @@ export function useEmailSignIn() {
     onSuccess: async (outcome) => {
       if (outcome.status === 'signedIn') {
         await signIn(outcome.session);
+        logger.info('이메일 로그인 완료');
       }
     },
   });

@@ -1,3 +1,4 @@
+import { logger } from '@/shared/lib/logger';
 import { useMutation } from '@tanstack/react-query';
 
 import {
@@ -12,19 +13,29 @@ import {
  */
 export function useRequestVerificationCode() {
   return useMutation({
+    onError: (error) => {
+      logger.error('비밀번호 재설정 인증 코드 발송 실패', error);
+    },
     mutationFn: ({ email }: { email: string }) => requestVerificationCode(email),
   });
 }
 
 export function useVerifyCode() {
   return useMutation({
+    onError: (error) => {
+      logger.error('비밀번호 재설정 인증 코드 확인 실패', error);
+    },
     mutationFn: ({ email, code }: { email: string; code: string }) => verifyCode(email, code),
   });
 }
 
 export function useResetPassword() {
   return useMutation({
+    onError: (error) => {
+      logger.error('비밀번호 재설정 실패', error);
+    },
     mutationFn: (params: { email: string; emailVerificationToken: string; newPassword: string }) =>
       resetPassword(params),
+    onSuccess: () => logger.info('비밀번호 재설정 완료'),
   });
 }

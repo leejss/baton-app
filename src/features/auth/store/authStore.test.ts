@@ -4,6 +4,7 @@ import { z } from 'zod';
 import type { Session } from '@/features/auth/api/auth.schema';
 import { useAuthStore } from '@/features/auth/store/authStore';
 import { get } from '@/shared/api/client';
+import { logger } from '@/shared/lib/logger';
 import { secureStorage } from '@/shared/lib/secureStorage';
 
 jest.mock('@/shared/config/api', () => ({
@@ -11,7 +12,8 @@ jest.mock('@/shared/config/api', () => ({
   assertApiConfigured: jest.fn(),
 }));
 jest.mock('@/shared/lib/logger', () => ({
-  logger: { warn: jest.fn(), debug: jest.fn() },
+  registerLogUserReader: jest.fn(),
+  logger: { info: jest.fn(), warn: jest.fn(), debug: jest.fn(), error: jest.fn() },
 }));
 jest.mock('@/shared/lib/deviceId', () => ({ getDeviceId: jest.fn() }));
 jest.mock('@/features/auth/lib/kakaoAuth', () => ({
@@ -80,6 +82,8 @@ it('사용자가 직접 로그아웃하면 서버 세션도 폐기한다', async
     .mockResolvedValue(new Response(null, { status: 204 }));
 
   await useAuthStore.getState().signOut();
+  expect(logger.info).toHaveBeenCalledTimes(1);
+  expect(logger.info).toHaveBeenCalledWith('로그아웃 완료');
 
   expect(fetchMock).toHaveBeenCalledWith(
     'https://api.example.com/api/v1/auth/logout',
@@ -98,6 +102,7 @@ it('사용자가 직접 로그아웃하면 서버 세션도 폐기한다', async
 it('회원탈퇴 이후에는 이미 폐기된 서버 세션을 다시 요청하지 않는다', async () => {
   const fetchMock = jest.spyOn(globalThis, 'fetch');
   await useAuthStore.getState().signOut('withdrawn');
+  expect(logger.info).not.toHaveBeenCalled();
   expect(fetchMock).not.toHaveBeenCalled();
   expect(secureStorage.remove).toHaveBeenCalledWith('auth.session');
   expect(useAuthStore.getState()).toMatchObject({
@@ -127,6 +132,7 @@ it('로그아웃 요청이 401이면 서버 세션이 이미 끊긴 것이므로
 it('로그아웃 요청이 실패하면 재시도할 수 있도록 세션을 유지한다', async () => {
   jest.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(null, { status: 503 }));
   await expect(useAuthStore.getState().signOut()).rejects.toMatchObject({ status: 503 });
+  expect(logger.info).not.toHaveBeenCalled();
   expect(secureStorage.remove).not.toHaveBeenCalled();
   expect(useAuthStore.getState()).toMatchObject({
     status: 'signedIn',

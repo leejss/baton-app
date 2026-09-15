@@ -1,11 +1,17 @@
+import { sanitizeRequest } from '@/shared/lib/logSanitizer';
 import { API_URL, assertApiConfigured } from '@/shared/config/api';
 import { z, type ZodType } from 'zod';
 
 import { logRequestStart } from '@/shared/api/devNetworkLog';
 import { withAbortTimeout } from '@/shared/api/abort';
-import { AppError, normalizeFetchError, type HttpDiagnostics } from '@/shared/api/errors';
+import {
+  AppError,
+  normalizeError,
+  normalizeFetchError,
+  type HttpDiagnostics,
+} from '@/shared/api/errors';
 import { normalizeApiRoute, readHttpResponse } from '@/shared/api/httpResponse';
-import { reportError } from '@/shared/lib/reportError';
+import { logger } from '@/shared/lib/logger';
 
 /**
  * HTTP 단일 진입점. 화면·훅은 여기를 직접 부르지 않고 각 도메인의 api 모듈을 거친다.
@@ -76,7 +82,7 @@ export function clearAuthBridge(): void {
 // 요청
 // ─────────────────────────────────────────────────────────────
 
-type RequestOptions = {
+export type RequestOptions = {
   signal?: AbortSignal;
   /** `false`면 토큰을 싣지 않는다. 계약의 `공개` 엔드포인트용. */
   auth?: boolean;
@@ -97,9 +103,9 @@ function readRetryAfter(response: Response): number | null {
 type HttpResult = Awaited<ReturnType<typeof readHttpResponse>> & { response: Response };
 
 function readEnvelope(http: HttpDiagnostics): z.infer<typeof envelopeSchema> | null {
-  if (!http.raw) return null;
+  if (!http.response) return null;
   try {
-    const parsed = envelopeSchema.safeParse(JSON.parse(http.raw));
+    const parsed = envelopeSchema.safeParse(JSON.parse(http.response));
     return parsed.success ? parsed.data : null;
   } catch {
     return null;
@@ -143,15 +149,30 @@ async function fetchOnce(
   const startedAt = Date.now();
   const route = normalizeApiRoute(path);
   const log = logRequestStart(method, path, isAuthorized, startedAt);
-  // 직렬화와 signal 생성 실패는 fetch의 네트워크 오류가 아니다.
+  const baseDiagnostics = { method, route };
+  // 전송 문자열은 한 번만 만든다. 직렬화 실패에는 요청 본문을 기록하지 않는다.
+  let serializedBody: string | undefined;
+  try {
+    serializedBody = body === undefined ? undefined : JSON.stringify(body);
+  } catch (error) {
+    const normalized = normalizeError(error);
+    throw new AppError(normalized.code, normalized.message, {
+      cause: normalized,
+      http: { ...baseDiagnostics, durationMs: Date.now() - startedAt },
+    });
+  }
   const timedSignal = withAbortTimeout(options.signal, TIMEOUT_MS);
   const init: RequestInit = {
     method,
     headers,
-    body: body === undefined ? undefined : JSON.stringify(body),
+    body: serializedBody,
     signal: timedSignal.signal,
   };
 
+  const diagnostics = {
+    ...baseDiagnostics,
+    ...(method !== 'GET' ? sanitizeRequest(serializedBody) : {}),
+  };
   try {
     let response: Response;
     try {
@@ -160,12 +181,12 @@ async function fetchOnce(
       const normalized = normalizeFetchError(error, init.signal);
       const failure = new AppError(normalized.code, normalized.message, {
         cause: normalized,
-        http: { method, route, durationMs: Date.now() - startedAt },
+        http: { ...diagnostics, durationMs: Date.now() - startedAt },
       });
       log.failed(failure);
       throw failure;
     }
-    const bodyResult = await readHttpResponse(response, { method, route }, startedAt, init.signal);
+    const bodyResult = await readHttpResponse(response, diagnostics, startedAt, init.signal);
     log.succeeded(response);
     return { response, ...bodyResult };
   } finally {
@@ -190,7 +211,7 @@ async function refreshTokens(): Promise<RefreshResult> {
   const result = await fetchOnce('POST', '/auth/token/refresh', { refreshToken }, { auth: false });
   if (!result.response.ok) {
     const failure = toServerError(result);
-    reportError(failure);
+    logger.error('인증 토큰 갱신 실패', failure);
     await bridge.onSessionExpired();
     return { refreshed: false, failure };
   }
@@ -203,7 +224,7 @@ async function refreshTokens(): Promise<RefreshResult> {
       cause: parsed.error,
       http: result.http,
     });
-    reportError(failure);
+    logger.error('인증 토큰 갱신 실패', failure);
     await bridge.onSessionExpired();
     return { refreshed: false, failure };
   }

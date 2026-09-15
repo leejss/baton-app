@@ -25,7 +25,9 @@ export type HttpDiagnostics = {
   durationMs: number;
   contentType?: string | null;
   /** 서버 응답 원문만 허용한다. 마스킹·크기 제한 없이 전송한다. */
-  raw?: string;
+  response?: string;
+  request?: string;
+  requestTruncated?: boolean;
 };
 
 /**

@@ -2,7 +2,7 @@ import { create } from 'zustand';
 
 import { registerAuthBridge, type RefreshedTokens } from '@/shared/api/client';
 import { isAppError } from '@/shared/api/errors';
-import { logger } from '@/shared/lib/logger';
+import { logger, registerLogUserReader } from '@/shared/lib/logger';
 import { secureStorage } from '@/shared/lib/secureStorage';
 
 import { signOutFromServer } from '@/features/auth/api/auth.api';
@@ -93,6 +93,7 @@ export const useAuthStore = create<AuthStore>()((set, get) => ({
     await signOutFromKakao();
     await secureStorage.remove(SESSION_KEY);
     set({ status: 'signedOut', session: null, signOutReason: reason ?? null });
+    if (reason === undefined) logger.info('로그아웃 완료');
   },
 
   clearSignOutReason: () => set({ signOutReason: null }),
@@ -125,3 +126,5 @@ registerAuthBridge({
     await useAuthStore.getState().signOut('sessionRevoked');
   },
 });
+
+registerLogUserReader(() => useAuthStore.getState().session?.user ?? null);

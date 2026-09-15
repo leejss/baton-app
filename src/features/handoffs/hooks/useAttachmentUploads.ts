@@ -1,8 +1,8 @@
+import { logger } from '@/shared/lib/logger';
 import { useMutation } from '@tanstack/react-query';
 import { useEffect, useRef } from 'react';
 import { uploadAttachment, deleteAttachment } from '@/features/handoffs/api/attachment.api';
 import type { LocalAttachment } from '@/features/handoffs/types';
-import { reportError } from '@/shared/lib/reportError';
 
 type Options = {
   attachments: LocalAttachment[];
@@ -15,6 +15,10 @@ export function useAttachmentUploads({ attachments, onAdd, onUpdate, onRemove }:
     new Map<string, { controller: AbortController; file: LocalAttachment; removed: boolean }>(),
   );
   const upload = useMutation({
+    onError: (error) => {
+      logger.error('첨부 사진 업로드 실패', error);
+    },
+    onSuccess: () => logger.info('첨부 사진 업로드 완료'),
     mutationKey: ['attachments', 'upload'],
     mutationFn: async (file: LocalAttachment) => {
       const task = { controller: new AbortController(), file, removed: false };
@@ -31,7 +35,9 @@ export function useAttachmentUploads({ attachments, onAdd, onUpdate, onRemove }:
       } finally {
         tasks.current.delete(file.localId);
         if (task.removed && task.file.attachmentId !== undefined)
-          void deleteAttachment(task.file.attachmentId).catch(reportError);
+          void deleteAttachment(task.file.attachmentId).catch((error) =>
+            logger.warn('첨부 사진 삭제 실패', error),
+          );
       }
     },
   });
@@ -56,7 +62,9 @@ export function useAttachmentUploads({ attachments, onAdd, onUpdate, onRemove }:
       task.removed = true;
       task.controller.abort();
     } else if (file?.attachmentId !== undefined && !file.isLinked)
-      void deleteAttachment(file.attachmentId).catch(reportError);
+      void deleteAttachment(file.attachmentId).catch((error) =>
+        logger.warn('첨부 사진 삭제 실패', error),
+      );
     onRemove(id);
   };
   return {

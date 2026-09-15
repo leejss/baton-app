@@ -1,3 +1,4 @@
+import { logger } from '@/shared/lib/logger';
 import { mutationOptions, type QueryClient } from '@tanstack/react-query';
 import {
   createHandoff,
@@ -38,28 +39,44 @@ export function handoffMutations(client: QueryClient, storeId: number) {
       mutationOptions({
         mutationKey: ['handoffs', 'create'],
         mutationFn: (input: HandoffCreateRequestDto) => createHandoff(storeId, input),
-        onSuccess,
-        onError,
+        onSuccess: () => {
+          logger.info('인수인계 등록 완료');
+          return onSuccess();
+        },
+        onError: (error) => {
+          logger.error('인수인계 등록 실패', error);
+          return onError(error);
+        },
       }),
     update: (id: string) =>
       mutationOptions({
         mutationKey: ['handoffs', 'update'],
         mutationFn: (input: HandoffUpdateRequestDto) => updateHandoff(id, input),
-        onSuccess,
-        onError,
+        onSuccess: () => {
+          logger.info('인수인계 수정 완료');
+          return onSuccess();
+        },
+        onError: (error) => {
+          logger.error('인수인계 수정 실패', error);
+          return onError(error);
+        },
       }),
     remove: () =>
       mutationOptions({
         mutationKey: ['handoffs', 'delete'],
         mutationFn: removeHandoff,
         onSuccess: async (_data, id) => {
+          logger.info('인수인계 삭제 완료');
           client.removeQueries({
             queryKey: handoffQueries.detail(storeId, id).queryKey,
             exact: true,
           });
           await invalidateHandoffViews(client, storeId);
         },
-        onError,
+        onError: (error) => {
+          logger.error('인수인계 삭제 실패', error);
+          return onError(error);
+        },
       }),
     confirm: () =>
       mutationOptions({
@@ -89,8 +106,14 @@ export function handoffMutations(client: QueryClient, storeId: number) {
             throw error;
           }
         },
-        onSuccess,
-        onError,
+        onSuccess: () => {
+          logger.info('인수인계 확인 처리 완료');
+          return onSuccess();
+        },
+        onError: (error) => {
+          logger.error('인수인계 확인 처리 실패', error);
+          return onError(error);
+        },
       }),
   };
 }

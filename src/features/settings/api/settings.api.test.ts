@@ -13,7 +13,10 @@ jest.mock('@/shared/config/api', () => ({
   API_URL: 'https://api.example.com/api/v1',
   assertApiConfigured: jest.fn(),
 }));
-jest.mock('@/shared/lib/logger', () => ({ logger: { warn: jest.fn(), debug: jest.fn() } }));
+jest.mock('@/shared/lib/logger', () => ({
+  registerLogUserReader: jest.fn(),
+  logger: { info: jest.fn(), warn: jest.fn(), debug: jest.fn(), error: jest.fn() },
+}));
 jest.mock('expo-router', () => ({ router: { replace: jest.fn() } }));
 
 const profile = {
