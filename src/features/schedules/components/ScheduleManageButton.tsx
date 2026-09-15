@@ -30,6 +30,7 @@ export function ScheduleManageButton({ date }: { date?: string }) {
       <Pressable
         accessibilityRole="button"
         accessibilityLabel="근무편집"
+        hitSlop={8}
         onPress={() => setVisible(true)}
         style={styles.button}
       >
@@ -75,7 +76,7 @@ export function ScheduleManageButton({ date }: { date?: string }) {
   );
 }
 const styles = StyleSheet.create({
-  button: { minHeight: 44, justifyContent: 'center' },
+  button: { minWidth: 56, height: 28, alignItems: 'center', justifyContent: 'center' },
   options: { gap: spacing.sm },
   option: {
     flexDirection: 'row',

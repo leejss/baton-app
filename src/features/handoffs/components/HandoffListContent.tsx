@@ -27,7 +27,12 @@ export function HandoffListContent({ scope, onManagePress, onOpen }: HandoffList
     .flatMap((page) => page.items)
     .map((item) => toHandoffCardModel(item, context.userId, new Date(), scope));
   const renderItem: ListRenderItem<HandoffCardModel> = ({ item }) => (
-    <HandoffCard item={item} onPress={onOpen} onManagePress={onManagePress} />
+    <HandoffCard
+      isReceivedScope={scope === 'received'}
+      item={item}
+      onPress={onOpen}
+      onManagePress={onManagePress}
+    />
   );
 
   return (

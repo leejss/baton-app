@@ -19,6 +19,7 @@ import { MainHeader } from '@/features/tabs/components/MainHeader';
 import { SCREEN_PADDING_X, spacing, useTheme } from '@/theme';
 
 type HandoffListScreenProps = {
+  onBack?: () => void;
   scope: HandoffScope;
   onCreate: () => void;
   onEdit: (handoffId: string) => void;
@@ -27,6 +28,7 @@ type HandoffListScreenProps = {
 };
 
 export function HandoffListScreen({
+  onBack,
   scope,
   onCreate,
   onEdit,
@@ -81,7 +83,11 @@ export function HandoffListScreen({
 
   return (
     <View style={[styles.root, { backgroundColor: theme.colors.surfaceNeutralSubtle }]}>
-      <MainHeader title="인수인계" backgroundColor={theme.colors.surfaceNeutralSubtle} />
+      <MainHeader
+        title="인수인계"
+        backgroundColor={theme.colors.surfaceNeutralSubtle}
+        onBack={onBack}
+      />
 
       <View style={styles.toolbar}>
         <HandoffScopeTabs value={scope} onChange={onScopeChange} />

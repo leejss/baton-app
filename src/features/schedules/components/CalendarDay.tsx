@@ -13,6 +13,7 @@ type CalendarDayProps = {
   muted?: boolean;
   count: number;
   rowHeight: number;
+  selectionVariant?: 'subtle' | 'strong';
   onSelect: (date: string) => void;
 };
 
@@ -25,9 +26,11 @@ export function CalendarDay({
   muted,
   count,
   rowHeight,
+  selectionVariant = 'strong',
   onSelect,
 }: CalendarDayProps) {
   const { colors } = useTheme();
+  const hasStrongSelection = selected && selectionVariant === 'strong';
   return (
     <Pressable
       accessibilityRole="button"
@@ -40,14 +43,17 @@ export function CalendarDay({
       <View
         style={[
           styles.circle,
-          today && [styles.today, { backgroundColor: colors.surfaceBlueSubtle }],
-          selected && { backgroundColor: colors.surfaceBlueStrong },
+          (today || selected) && {
+            backgroundColor: hasStrongSelection
+              ? colors.surfaceBlueStrong
+              : colors.surfaceBlueSubtle,
+          },
         ]}
       >
         <Text
           weight="medium"
           color={
-            selected
+            hasStrongSelection
               ? 'foregroundInverse'
               : outside || muted
                 ? 'foregroundDisabled'
@@ -57,17 +63,19 @@ export function CalendarDay({
           {Number(date.slice(8))}
         </Text>
       </View>
-      <View accessible={false} importantForAccessibility="no" style={styles.dots}>
-        {Array.from({ length: Math.min(count, 3) }, (_, index) => (
-          <View key={index} style={[styles.dot, { backgroundColor: colors.surfaceBlueStrong }]} />
-        ))}
-      </View>
+      {count > 0 && (
+        <View accessible={false} importantForAccessibility="no" style={styles.dots}>
+          {Array.from({ length: Math.min(count, 3) }, (_, index) => (
+            <View key={index} style={[styles.dot, { backgroundColor: colors.surfaceBlueStrong }]} />
+          ))}
+        </View>
+      )}
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  root: { width: `${100 / 7}%`, alignItems: 'center', paddingTop: 2, gap: 6 },
+  root: { width: `${100 / 7}%`, alignItems: 'center', paddingTop: 2, gap: 8 },
   circle: {
     minWidth: 32,
     minHeight: 32,

@@ -52,7 +52,7 @@ export function WeekScheduleCard({
         onPress={handleDetailsPress}
         style={({ pressed }) => [styles.titleButton, pressed && styles.pressed]}
       >
-        <IllustIcon name="calendar" />
+        <IllustIcon name="calendar" size={22} />
         <Text variant="title" weight="semibold">
           {title}
         </Text>

@@ -42,7 +42,15 @@ export function DaySchedules({
   const retry = () => {
     void query.refetch();
   };
-  if (!query.data) return <QueryBoundary query={query}>{null}</QueryBoundary>;
+  if (!query.data)
+    return (
+      <QueryBoundary
+        query={query}
+        pendingFallback={<ScheduleMessage message="근무자 목록을 불러오는 중입니다." />}
+      >
+        {null}
+      </QueryBoundary>
+    );
   if (isManaging && !context.canManage)
     return <ScheduleMessage message="관리자만 근무 일정을 편집할 수 있습니다." />;
   const model = daySchedules(query.data, date, context.userId);

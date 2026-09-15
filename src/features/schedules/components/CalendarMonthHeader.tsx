@@ -42,7 +42,7 @@ export function CalendarMonthHeader({
           <Text variant="heading" weight="semibold">
             {formatKoreanMonth(month)}
           </Text>
-          <ArrowDownS size={20} color="foregroundDisabled" />
+          <ArrowDownS size={24} color="foregroundDisabled" />
         </Pressable>
         {trailing}
       </View>
@@ -57,13 +57,13 @@ export function CalendarMonthHeader({
   );
 }
 const styles = StyleSheet.create({
-  // TODO(design-system): Figma 1097:36397의 월 제목부터 요일까지 28px 여백을 sync한다.
-  root: { paddingBottom: 28 },
+  // Figma 1097:36397의 월 헤더 32px과 요일 시작까지 40px 간격을 따른다.
+  root: { paddingBottom: 40 },
   heading: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: 8,
   },
-  month: { flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: 44 },
+  month: { height: 32, flexDirection: 'row', alignItems: 'center', gap: 6 },
 });

@@ -8,9 +8,11 @@ export default function HandoffsRoute() {
   const router = useRouter();
   const params = useLocalSearchParams<{ scope?: string }>();
   const scope: HandoffScope = isHandoffScope(params.scope) ? params.scope : 'all';
+  const handleBack = () => (router.canGoBack() ? router.back() : router.navigate(ROUTES.home));
 
   return (
     <HandoffListScreen
+      onBack={handleBack}
       scope={scope}
       onCreate={() => router.push(ROUTES.handoffs.new.index)}
       onEdit={(handoffId) => router.push(ROUTES.handoffs.edit(handoffId))}
