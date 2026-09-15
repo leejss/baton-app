@@ -1,3 +1,4 @@
+import { Image } from 'expo-image';
 import { StyleSheet, View } from 'react-native';
 
 import { formatKoreanDate } from '@/shared/lib/formatters';
@@ -66,8 +67,23 @@ export function CalendarDay({
       {count > 0 && (
         <View accessible={false} importantForAccessibility="no" style={styles.dots}>
           {Array.from({ length: Math.min(count, 3) }, (_, index) => (
-            <View key={index} style={[styles.dot, { backgroundColor: colors.surfaceBlueStrong }]} />
+            <View
+              key={index}
+              style={[styles.dot, { backgroundColor: colors.foregroundBlueSoft }]}
+            />
           ))}
+          {count >= 3 && (
+            <View style={styles.more}>
+              <Image
+                source={require('@/assets/images/schedules/calendar-more.svg')}
+                contentFit="fill"
+                accessible={false}
+                accessibilityElementsHidden
+                importantForAccessibility="no"
+                style={styles.moreIcon}
+              />
+            </View>
+          )}
         </View>
       )}
     </Pressable>
@@ -84,6 +100,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   today: {},
-  dots: { height: 4, flexDirection: 'row', gap: 2 },
+  dots: { height: 4, flexDirection: 'row', alignItems: 'center', gap: 2, overflow: 'visible' },
   dot: { width: 4, height: 4, borderRadius: radius.full },
+  more: { width: 4, height: 4 },
+  moreIcon: { position: 'absolute', top: -0.1, left: -0.1, width: 4.2, height: 4.2 },
 });

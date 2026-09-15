@@ -121,6 +121,7 @@ export function MainHeader({
               accessibilityLabel={count > 0 ? `알림, 읽지 않은 알림 ${badgeText}개` : '알림'}
               accessibilityRole="button"
               onPress={() => router.navigate(ROUTES.notifications)}
+              hitSlop={10}
               style={({ pressed }) => [styles.notificationButton, pressed && styles.pressed]}
             >
               <NavNotification color="foregroundStrong" />
@@ -153,7 +154,7 @@ const styles = StyleSheet.create({
     minHeight: 62,
     paddingHorizontal: SCREEN_PADDING_X,
     flexDirection: 'row',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     justifyContent: 'space-between',
     gap: 10,
     paddingTop: 14,
@@ -177,6 +178,7 @@ const styles = StyleSheet.create({
     flexShrink: 1,
     flexDirection: 'row',
     alignItems: 'center',
+    gap: spacing.sm + spacing.xs,
   },
   storeTag: {
     maxWidth: 200,
@@ -195,17 +197,17 @@ const styles = StyleSheet.create({
     minWidth: 0,
   },
   notificationButton: {
-    width: 44,
-    height: 44,
+    // Figma: 24px 아이콘 프레임. 44px 터치 영역은 hitSlop으로 확보한다.
+    width: 24,
+    height: 24,
     alignItems: 'center',
     justifyContent: 'center',
     flexShrink: 0,
-    marginTop: -8,
   },
   badge: {
     position: 'absolute',
-    top: 3,
-    right: 0,
+    top: -5,
+    right: -5,
     minWidth: 18,
     height: 18,
     paddingHorizontal: spacing.xs,

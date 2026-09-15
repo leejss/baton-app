@@ -25,7 +25,7 @@ export function SettingsSection({
           styles.card,
           spacing === 'spacious' && styles.spacious,
           spacing === 'compact' && styles.compact,
-          { borderColor: colors.borderDefault },
+          { borderColor: colors.borderWeak, backgroundColor: colors.surfaceNeutralDefault },
         ]}
       >
         {children}
@@ -38,10 +38,10 @@ const styles = StyleSheet.create({
   card: {
     borderWidth: 1,
     borderRadius: radius.md,
-    paddingHorizontal: 16,
-    paddingVertical: 13,
+    paddingHorizontal: 15,
+    paddingVertical: 12,
     gap: 9,
   },
   spacious: { paddingVertical: 21, gap: 25 },
-  compact: { paddingVertical: 8 },
+  compact: { paddingHorizontal: 16, paddingVertical: 8 },
 });

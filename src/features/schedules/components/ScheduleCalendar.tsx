@@ -139,7 +139,7 @@ export function ScheduleCalendar({
                     selected={
                       range ? date >= range.start && date <= range.end : date === selectedDate
                     }
-                    selectionVariant={mode === 'range' ? 'strong' : 'subtle'}
+                    selectionVariant="strong"
                     outside={!date.startsWith(month)}
                     disabled={
                       mode === 'readonly' ||
@@ -162,7 +162,6 @@ export function ScheduleCalendar({
 }
 
 const styles = StyleSheet.create({
-  // Figma 1097:36402의 요일 영역 36px과 날짜 행 시작점(36/100/160/220/280)을 따른다.
   weekdays: { flexDirection: 'row', paddingBottom: 14 },
   weekday: { width: `${100 / 7}%`, alignItems: 'center', minHeight: 22 },
   grid: { width: '100%' },
