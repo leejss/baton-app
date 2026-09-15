@@ -16,6 +16,18 @@ export function useUpdateDisplayName() {
 }
 
 /**
+ * 사용자가 직접 하는 로그아웃. 서버 로그아웃이 실패하면 세션이 남으므로 오류로 돌려준다 —
+ * 호출부는 성공했을 때만 시작 화면으로 보낸다.
+ */
+export function useSignOut() {
+  const signOut = useAuthStore((state) => state.signOut);
+
+  return useMutation({
+    mutationFn: () => signOut(),
+  });
+}
+
+/**
  * 회원 탈퇴. 되돌릴 수 없다.
  *
  * 성공하면 계정이 사라졌으므로 세션을 비운다. 이때 서버 로그아웃은 부르지 않는다 —

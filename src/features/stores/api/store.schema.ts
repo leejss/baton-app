@@ -66,6 +66,12 @@ export const storeInvitationPreviewSchema = z.object({
   address: z.string(),
   detailAddress: z.string().nullish(),
   storeContact: z.string(),
+  /**
+   * 활성 관리자 이름. **서버가 마스킹한 값**(`김*현`)이라 앱에서 다시 가리지 않는다.
+   * wiki `proposals/store-invitation-preview-manager-name.md`(Draft) 기준이며,
+   * 서버 반영 전이거나 관리자를 확정할 수 없으면 `null`·생략이다.
+   */
+  managerName: z.string().nullish(),
   invitationCode: invitationCodeValueSchema,
   expiresAt: z.iso.datetime({ offset: true }),
 });

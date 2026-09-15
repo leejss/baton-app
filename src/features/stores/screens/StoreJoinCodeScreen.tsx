@@ -149,7 +149,7 @@ export function StoreJoinCodeScreen({
       >
         <Button
           label="다음"
-          color="black"
+          color="blue"
           disabled={code.length < INVITATION_CODE_LENGTH}
           isLoading={preview.isPending}
           onPress={submit}

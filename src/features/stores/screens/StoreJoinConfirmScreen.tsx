@@ -151,7 +151,7 @@ export function StoreJoinConfirmScreen({
       </ScrollView>
 
       <BottomActionBar>
-        <Button label="다음" color="black" isLoading={join.isPending} onPress={confirm} />
+        <Button label="다음" color="blue" isLoading={join.isPending} onPress={confirm} />
       </BottomActionBar>
 
       <Modal

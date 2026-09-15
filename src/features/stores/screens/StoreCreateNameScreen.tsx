@@ -37,7 +37,7 @@ export function StoreCreateNameScreen({ onBack, onNext }: StoreCreateNameScreenP
       progress={getCreateStepProgress('name')}
       title="매장 이름을 알려주세요"
       description="직원들이 알아볼 수 있는 매장 이름을 입력해주세요."
-      action={<Button label="다음" color="black" disabled={!formState.isValid} onPress={submit} />}
+      action={<Button label="다음" color="blue" disabled={!formState.isValid} onPress={submit} />}
     >
       <Controller
         control={control}
@@ -48,7 +48,7 @@ export function StoreCreateNameScreen({ onBack, onNext }: StoreCreateNameScreenP
             value={field.value}
             onChangeText={field.onChange}
             onBlur={field.onBlur}
-            placeholder="투썸플레이스"
+            placeholder="예) 투썸플레이스"
             returnKeyType="done"
             onSubmitEditing={submit}
             status={fieldState.isTouched && fieldState.error !== undefined ? 'error' : 'none'}

@@ -23,6 +23,7 @@ export default function ConfirmStoreRoute() {
           ? preview.address
           : `${preview.address} ${preview.detailAddress}`
       }
+      managerName={preview.managerName ?? undefined}
       storeContact={preview.storeContact}
       invitationCode={preview.invitationCode}
       onBack={() => goBackOr(ROUTES.storeJoin.index)}

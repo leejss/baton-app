@@ -45,7 +45,7 @@ export function StoreJoinedScreen({ onBack, onStart }: StoreJoinedScreenProps) {
       </View>
 
       <BottomActionBar>
-        <Button label="시작하기" color="black" onPress={onStart} />
+        <Button label="시작하기" color="blue" onPress={onStart} />
       </BottomActionBar>
     </Box>
   );

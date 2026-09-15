@@ -43,7 +43,7 @@ export function StoreCreateBranchScreen({ onBack, onNext }: StoreCreateBranchScr
       progress={getCreateStepProgress('branch')}
       title="어느 지점인가요?"
       description="지점명과 주소를 입력해주세요."
-      action={<Button label="다음" color="black" disabled={!formState.isValid} onPress={submit} />}
+      action={<Button label="다음" color="blue" disabled={!formState.isValid} onPress={submit} />}
     >
       <Controller
         control={control}
@@ -54,7 +54,7 @@ export function StoreCreateBranchScreen({ onBack, onNext }: StoreCreateBranchScr
             value={field.value}
             onChangeText={field.onChange}
             onBlur={field.onBlur}
-            placeholder="투썸플레이스 강남점"
+            placeholder="예) 강남점"
             status={fieldState.isTouched && fieldState.error !== undefined ? 'error' : 'none'}
             subtitle={fieldState.isTouched ? fieldState.error?.message : undefined}
           />

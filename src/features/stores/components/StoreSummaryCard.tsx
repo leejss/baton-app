@@ -17,8 +17,8 @@ export type StoreSummaryCardProps = {
   /**
    * 관리자 표시명. 시안은 `김*현`처럼 가운데를 가린 형태다.
    *
-   * ⚠️ 계약의 `StoreInvitationPreview`에는 관리자 이름이 없다. 값을 모르는 화면에서는
-   * 생략하고 행 자체를 그리지 않는다 — 빈 값을 그리면 정보가 비어 보인다.
+   * 초대 매장 확인 화면은 미리보기 응답의 `managerName`을 쓰는데, 서버가 아직 내려주지
+   * 않을 수 있다. 값을 모르면 생략하고 행 자체를 그리지 않는다 — 빈 값을 그리면 정보가 비어 보인다.
    */
   managerName?: string;
   storeContact: string;

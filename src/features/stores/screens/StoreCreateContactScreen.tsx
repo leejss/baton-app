@@ -73,7 +73,7 @@ export function StoreCreateContactScreen({ onBack, onCreated }: StoreCreateConta
       action={
         <Button
           label="다음"
-          color="black"
+          color="blue"
           disabled={!formState.isValid}
           isLoading={createStore.isPending}
           onPress={submit}
