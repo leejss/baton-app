@@ -16,8 +16,8 @@ export function useUpdateDisplayName() {
 }
 
 /**
- * 사용자가 직접 하는 로그아웃. 서버 로그아웃이 실패하면 세션이 남으므로 오류로 돌려준다 —
- * 호출부는 성공했을 때만 시작 화면으로 보낸다.
+ * 사용자가 직접 하는 로그아웃. 서버가 401(세션 이미 끊김)이면 성공으로 처리한다.
+ * 네트워크 등 다른 실패만 오류로 돌려주며, 이때는 세션이 남아 있다.
  */
 export function useSignOut() {
   const signOut = useAuthStore((state) => state.signOut);

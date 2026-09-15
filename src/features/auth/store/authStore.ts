@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 
 import { registerAuthBridge, type RefreshedTokens } from '@/shared/api/client';
+import { isAppError } from '@/shared/api/errors';
 import { logger } from '@/shared/lib/logger';
 import { secureStorage } from '@/shared/lib/secureStorage';
 
@@ -81,7 +82,13 @@ export const useAuthStore = create<AuthStore>()((set, get) => ({
     // 갱신 실패로 들어온 경우 서버 로그아웃의 401이 같은 갱신 작업을 기다리면
     // 서로 완료를 기다리게 된다. 이미 거부된 세션은 기기에서만 정리한다.
     if (reason === undefined) {
-      await signOutFromServer();
+      try {
+        await signOutFromServer();
+      } catch (error) {
+        // 401은 서버에서 세션이 이미 끊겼다는 뜻이라 로그아웃의 목적은 이뤄졌다. 기기 정리를 이어간다.
+        // 그 밖의 실패(네트워크 등)는 서버 세션이 살아 있을 수 있어 호출부에 알린다.
+        if (!(isAppError(error) && error.status === 401)) throw error;
+      }
     }
     await signOutFromKakao();
     await secureStorage.remove(SESSION_KEY);

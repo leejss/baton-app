@@ -107,6 +107,23 @@ it('회원탈퇴 이후에는 이미 폐기된 서버 세션을 다시 요청하
   });
 });
 
+it('로그아웃 요청이 401이면 서버 세션이 이미 끊긴 것이므로 로그아웃을 완료한다', async () => {
+  // 로그아웃 401 → 토큰 갱신도 401 → 세션 만료 처리까지 모두 거친 뒤에도 사용자 로그아웃으로 끝나야 한다.
+  jest
+    .spyOn(globalThis, 'fetch')
+    .mockImplementation(async () => new Response(null, { status: 401 }));
+
+  await expect(useAuthStore.getState().signOut()).resolves.toBeUndefined();
+
+  expect(secureStorage.remove).toHaveBeenCalledWith('auth.session');
+  expect(useAuthStore.getState()).toMatchObject({
+    status: 'signedOut',
+    session: null,
+    // 사용자가 직접 누른 로그아웃이라 "다른 기기 로그인" 안내를 띄우지 않는다.
+    signOutReason: null,
+  });
+});
+
 it('로그아웃 요청이 실패하면 재시도할 수 있도록 세션을 유지한다', async () => {
   jest.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(null, { status: 503 }));
   await expect(useAuthStore.getState().signOut()).rejects.toMatchObject({ status: 503 });
