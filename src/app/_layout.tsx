@@ -43,11 +43,15 @@ export default function RootLayout() {
               <Stack.Screen name="(store-onboarding)" />
               <Stack.Screen name="+not-found" />
             </Stack>
-            <SplashOverlay isReady={authStatus !== 'restoring'} />
             {/* 어느 화면에 있든 위에 떠야 해서 라우트 트리 바깥에 둔다. */}
             <ForcedLogoutModal />
           </ThemeProvider>
         </SessionQueryProvider>
+        {/*
+         * SessionQueryProvider는 로그인·로그아웃마다 key로 안쪽을 새로 만든다. 스플래시가 그 안에 있으면
+         * 다시 나타났다가 Android에서 사라지지 않는다. 앱 시작 때 한 번만 쓰도록 바깥에 둔다.
+         */}
+        <SplashOverlay isReady={authStatus !== 'restoring'} />
       </KeyboardProvider>
     </GestureHandlerRootView>
   );

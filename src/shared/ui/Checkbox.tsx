@@ -5,7 +5,7 @@ import { radius, useTheme } from '@/theme';
 
 /**
  * 체크박스. 시안 `Icon/check box`(`307:5299`)의 미선택 상태를 옮겼다 —
- * 흰 바닥에 1.4pt 회색 테두리, 안쪽 정사각형이 슬롯의 약 90%.
+ * 흰 바닥에 1.4pt 회색 테두리, 안쪽 정사각형은 슬롯 크기와 무관하게 25.5.
  *
  * ⚠️ 회원가입 시안(`943:111541`)에는 선택 상태 프레임이 없다. 선택 상태는
  * `surfaceBlueStrong` 바닥에 `foregroundInverse` 체크를 올린다.
@@ -23,8 +23,11 @@ export type CheckboxProps = {
 };
 
 const SPEC = {
-  /** 슬롯 대비 안쪽 사각형 비율(25.5/28). */
-  boxRatio: 0.9,
+  /**
+   * 안쪽 사각형 한 변. 시안은 34 슬롯(전체 동의)과 28 슬롯(개별 항목) 모두 25.5다
+   * (`908:35529`, `I943:111553;920:35543`). 슬롯 비율로 키우면 전체 동의만 커 보인다.
+   */
+  boxSize: 25.5,
   borderWidth: 1.5,
   /** 안쪽 사각형 대비 체크 글리프 비율. */
   iconRatio: 0.85,
@@ -33,7 +36,8 @@ const SPEC = {
 export function Checkbox({ isChecked, onToggle, accessibilityLabel, size = 28 }: CheckboxProps) {
   const { colors } = useTheme();
 
-  const boxSize = Math.round(size * SPEC.boxRatio);
+  // 슬롯이 박스보다 작게 들어오면 슬롯에 맞춘다.
+  const boxSize = Math.min(SPEC.boxSize, size);
   const isInteractive = onToggle !== undefined;
 
   const box = (
