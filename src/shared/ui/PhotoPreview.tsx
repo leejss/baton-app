@@ -1,6 +1,7 @@
 import { Image } from 'expo-image';
 import { useState } from 'react';
 import { Modal, StyleSheet, View } from 'react-native';
+import { ScreenHeader } from '@/shared/ui/ScreenHeader';
 import { Button } from '@/shared/ui/Button';
 import { Pressable } from '@/shared/ui/Pressable';
 import { Text } from '@/shared/ui/Text';
@@ -62,23 +63,29 @@ export function PhotoPreview({
       </Pressable>
       <Modal visible={open} animationType="fade" onRequestClose={() => setOpen(false)}>
         <View style={[styles.viewer, { backgroundColor: colors.backgroundDefault }]}>
-          <Button label="사진 닫기" onPress={() => setOpen(false)} />
-          {failed || !uri ? (
-            <>
-              <Text>사진을 불러오지 못했습니다.</Text>
-              <Button label="사진 다시 조회" isLoading={refreshing} onPress={() => void retry()} />
-            </>
-          ) : (
-            <Image
-              key={`${uri}:${version}:full`}
-              source={{ uri }}
-              placeholder={null}
-              contentFit="contain"
-              onError={onError}
-              style={styles.fullImage}
-              accessibilityLabel={label}
-            />
-          )}
+          <ScreenHeader onBack={() => setOpen(false)} />
+          <View style={styles.viewerContent}>
+            {failed || !uri ? (
+              <>
+                <Text>사진을 불러오지 못했습니다.</Text>
+                <Button
+                  label="사진 다시 조회"
+                  isLoading={refreshing}
+                  onPress={() => void retry()}
+                />
+              </>
+            ) : (
+              <Image
+                key={`${uri}:${version}:full`}
+                source={{ uri }}
+                placeholder={null}
+                contentFit="contain"
+                onError={onError}
+                style={styles.fullImage}
+                accessibilityLabel={label}
+              />
+            )}
+          </View>
         </View>
       </Modal>
     </>
@@ -96,6 +103,9 @@ const styles = StyleSheet.create({
   },
   image: { width: '100%', height: '100%' },
   viewer: {
+    flex: 1,
+  },
+  viewerContent: {
     flex: 1,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.xl,

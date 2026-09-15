@@ -20,7 +20,7 @@ import { HandoffTypeBadge } from '@/features/handoffs/components/HandoffTypeBadg
 import { KebabMenu } from '@/shared/ui/icons';
 import { Pressable } from '@/shared/ui/Pressable';
 import { ScreenHeader } from '@/shared/ui/ScreenHeader';
-import { Button, QueryBoundary, Text } from '@/shared/ui';
+import { BottomActionBar, Button, QueryBoundary, Text } from '@/shared/ui';
 import { SCREEN_PADDING_X, useTheme } from '@/theme';
 
 type HandoffDetailScreenProps = {
@@ -144,17 +144,19 @@ export function HandoffDetailScreen({
             </ScrollView>
 
             {data.recipient.user.userId === context.userId && data.status === 'UNCONFIRMED' ? (
-              <Button
-                label="확인 하기"
-                isLoading={confirmMutation.isPending}
-                onPress={() => {
-                  if (!confirmMutation.isPending)
-                    confirmMutation.mutate(data.id, {
-                      onError: (error) =>
-                        Alert.alert('확인하지 못했어요', normalizeError(error).message),
-                    });
-                }}
-              />
+              <BottomActionBar>
+                <Button
+                  label="확인 하기"
+                  isLoading={confirmMutation.isPending}
+                  onPress={() => {
+                    if (!confirmMutation.isPending)
+                      confirmMutation.mutate(data.id, {
+                        onError: (error) =>
+                          Alert.alert('확인하지 못했어요', normalizeError(error).message),
+                      });
+                  }}
+                />
+              </BottomActionBar>
             ) : (
               <HandoffDetailStatusBar label={detail.statusActionLabel} />
             )}

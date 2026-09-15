@@ -33,7 +33,10 @@ export function HandoffCard({ item, onPress, onManagePress }: HandoffCardProps) 
       ]}
     >
       <View style={styles.mainContent}>
-        <IllustIcon name={item.direction} />
+        <IllustIcon
+          name={item.direction}
+          style={item.direction === 'received' ? styles.receivedIcon : undefined}
+        />
 
         <View style={styles.textContent}>
           <Text variant="caption" weight="medium" color="foregroundSubtle">
@@ -87,6 +90,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
+  },
+  receivedIcon: {
+    transform: [{ scaleX: -1 }],
   },
   textContent: {
     flex: 1,
