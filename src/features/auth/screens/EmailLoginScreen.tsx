@@ -236,6 +236,8 @@ export function EmailLoginScreen({
                         accessibilityLabel="비밀번호를 잊으셨나요?"
                         onPress={onForgotPassword}
                         hitSlop={spacing.sm}
+                        // 기본값은 줄 전체 폭이라 문구 왼쪽 빈 곳을 눌러도 이동한다. 문구만큼만 차지하게 한다.
+                        style={styles.forgotPassword}
                       >
                         <Text variant="caption" color="foregroundSubtle" style={textStyles.right}>
                           비밀번호를 잊으셨나요?
@@ -340,6 +342,8 @@ const styles = StyleSheet.create({
     minHeight: SPEC.actionsTop,
   },
   actions: { gap: SPEC.actionsGap },
+  /** 시안대로 오른쪽 끝에 붙이되, 터치 영역은 문구 크기까지만 둔다. */
+  forgotPassword: { alignSelf: 'flex-end' },
   socialRow: {
     flexDirection: 'row',
     justifyContent: 'center',
