@@ -70,9 +70,11 @@ describe('근무 삭제', () => {
     await fireEvent.press(screen.getByLabelText('삭제 확인'));
     expect(await screen.findByText('삭제 완료')).toBeOnTheScreen();
     expect(remove).toHaveBeenCalledTimes(1);
-    expect(monthlyScheduleSchema.parse(await source.month(101, '2026-09')).schedules).toHaveLength(
-      0,
-    );
+    expect(
+      monthlyScheduleSchema
+        .parse(await source.month(101, '2026-09'))
+        .dailyScheduleCounts.reduce((sum, day) => sum + day.scheduleCount, 0),
+    ).toBe(0);
     await fireEvent.press(screen.getByLabelText('확인'));
     expect(onClose).toHaveBeenCalledTimes(1);
   });

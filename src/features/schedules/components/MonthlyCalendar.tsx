@@ -12,7 +12,7 @@ export function MonthlyCalendar(props: MonthlyCalendarProps) {
   const context = useMainContext();
   const query = useQuery(scheduleQueries.month(context.storeId, props.month));
   const counts: Record<string, number> = {};
-  for (const item of query.data ?? []) counts[item.date] = (counts[item.date] ?? 0) + 1;
+  for (const item of query.data ?? []) counts[item.date] = item.scheduleCount;
 
   // 월간 조회 중에도 달력 조작 영역은 유지한다. 데이터가 도착하기 전에는
   // 근무 점만 비워서 날짜 선택과 월 이동을 막지 않는다.
