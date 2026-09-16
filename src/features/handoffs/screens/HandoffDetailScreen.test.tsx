@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it, jest } from '@jest/globals';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import * as api from '@/features/handoffs/api/handoff.api';
 import { handoffQueries } from '@/features/handoffs/api/handoff.queries';
 import { INITIAL_MOCK_HANDOFFS } from '@/test/fixtures/handoffs';
 import { HandoffDetailScreen } from '@/features/handoffs/screens/HandoffDetailScreen';
@@ -16,6 +17,7 @@ const INITIAL_METRICS = {
 
 afterEach(async () => {
   await cleanup();
+  jest.restoreAllMocks();
 });
 
 describe('HandoffDetailScreen', () => {
@@ -58,5 +60,47 @@ describe('HandoffDetailScreen', () => {
     expect(screen.getByText('이서연님께')).toBeOnTheScreen();
     expect(screen.getByText('확인중')).toBeOnTheScreen();
     expect(screen.getByLabelText('인수인계 수정 및 삭제 메뉴')).toBeOnTheScreen();
+  });
+
+  it('수신자가 확인을 완료하면 성공 알림을 표시하고 CTA를 중복 실행하지 않는다', async () => {
+    const handoff = INITIAL_MOCK_HANDOFFS[1];
+    if (handoff === undefined) throw new Error('수신 인수인계 테스트 데이터가 없습니다.');
+    const confirmed = {
+      ...handoff,
+      status: 'CONFIRMED' as const,
+      recipient: { ...handoff.recipient, confirmedAt: '2026-09-16T10:00:00+09:00' },
+    };
+    jest.spyOn(api, 'fetchHandoff').mockResolvedValueOnce(handoff).mockResolvedValue(confirmed);
+    jest.spyOn(api, 'confirmHandoff').mockResolvedValue(confirmed);
+
+    const queryClient = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false, staleTime: Infinity, gcTime: Infinity },
+        mutations: { retry: false },
+      },
+    });
+    queryClient.setQueryData(handoffQueries.detail(101, handoff.id).queryKey, handoff);
+
+    await render(
+      <SafeAreaProvider initialMetrics={INITIAL_METRICS}>
+        <QueryClientProvider client={queryClient}>
+          <MainContextProvider value={TEST_CONTEXT}>
+            <HandoffDetailScreen
+              handoffId={String(handoff.id)}
+              onBack={jest.fn()}
+              onDeleted={jest.fn()}
+              onEdit={jest.fn()}
+              onHome={jest.fn()}
+            />
+          </MainContextProvider>
+        </QueryClientProvider>
+      </SafeAreaProvider>,
+    );
+
+    await fireEvent.press(screen.getByLabelText('확인 하기'));
+    expect(await screen.findByText('확인 완료했습니다.')).toBeOnTheScreen();
+    expect(screen.queryByLabelText('확인 하기')).not.toBeOnTheScreen();
+    expect(screen.getByText('확인 완료')).toBeOnTheScreen();
+    expect(api.confirmHandoff).toHaveBeenCalledTimes(1);
   });
 });

@@ -47,7 +47,12 @@ export function EmployeePicker({
     (member) => member.isActive && member.name.includes(search.trim()),
   );
   const renderItem = ({ item }: ListRenderItemInfo<ScheduleMember>) => (
-    <EmployeeRow member={item} selected={item.id === selectedId} onSelect={onSelect} />
+    <EmployeeRow
+      member={item}
+      selected={item.id === selectedId}
+      disabled={selectedId !== null && item.id !== selectedId}
+      onSelect={onSelect}
+    />
   );
   const handleDismiss = () => {
     const next = pendingDone.current;

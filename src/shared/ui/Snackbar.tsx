@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Text } from '@/shared/ui/Text';
-import { AlertCircleFill } from '@/shared/ui/icons';
+import { AlertCircleFill, CheckSquare } from '@/shared/ui/icons';
 import { radius, useTheme } from '@/theme';
 
 /**
@@ -13,6 +13,7 @@ import { radius, useTheme } from '@/theme';
 export type SnackbarProps = {
   title: string;
   description?: string;
+  tone?: 'warning' | 'success';
   /** 오른쪽 텍스트 버튼. 생략하면 버튼 없이 메시지만 보여준다. */
   actionLabel?: string;
   onAction?: () => void;
@@ -28,21 +29,36 @@ const SPEC = {
   iconSize: 24,
 } as const;
 
-export function Snackbar({ title, description, actionLabel, onAction }: SnackbarProps) {
+export function Snackbar({
+  title,
+  description,
+  tone = 'warning',
+  actionLabel,
+  onAction,
+}: SnackbarProps) {
   const { colors } = useTheme();
+  const StatusIcon = tone === 'success' ? CheckSquare : AlertCircleFill;
 
   return (
     <View
       accessibilityRole="alert"
       style={[
         styles.container,
-        { backgroundColor: colors.surfaceWarningSoft, borderColor: colors.borderWarningDefault },
+        {
+          backgroundColor:
+            tone === 'success' ? colors.surfaceSuccessSoft : colors.surfaceWarningSoft,
+          borderColor:
+            tone === 'success' ? colors.borderSuccessDefault : colors.borderWarningDefault,
+        },
       ]}
     >
-      <AlertCircleFill size={SPEC.iconSize} color="foregroundWarningDefault" />
+      <StatusIcon
+        size={SPEC.iconSize}
+        color={tone === 'success' ? 'foregroundSuccessDefault' : 'foregroundWarningDefault'}
+      />
 
       <View style={styles.message}>
-        <Text variant="body" weight="semibold">
+        <Text variant="body" weight="semibold" style={styles.title}>
           {title}
         </Text>
         {description !== undefined && (
@@ -80,4 +96,5 @@ const styles = StyleSheet.create({
   },
   /** 메시지가 길어지면 이 블록만 늘어나고 아이콘·액션은 제자리를 지킨다. */
   message: { flex: 1, gap: SPEC.messageGap },
+  title: { opacity: 0.88 },
 });

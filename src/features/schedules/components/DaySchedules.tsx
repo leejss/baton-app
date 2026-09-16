@@ -3,6 +3,7 @@ import { QueryRefreshNotice } from '@/shared/ui/QueryRefreshNotice';
 import { useMainContext } from '@/features/stores/hooks/useMainContext';
 import { FlashList, type ListRenderItemInfo } from '@shopify/flash-list';
 import { useQuery } from '@tanstack/react-query';
+import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet, View, useWindowDimensions } from 'react-native';
@@ -81,7 +82,24 @@ export function DaySchedules({
         </Text>
       </View>
       {items.length === 0 ? (
-        <ScheduleMessage message="해당 날짜에 등록된 근무 일정이 없습니다." />
+        <View style={styles.emptyState}>
+          <Image
+            source={require('@/assets/images/schedules/empty-schedule.png')}
+            contentFit="contain"
+            accessible={false}
+            accessibilityElementsHidden
+            importantForAccessibility="no"
+            style={styles.emptyIllustration}
+          />
+          <Text
+            variant="caption"
+            weight="medium"
+            color="foregroundDisabled"
+            style={styles.emptyText}
+          >
+            해당 날짜에 등록된{`\n`}근무 일정이 없습니다.
+          </Text>
+        </View>
       ) : (
         <View
           style={{
@@ -113,11 +131,11 @@ export function DaySchedules({
   );
 }
 const styles = StyleSheet.create({
-  // TODO(design-system): Figma 1097:36712의 카드 radius 24·padding 18/24를 sync한다.
   card: {
     borderRadius: 24,
     paddingHorizontal: 18,
-    paddingVertical: spacing.lg,
+    paddingTop: 28,
+    paddingBottom: 26,
     gap: spacing.md,
   },
   titleRow: {
@@ -125,5 +143,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 6,
   },
+  emptyState: {
+    width: '100%',
+    height: 128,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.md,
+  },
+  emptyIllustration: { width: 64, height: 56 },
+  emptyText: { textAlign: 'center' },
   more: { minHeight: 44, alignItems: 'center', justifyContent: 'center' },
 });

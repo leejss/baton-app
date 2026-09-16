@@ -330,6 +330,17 @@ describe('관리자 근무 등록·수정', () => {
       params: { selectedDate: '2026-09-15' },
     });
   });
+  it('근무자를 한 명 선택하면 다른 근무자 선택을 비활성화한다', async () => {
+    const source = createMockScheduleDataSource({ schedules: [] });
+    await mount(<ScheduleEditorScreen source={source} initialDate="2026-09-15" />);
+
+    await fireEvent.press(await screen.findByLabelText('이서연, seoyeon@baton.app'));
+
+    expect(screen.getByLabelText('이서연, seoyeon@baton.app')).toBeEnabled();
+    expect(screen.getByLabelText('김지원, jiwon@baton.app')).toBeDisabled();
+    expect(screen.getByLabelText('박현우, hyunwoo@baton.app')).toBeDisabled();
+    expect(screen.getByLabelText('최민지, minji@baton.app')).toBeDisabled();
+  });
   it('부분 저장 뒤 폼에서 재시도해도 실패한 날짜만 저장한다', async () => {
     const source = createMockScheduleDataSource({
       schedules: [],

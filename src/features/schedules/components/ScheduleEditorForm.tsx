@@ -74,6 +74,7 @@ export function ScheduleEditorForm(props: ScheduleEditorFormProps) {
   return (
     <View style={styles.root}>
       <KeyboardAwareScrollView
+        style={styles.scrollView}
         contentInsetAdjustmentBehavior="automatic"
         keyboardShouldPersistTaps="handled"
         bottomOffset={120}
@@ -243,6 +244,7 @@ export function ScheduleEditorForm(props: ScheduleEditorFormProps) {
 const styles = StyleSheet.create({
   // TODO(design-system): Figma 등록 화면의 달력 위 여백 14px·하단 버튼 간격 10px를 sync한다.
   root: { flex: 1 },
+  scrollView: { flex: 1 },
   scroll: { paddingBottom: spacing.lg },
   calendar: {
     paddingHorizontal: SCREEN_PADDING_X,
