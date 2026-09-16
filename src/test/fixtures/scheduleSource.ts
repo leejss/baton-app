@@ -9,6 +9,7 @@ export type ScheduleDataSource = {
   key: string;
   context: (signal?: AbortSignal) => Promise<ScheduleContext>;
   month: (storeId: number, month: string, signal?: AbortSignal) => Promise<unknown>;
+  daily: (storeId: number, date: string, cursor?: string, signal?: AbortSignal) => Promise<unknown>;
   members: (storeId: number, signal?: AbortSignal) => Promise<unknown>;
   detail: (storeId: number, id: number, signal?: AbortSignal) => Promise<unknown>;
   create: (storeId: number, input: ScheduleCreateRequest) => Promise<unknown>;

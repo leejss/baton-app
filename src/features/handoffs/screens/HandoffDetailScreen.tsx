@@ -20,7 +20,7 @@ import { HandoffTypeBadge } from '@/features/handoffs/components/HandoffTypeBadg
 import { KebabMenu } from '@/shared/ui/icons';
 import { Pressable } from '@/shared/ui/Pressable';
 import { ScreenHeader } from '@/shared/ui/ScreenHeader';
-import { BottomActionBar, Button, QueryBoundary, Text } from '@/shared/ui';
+import { BottomActionBar, Button, QueryBoundary, Snackbar, Text } from '@/shared/ui';
 import { SCREEN_PADDING_X, useTheme } from '@/theme';
 
 type HandoffDetailScreenProps = {
@@ -53,6 +53,7 @@ export function HandoffDetailScreen({
 
   const deleteMutation = useMutation(handoffMutations(queryClient, context.storeId).remove());
   const confirmMutation = useMutation(handoffMutations(queryClient, context.storeId).confirm());
+  const [confirmationComplete, setConfirmationComplete] = useState(false);
 
   const handleEdit = () => {
     onEdit();
@@ -63,6 +64,16 @@ export function HandoffDetailScreen({
   const handleManage = () => {
     actionSheetRef.current?.present();
   };
+  const canConfirm =
+    data !== undefined &&
+    data.recipient.user.userId === context.userId &&
+    data.status === 'UNCONFIRMED' &&
+    !confirmationComplete;
+  const confirmationNotice = confirmationComplete ? (
+    <View pointerEvents="none" style={styles.confirmationNotice}>
+      <Snackbar tone="success" title="확인 완료했습니다." />
+    </View>
+  ) : undefined;
 
   return (
     <View style={[styles.root, { backgroundColor: theme.colors.backgroundDefault }]}>
@@ -143,7 +154,7 @@ export function HandoffDetailScreen({
               />
             </ScrollView>
 
-            {data.recipient.user.userId === context.userId && data.status === 'UNCONFIRMED' ? (
+            {canConfirm ? (
               <BottomActionBar>
                 <Button
                   label="확인 하기"
@@ -151,6 +162,7 @@ export function HandoffDetailScreen({
                   onPress={() => {
                     if (!confirmMutation.isPending)
                       confirmMutation.mutate(data.id, {
+                        onSuccess: () => setConfirmationComplete(true),
                         onError: (error) =>
                           Alert.alert('확인하지 못했어요', normalizeError(error).message),
                       });
@@ -158,7 +170,10 @@ export function HandoffDetailScreen({
                 />
               </BottomActionBar>
             ) : (
-              <HandoffDetailStatusBar label={detail.statusActionLabel} />
+              <HandoffDetailStatusBar
+                label={confirmationComplete ? '확인 완료' : detail.statusActionLabel}
+                above={confirmationNotice}
+              />
             )}
             <HandoffActionSheet ref={actionSheetRef} onDelete={handleDelete} onEdit={handleEdit} />
             <DeleteHandoffDialog
@@ -212,4 +227,9 @@ const styles = StyleSheet.create({
   bodyCopy: { gap: 5 },
   meta: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   divider: { width: '100%', height: StyleSheet.hairlineWidth },
+  confirmationNotice: {
+    paddingHorizontal: SCREEN_PADDING_X,
+    paddingVertical: 14,
+    marginBottom: 4,
+  },
 });

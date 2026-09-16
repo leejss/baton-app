@@ -9,16 +9,18 @@ import { radius, useTheme } from '@/theme';
 type EmployeeRowProps = {
   member: ScheduleMember;
   selected: boolean;
+  disabled?: boolean;
   onSelect: (id: number) => void;
 };
 
-export function EmployeeRow({ member, selected, onSelect }: EmployeeRowProps) {
+export function EmployeeRow({ member, selected, disabled = false, onSelect }: EmployeeRowProps) {
   const { colors } = useTheme();
   return (
     <Pressable
       accessibilityRole="radio"
       accessibilityLabel={`${member.name}, ${member.email}`}
-      accessibilityState={{ selected }}
+      accessibilityState={{ selected, disabled }}
+      disabled={disabled}
       onPress={() => onSelect(member.id)}
       style={styles.row}
     >
@@ -27,37 +29,52 @@ export function EmployeeRow({ member, selected, onSelect }: EmployeeRowProps) {
         <Text
           variant="title"
           weight="semibold"
-          color={selected ? 'foregroundStrong' : 'foregroundSubtle'}
+          color={disabled ? 'foregroundDisabled' : 'foregroundStrong'}
         >
-          {member.name}{' '}
-          <Text variant="caption" color="foregroundSubtle">
-            {member.role === 'MANAGER' ? '관리자' : '근로자'}
-          </Text>
+          {member.name}
+        </Text>
+        <Text variant="caption" color={disabled ? 'foregroundDisabled' : 'foregroundSubtle'}>
+          {member.role === 'MANAGER' ? '관리자' : '근로자'}
         </Text>
       </View>
-      <View
-        style={[
-          styles.check,
-          {
-            borderColor: selected ? colors.surfaceBlueStrong : colors.borderDefault,
-            backgroundColor: selected ? colors.surfaceBlueStrong : colors.backgroundDefault,
-          },
-        ]}
-      >
-        {selected && <Check size={16} color="foregroundInverse" />}
+      <View style={styles.checkSlot}>
+        <View
+          style={[
+            styles.check,
+            {
+              borderColor: selected
+                ? colors.surfaceBlueStrong
+                : disabled
+                  ? colors.borderSubtle
+                  : colors.borderDefault,
+              backgroundColor: selected
+                ? colors.surfaceBlueStrong
+                : disabled
+                  ? colors.surfaceNeutralDisabled
+                  : colors.backgroundDefault,
+            },
+          ]}
+        >
+          {selected && <Check size={16} color="foregroundInverse" />}
+        </View>
       </View>
     </Pressable>
   );
 }
 const styles = StyleSheet.create({
-  // Figma 1097:39094: 아바타 34, 선택 표시 22.5, 행 간격 포함 64.
   row: {
     minHeight: 64,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
   },
-  info: { flex: 1 },
+  info: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8 },
+  checkSlot: {
+    width: 30,
+    height: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   check: {
     width: 22.5,
     height: 22.5,

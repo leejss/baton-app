@@ -2,12 +2,13 @@ import { toHandoffCardModel } from '@/features/handoffs/api/mappers';
 import { useMainContext } from '@/features/stores/hooks/useMainContext';
 import { useSuspenseInfiniteQuery } from '@tanstack/react-query';
 import { FlashList, type ListRenderItem } from '@shopify/flash-list';
+import { Image } from 'expo-image';
 import { StyleSheet, View } from 'react-native';
 
 import { handoffQueries } from '@/features/handoffs/api/handoff.queries';
 import { HandoffCard } from '@/features/handoffs/components/HandoffCard';
 import type { HandoffCardModel, HandoffScope } from '@/features/handoffs/types';
-import { Button, Text, EmptyState } from '@/shared/ui';
+import { Button, Text } from '@/shared/ui';
 import { SCREEN_PADDING_X, spacing } from '@/theme';
 
 type HandoffListContentProps = {
@@ -59,7 +60,24 @@ export function HandoffListContent({ scope, onManagePress, onOpen }: HandoffList
       keyExtractor={keyExtractor}
       ItemSeparatorComponent={ItemSeparator}
       ListEmptyComponent={
-        <EmptyState title="인수인계가 없어요" description="새 인수인계를 작성해 보세요." />
+        <View style={styles.emptyState}>
+          <Image
+            source={require('@/assets/images/schedules/empty-schedule.png')}
+            contentFit="contain"
+            accessible={false}
+            accessibilityElementsHidden
+            importantForAccessibility="no"
+            style={styles.emptyIllustration}
+          />
+          <Text
+            variant="caption"
+            weight="medium"
+            color="foregroundDisabled"
+            style={styles.emptyText}
+          >
+            인수인계가 없어요{`\n`}새 인수인계를 작성해보세요
+          </Text>
+        </View>
       }
       renderItem={renderItem}
       style={styles.list}
@@ -79,7 +97,17 @@ const styles = StyleSheet.create({
   list: { flex: 1 },
   listContent: {
     paddingHorizontal: SCREEN_PADDING_X,
+    paddingTop: 14,
     paddingBottom: spacing.lg,
   },
   separator: { height: spacing.md },
+  emptyState: {
+    width: '100%',
+    height: 128,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.md,
+  },
+  emptyIllustration: { width: 64, height: 56 },
+  emptyText: { textAlign: 'center' },
 });

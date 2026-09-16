@@ -2,9 +2,9 @@ import { QueryBoundary } from '@/shared/ui/QueryBoundary';
 import { QueryRefreshNotice } from '@/shared/ui/QueryRefreshNotice';
 import { useMainContext } from '@/features/stores/hooks/useMainContext';
 import { FlashList, type ListRenderItemInfo } from '@shopify/flash-list';
-import { useQuery } from '@tanstack/react-query';
+import { useInfiniteQuery } from '@tanstack/react-query';
+import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
 import { StyleSheet, View, useWindowDimensions } from 'react-native';
 
 import { ROUTES } from '@/shared/lib/routes';
@@ -12,7 +12,7 @@ import { scheduleQueries } from '@/features/schedules/api/schedule.queries';
 import { ScheduleMessage } from '@/features/schedules/components/ScheduleMessage';
 import { ScheduleWorkerRow } from '@/features/schedules/components/ScheduleWorkerRow';
 import type { ScheduleItem } from '@/features/schedules/types';
-import { canEditSchedule, daySchedules } from '@/features/schedules/lib/schedulePolicy';
+import { canEditSchedule } from '@/features/schedules/lib/schedulePolicy';
 import { formatKoreanDate } from '@/shared/lib/formatters';
 import { IllustIcon, Pressable, Text } from '@/shared/ui';
 import { spacing, useTheme } from '@/theme';
@@ -34,13 +34,15 @@ export function DaySchedules({
   onSelect,
 }: DaySchedulesProps) {
   const context = useMainContext();
-  const query = useQuery(scheduleQueries.month(context.storeId ?? 0, date.slice(0, 7)));
-  const [expanded, setExpanded] = useState(false);
+  const query = useInfiniteQuery(scheduleQueries.daily(context.storeId, date));
   const { colors } = useTheme();
   const router = useRouter();
   const { fontScale } = useWindowDimensions();
   const retry = () => {
     void query.refetch();
+  };
+  const loadMore = () => {
+    if (query.hasNextPage && !query.isFetching) void query.fetchNextPage({ cancelRefetch: false });
   };
   if (!query.data)
     return (
@@ -53,8 +55,8 @@ export function DaySchedules({
     );
   if (isManaging && !context.canManage)
     return <ScheduleMessage message="관리자만 근무 일정을 편집할 수 있습니다." />;
-  const model = daySchedules(query.data, date, context.userId);
-  const items = expanded || isManaging ? model.all : model.preview;
+  const items = query.data.pages.flatMap((page) => page.items);
+  const workerCount = query.data.pages[0]?.totalEmployeeCount ?? 0;
   const handleHandoff = (id: number) => router.push(ROUTES.handoffs.createForRecipient(String(id)));
   const renderItem = ({ item }: ListRenderItemInfo<ScheduleItem>) => (
     <ScheduleWorkerRow
@@ -70,18 +72,35 @@ export function DaySchedules({
 
   return (
     <View style={[styles.card, { backgroundColor: colors.backgroundDefault }]}>
-      <QueryRefreshNotice failed={query.isError} onRetry={retry} />
+      <QueryRefreshNotice failed={query.isRefetchError} onRetry={retry} />
       <View style={styles.titleRow}>
         <IllustIcon name="calendar" />
         <Text variant="title" weight="bold">
           {formatKoreanDate(date)}{' '}
           <Text variant="title" weight="bold" color="foregroundBlueSoft">
-            총 {model.workerCount}명
+            총 {workerCount}명
           </Text>
         </Text>
       </View>
       {items.length === 0 ? (
-        <ScheduleMessage message="해당 날짜에 등록된 근무 일정이 없습니다." />
+        <View style={styles.emptyState}>
+          <Image
+            source={require('@/assets/images/schedules/empty-schedule.png')}
+            contentFit="contain"
+            accessible={false}
+            accessibilityElementsHidden
+            importantForAccessibility="no"
+            style={styles.emptyIllustration}
+          />
+          <Text
+            variant="caption"
+            weight="medium"
+            color="foregroundDisabled"
+            style={styles.emptyText}
+          >
+            해당 날짜에 등록된{`\n`}근무 일정이 없습니다.
+          </Text>
+        </View>
       ) : (
         <View
           style={{
@@ -97,15 +116,28 @@ export function DaySchedules({
           />
         </View>
       )}
-      {!isManaging && !expanded && model.hasMore && (
+      {query.isFetchNextPageError && (
+        <Text variant="bodySmall" color="foregroundWarningDefault">
+          다음 근무 일정을 불러오지 못했습니다. 다시 시도해주세요.
+        </Text>
+      )}
+      {query.hasNextPage && (
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="전체 근무 일정 더 보기"
-          onPress={() => setExpanded(true)}
+          accessibilityLabel={
+            query.isFetchNextPageError ? '근무 일정 더 보기 다시 시도' : '전체 근무 일정 더 보기'
+          }
+          accessibilityState={{ disabled: query.isFetching, busy: query.isFetchingNextPage }}
+          disabled={query.isFetching}
+          onPress={loadMore}
           style={styles.more}
         >
           <Text variant="bodySmall" color="foregroundSubtle">
-            더 보기
+            {query.isFetchingNextPage
+              ? '불러오는 중…'
+              : query.isFetchNextPageError
+                ? '다시 시도'
+                : '더 보기'}
           </Text>
         </Pressable>
       )}
@@ -113,11 +145,11 @@ export function DaySchedules({
   );
 }
 const styles = StyleSheet.create({
-  // TODO(design-system): Figma 1097:36712의 카드 radius 24·padding 18/24를 sync한다.
   card: {
     borderRadius: 24,
     paddingHorizontal: 18,
-    paddingVertical: spacing.lg,
+    paddingTop: 28,
+    paddingBottom: 26,
     gap: spacing.md,
   },
   titleRow: {
@@ -125,5 +157,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 6,
   },
+  emptyState: {
+    width: '100%',
+    height: 128,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.md,
+  },
+  emptyIllustration: { width: 64, height: 56 },
+  emptyText: { textAlign: 'center' },
   more: { minHeight: 44, alignItems: 'center', justifyContent: 'center' },
 });

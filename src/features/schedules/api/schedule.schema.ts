@@ -19,14 +19,14 @@ export const scheduleSchema = z.object({
 export const monthlyScheduleSchema = z.object({
   monthStart: date,
   monthEnd: date,
-  schedules: z.array(scheduleSchema),
-  selectedDatePreview: z
-    .object({
-      date,
-      schedules: z.array(scheduleSchema).max(3),
-      hasMore: z.boolean(),
-    })
-    .nullish(),
+  dailyScheduleCounts: z.array(z.object({ date, scheduleCount: z.number().int().nonnegative() })),
+});
+export const dailySchedulePageSchema = z.object({
+  date,
+  totalEmployeeCount: z.number().int().nonnegative(),
+  items: z.array(scheduleSchema),
+  nextCursor: z.string().nullish(),
+  hasNext: z.boolean(),
 });
 export const scheduleBatchSchema = z.object({
   requestedCount: z.number().int().positive(),

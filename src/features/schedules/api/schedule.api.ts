@@ -1,6 +1,7 @@
 import { get, post, patch, del } from '@/shared/api/client';
 import {
   monthlyScheduleSchema,
+  dailySchedulePageSchema,
   scheduleSchema,
   scheduleBatchSchema,
   type ScheduleCreateRequest,
@@ -12,6 +13,16 @@ export const fetchMonth = (storeId: number, month: string, signal?: AbortSignal)
   });
 export const fetchSchedule = (storeId: number, id: number, signal?: AbortSignal) =>
   get(`/stores/${storeId}/schedules/${id}`, scheduleSchema, { signal });
+export function fetchDailySchedules(
+  storeId: number,
+  date: string,
+  cursor?: string,
+  signal?: AbortSignal,
+) {
+  const params = new URLSearchParams({ date, size: '3' });
+  if (cursor !== undefined) params.set('cursor', cursor);
+  return get(`/stores/${storeId}/daily-schedules?${params}`, dailySchedulePageSchema, { signal });
+}
 export const createSchedules = (storeId: number, input: ScheduleCreateRequest) =>
   post(`/stores/${storeId}/schedules`, input, scheduleBatchSchema);
 export const updateSchedule = (storeId: number, id: number, input: ScheduleUpdateRequest) =>

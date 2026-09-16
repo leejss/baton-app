@@ -110,8 +110,8 @@ const styles = StyleSheet.create({
   scroll: { paddingBottom: spacing.xl },
   calendar: {
     paddingHorizontal: SCREEN_PADDING_X,
-    paddingTop: 14,
-    paddingBottom: spacing.lg,
+    paddingTop: 21,
+    paddingBottom: 50,
   },
   list: { padding: SCREEN_PADDING_X },
 });

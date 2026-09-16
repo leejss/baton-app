@@ -52,4 +52,37 @@ describe('HandoffListScreen', () => {
     expect(screen.getByLabelText('인수인계 글쓰기')).toBeOnTheScreen();
     expect(screen.queryByText('마감 정산 확인 부탁드려요')).not.toBeOnTheScreen();
   });
+
+  it('인수인계가 없을 때 Figma 빈 상태 문구를 표시한다', async () => {
+    jest.spyOn(api, 'fetchHandoffs').mockResolvedValue({
+      items: [],
+      nextCursor: null,
+      hasNext: false,
+    });
+    jest
+      .spyOn(notifications, 'fetchNotifications')
+      .mockResolvedValue({ items: [], unreadCount: 0, badgeText: '' });
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false, gcTime: Infinity } },
+    });
+
+    await render(
+      <SafeAreaProvider initialMetrics={INITIAL_METRICS}>
+        <QueryClientProvider client={queryClient}>
+          <MainContextProvider value={TEST_CONTEXT}>
+            <HandoffListScreen
+              scope="sent"
+              onCreate={jest.fn()}
+              onEdit={jest.fn()}
+              onOpen={jest.fn()}
+              onScopeChange={jest.fn()}
+            />
+          </MainContextProvider>
+        </QueryClientProvider>
+      </SafeAreaProvider>,
+    );
+
+    expect(await screen.findByText(/인수인계가 없어요/)).toBeOnTheScreen();
+    expect(screen.getByText(/새 인수인계를 작성해보세요/)).toBeOnTheScreen();
+  });
 });

@@ -124,7 +124,7 @@ const styles = StyleSheet.create({
   listRegion: { flex: 1 },
   toolbar: {
     paddingHorizontal: SCREEN_PADDING_X,
-    paddingTop: spacing.sm,
+    paddingTop: 20,
     paddingBottom: spacing.md,
     flexDirection: 'row',
     alignItems: 'center',

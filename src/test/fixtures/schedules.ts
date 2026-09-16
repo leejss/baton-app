@@ -132,14 +132,28 @@ export function createMockScheduleDataSource(options: MockOptions = {}): Schedul
       return {
         monthStart: dates[0],
         monthEnd: dates.at(-1),
-        schedules: [...items.values()]
-          .filter((item) => item.workDate.startsWith(month))
-          .sort(
-            (a, b) =>
-              a.workDate.localeCompare(b.workDate) ||
-              a.startTime.localeCompare(b.startTime) ||
-              a.id - b.id,
-          ),
+        dailyScheduleCounts: dates.map((date) => ({
+          date,
+          scheduleCount: [...items.values()].filter((item) => item.workDate === date).length,
+        })),
+      };
+    },
+    async daily(storeId, date, cursor, signal) {
+      assertStore(storeId, signal);
+      seedMonth(date.slice(0, 7));
+      const schedules = [...items.values()]
+        .filter((item) => item.workDate === date)
+        .sort((a, b) => a.startTime.localeCompare(b.startTime) || a.id - b.id);
+      const start =
+        cursor === undefined ? 0 : schedules.findIndex((item) => String(item.id) === cursor) + 1;
+      const page = schedules.slice(start, start + 3);
+      const hasNext = start + page.length < schedules.length;
+      return {
+        date,
+        totalEmployeeCount: new Set(schedules.map((item) => item.employee.userId)).size,
+        items: page,
+        nextCursor: hasNext ? String(page.at(-1)?.id) : null,
+        hasNext,
       };
     },
     async detail(storeId, id, signal) {

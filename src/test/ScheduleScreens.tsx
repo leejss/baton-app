@@ -10,6 +10,7 @@ import * as notifications from '@/features/notifications/api/notification.api';
 import {
   scheduleSchema,
   monthlyScheduleSchema,
+  dailySchedulePageSchema,
   scheduleBatchSchema,
   scheduleMemberSchema,
 } from '@/features/schedules/api/schedule.schema';
@@ -23,6 +24,11 @@ function adapt<T extends object>(Screen: ComponentType<T>) {
         .spyOn(api, 'fetchMonth')
         .mockImplementation(async (id, month, signal) =>
           monthlyScheduleSchema.parse(await source.month(id, month, signal)),
+        );
+      jest
+        .spyOn(api, 'fetchDailySchedules')
+        .mockImplementation(async (id, date, cursor, signal) =>
+          dailySchedulePageSchema.parse(await source.daily(id, date, cursor, signal)),
         );
       jest
         .spyOn(api, 'fetchSchedule')

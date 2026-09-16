@@ -7,7 +7,10 @@ import type { ReactElement } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { createMockScheduleDataSource } from '@/test/fixtures/schedules';
-import { monthlyScheduleSchema } from '@/features/schedules/api/schedule.schema';
+import {
+  monthlyScheduleSchema,
+  dailySchedulePageSchema,
+} from '@/features/schedules/api/schedule.schema';
 import { ScheduleEditorScreen } from '@/test/ScheduleScreens';
 import { logger } from '@/shared/lib/logger';
 import { MOCK_STORE_MEMBERS } from '@/test/fixtures/members';
@@ -158,8 +161,13 @@ describe('관리자 근무 등록·수정', () => {
         ['2026-09-07', '2026-09-09'],
         ['2026-09-09', '2026-09-09'],
       ]);
-      const items = monthlyScheduleSchema.parse(await source.month(101, '2026-09')).schedules;
-      expect(items.map((item) => item.workDate)).toEqual(['2026-09-08', '2026-09-09']);
+      const counts = monthlyScheduleSchema.parse(
+        await source.month(101, '2026-09'),
+      ).dailyScheduleCounts;
+      expect(counts.filter((item) => item.scheduleCount > 0).map((item) => item.date)).toEqual([
+        '2026-09-08',
+        '2026-09-09',
+      ]);
       expect(info).toHaveBeenLastCalledWith('근무 재등록 결과', {
         created_count: 1,
         failed_count: 0,
@@ -186,9 +194,11 @@ describe('관리자 근무 등록·수정', () => {
     ).toBeOnTheScreen();
     expect(create).toHaveBeenCalledTimes(2);
     expect(info).not.toHaveBeenCalled();
-    expect(monthlyScheduleSchema.parse(await source.month(101, '2026-09')).schedules).toHaveLength(
-      0,
-    );
+    expect(
+      monthlyScheduleSchema
+        .parse(await source.month(101, '2026-09'))
+        .dailyScheduleCounts.reduce((sum, day) => sum + day.scheduleCount, 0),
+    ).toBe(0);
   });
 
   it('전체 저장 실패 뒤 직원·날짜·시간을 유지하고 전체 실패 날짜를 재시도한다', async () => {
@@ -242,9 +252,11 @@ describe('관리자 근무 등록·수정', () => {
     await fireEvent.press(screen.getByLabelText('이전으로'));
     expect(screen.getByDisplayValue('09:00')).toBeOnTheScreen();
     expect(screen.getByText('이서연')).toBeOnTheScreen();
-    expect(monthlyScheduleSchema.parse(await source.month(101, '2026-09')).schedules).toHaveLength(
-      1,
-    );
+    expect(
+      monthlyScheduleSchema
+        .parse(await source.month(101, '2026-09'))
+        .dailyScheduleCounts.reduce((sum, day) => sum + day.scheduleCount, 0),
+    ).toBe(1);
     await fireEvent.press(screen.getByLabelText('등록'));
     await screen.findByText('이미 등록된 근무가 있어요.');
     await fireEvent.press(screen.getByLabelText('중복 제외하고 등록'));
@@ -256,9 +268,11 @@ describe('관리자 근무 등록·수정', () => {
       false,
       true,
     ]);
-    expect(monthlyScheduleSchema.parse(await source.month(101, '2026-09')).schedules).toHaveLength(
-      2,
-    );
+    expect(
+      monthlyScheduleSchema
+        .parse(await source.month(101, '2026-09'))
+        .dailyScheduleCounts.reduce((sum, day) => sum + day.scheduleCount, 0),
+    ).toBe(2);
   });
 
   it.each(['2401', '0900', '0800'])(
@@ -316,7 +330,7 @@ describe('관리자 근무 등록·수정', () => {
     expect(screen.getByText(/6시간/)).toBeOnTheScreen();
     await fireEvent.press(screen.getByLabelText('등록'));
     expect(await screen.findByText('근무 등록 완료!')).toBeOnTheScreen();
-    const items = monthlyScheduleSchema.parse(await source.month(101, '2026-09')).schedules;
+    const items = dailySchedulePageSchema.parse(await source.daily(101, '2026-09-15')).items;
     expect(items).toHaveLength(1);
     expect(items[0]).toMatchObject({
       employee: { userId: 2 },
@@ -329,6 +343,17 @@ describe('관리자 근무 등록·수정', () => {
       pathname: '/schedules',
       params: { selectedDate: '2026-09-15' },
     });
+  });
+  it('근무자를 한 명 선택하면 다른 근무자 선택을 비활성화한다', async () => {
+    const source = createMockScheduleDataSource({ schedules: [] });
+    await mount(<ScheduleEditorScreen source={source} initialDate="2026-09-15" />);
+
+    await fireEvent.press(await screen.findByLabelText('이서연, seoyeon@baton.app'));
+
+    expect(screen.getByLabelText('이서연, seoyeon@baton.app')).toBeEnabled();
+    expect(screen.getByLabelText('김지원, jiwon@baton.app')).toBeDisabled();
+    expect(screen.getByLabelText('박현우, hyunwoo@baton.app')).toBeDisabled();
+    expect(screen.getByLabelText('최민지, minji@baton.app')).toBeDisabled();
   });
   it('부분 저장 뒤 폼에서 재시도해도 실패한 날짜만 저장한다', async () => {
     const source = createMockScheduleDataSource({
@@ -355,9 +380,11 @@ describe('관리자 근무 등록·수정', () => {
       ['2026-09-15', '2026-09-16'],
       ['2026-09-16', '2026-09-16'],
     ]);
-    expect(monthlyScheduleSchema.parse(await source.month(101, '2026-09')).schedules).toHaveLength(
-      2,
-    );
+    expect(
+      monthlyScheduleSchema
+        .parse(await source.month(101, '2026-09'))
+        .dailyScheduleCounts.reduce((sum, day) => sum + day.scheduleCount, 0),
+    ).toBe(2);
   });
   it('수정은 기존 직원을 유지하고 날짜 한 건과 시간만 바꾼다', async () => {
     const source = createMockScheduleDataSource({
@@ -384,7 +411,7 @@ describe('관리자 근무 등록·수정', () => {
     expect(screen.getByText('근무가 성공적으로 수정됐어요.')).toBeOnTheScreen();
     await fireEvent.press(screen.getByLabelText('닫기'));
     expect(mockDismissTo).toHaveBeenCalled();
-    const items = monthlyScheduleSchema.parse(await source.month(101, '2026-09')).schedules;
+    const items = dailySchedulePageSchema.parse(await source.daily(101, '2026-09-16')).items;
     expect(items).toHaveLength(1);
     expect(items[0]).toMatchObject({
       id: 12,

@@ -29,32 +29,6 @@ export const scheduleFormSchema = z
       });
   });
 
-export function sortSchedules(items: ScheduleItem[]): ScheduleItem[] {
-  return [...items].sort((a, b) => a.startTime.localeCompare(b.startTime) || a.id - b.id);
-}
-
-export function daySchedules(items: ScheduleItem[], date: string, userId: number) {
-  const all = sortSchedules(items.filter((item) => item.date === date));
-  // 사용자 결정: 본인 일정이 여러 개면 가장 늦게 끝나는 본인 근무를 기준으로 한다.
-  const own = all
-    .filter((item) => item.member.id === userId)
-    .sort((a, b) => b.endTime.localeCompare(a.endTime) || a.id - b.id)[0];
-  const preview = own
-    ? [
-        own,
-        ...all
-          .filter((item) => item.member.id !== userId && item.startTime >= own.endTime)
-          .slice(0, 2),
-      ]
-    : all.slice(0, 3);
-  return {
-    all,
-    preview,
-    hasMore: preview.length < all.length,
-    workerCount: new Set(all.map((item) => item.member.id)).size,
-  };
-}
-
 export function canEditSchedule(item: ScheduleItem, canManage: boolean, now: Date): boolean {
   return canManage && !hasStarted(item.date, item.startTime, now);
 }
