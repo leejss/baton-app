@@ -87,7 +87,10 @@ export function toHandoffDetailModel(
     title: handoff.title,
     body: handoff.body,
     dateLabel: formatRelativeSeoulDate(handoff.sentAt, now),
-    recipientLabel: `${handoff.recipient.user.displayName}님께`,
+    participantLabel:
+      handoff.sender.userId === viewerId
+        ? `${handoff.recipient.user.displayName}님께`
+        : `${handoff.sender.displayName}님 보냄`,
     statusActionLabel: DETAIL_STATUS_ACTION_LABELS[handoff.status],
     attachments: handoff.attachments.map(({ id, downloadUrl }) => ({
       id: String(id),
@@ -102,20 +105,17 @@ export function toRecipientModels(
   members: import('@/features/stores/api/store.schema').MemberDto[],
   viewerId: number,
 ): RecipientModel[] {
-  const recommendedIds = new Set(
-    dto.recommended ? dto.candidates.map((member) => member.userId) : [],
-  );
-  if (dto.recommended) recommendedIds.add(dto.recommended.userId);
+  const candidatesById = new Map(dto.candidates.map((candidate) => [candidate.userId, candidate]));
   return members
     .filter((member) => member.status === 'ACTIVE' && member.userId !== viewerId)
-    .map((member) => ({
-      member,
-      isRecommended: recommendedIds.has(member.userId),
-      nextShiftLabel:
-        recommendedIds.has(member.userId) && dto.recommendedStartAt
-          ? formatSeoulDateTime(dto.recommendedStartAt)
-          : undefined,
-    }))
+    .map((member) => {
+      const startAt = candidatesById.get(member.userId)?.startAt;
+      return {
+        member,
+        isRecommended: dto.recommended?.userId === member.userId,
+        nextShiftLabel: startAt ? formatSeoulDateTime(startAt) : undefined,
+      };
+    })
     .sort(
       (a, b) =>
         Number(b.isRecommended) - Number(a.isRecommended) ||

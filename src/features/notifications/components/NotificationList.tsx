@@ -31,7 +31,7 @@ export function NotificationList() {
   };
   const { data, refetch, isRefetchError } = useSuspenseQuery(notificationQueries.list(scope));
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const { open, openingId, message, clearMessage } = useOpenNotification(scope);
+  const { open, openingId, message } = useOpenNotification(scope);
 
   // useFocusEffect는 콜백 참조가 달라지면 다시 실행하므로 안정된 참조가 필요하다.
   useFocusEffect(
@@ -82,8 +82,8 @@ export function NotificationList() {
         >
           <Snackbar
             title={message ?? '알림을 새로 불러오지 못했어요.'}
-            actionLabel={message ? '닫기' : '다시 시도'}
-            onAction={message ? clearMessage : handleRefresh}
+            actionLabel={message ? undefined : '다시 시도'}
+            onAction={message ? undefined : handleRefresh}
           />
         </View>
       )}

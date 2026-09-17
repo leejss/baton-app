@@ -130,7 +130,7 @@ export function HandoffDetailScreen({
                         ∙
                       </Text>
                       <Text variant="caption" weight="medium" color="foregroundSubtle" selectable>
-                        {detail.recipientLabel}
+                        {detail.participantLabel}
                       </Text>
                     </View>
                   </View>
