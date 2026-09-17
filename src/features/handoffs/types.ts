@@ -40,7 +40,7 @@ export type HandoffDetailModel = {
   title: string;
   body: string;
   dateLabel: string;
-  recipientLabel: string;
+  participantLabel: string;
   statusActionLabel: string;
   attachments: HandoffDetailAttachmentModel[];
   canManage: boolean;

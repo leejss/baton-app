@@ -14,9 +14,12 @@ const INITIAL_METRICS = {
   frame: { x: 0, y: 0, width: 393, height: 852 },
   insets: { top: 44, right: 0, bottom: 34, left: 0 },
 };
+const clients: QueryClient[] = [];
 
 afterEach(async () => {
   await cleanup();
+  clients.forEach((client) => client.clear());
+  clients.length = 0;
   jest.restoreAllMocks();
 });
 
@@ -30,6 +33,7 @@ describe('HandoffDetailScreen', () => {
         queries: { retry: false, staleTime: Infinity, gcTime: Infinity },
       },
     });
+    clients.push(queryClient);
     queryClient.setQueryData(handoffQueries.detail(101, handoff.id).queryKey, handoff);
 
     const onBack = jest.fn();
@@ -76,9 +80,10 @@ describe('HandoffDetailScreen', () => {
     const queryClient = new QueryClient({
       defaultOptions: {
         queries: { retry: false, staleTime: Infinity, gcTime: Infinity },
-        mutations: { retry: false },
+        mutations: { retry: false, gcTime: Infinity },
       },
     });
+    clients.push(queryClient);
     queryClient.setQueryData(handoffQueries.detail(101, handoff.id).queryKey, handoff);
 
     await render(
@@ -97,10 +102,13 @@ describe('HandoffDetailScreen', () => {
       </SafeAreaProvider>,
     );
 
+    expect(screen.getByText('박현우님 보냄')).toBeOnTheScreen();
+    expect(screen.queryByText('김지원님께')).not.toBeOnTheScreen();
     await fireEvent.press(screen.getByLabelText('확인 하기'));
     expect(await screen.findByText('확인 완료했습니다.')).toBeOnTheScreen();
     expect(screen.queryByLabelText('확인 하기')).not.toBeOnTheScreen();
     expect(screen.getByText('확인 완료')).toBeOnTheScreen();
+    expect(screen.getByText('박현우님 보냄')).toBeOnTheScreen();
     expect(api.confirmHandoff).toHaveBeenCalledTimes(1);
   });
 });

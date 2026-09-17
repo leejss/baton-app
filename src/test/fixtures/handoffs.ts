@@ -92,5 +92,9 @@ const recommendedStartAt = new Date(Date.now() + 2 * 60 * 60_000).toISOString();
 export const MOCK_RECIPIENT_RECOMMENDATION: RecipientRecommendationDto = {
   recommended: minju,
   recommendedStartAt,
-  candidates: [minju, seojun, hayoon],
+  candidates: [
+    { ...minju, startAt: recommendedStartAt },
+    { ...seojun, startAt: new Date(Date.now() + 4 * 60 * 60_000).toISOString() },
+    { ...hayoon, startAt: new Date(Date.now() + 6 * 60 * 60_000).toISOString() },
+  ],
 };

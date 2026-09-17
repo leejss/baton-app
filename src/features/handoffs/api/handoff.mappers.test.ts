@@ -86,7 +86,7 @@ describe('handoff mapper', () => {
     expect(detail).toMatchObject({
       typeLabel: '업무 처리',
       dateLabel: '오늘',
-      recipientLabel: '이서연님께',
+      participantLabel: '이서연님께',
       statusActionLabel: '확인중',
       canManage: true,
       attachments: [
@@ -95,6 +95,19 @@ describe('handoff mapper', () => {
       ],
     });
   });
+
+  it.each(['UNCONFIRMED', 'CONFIRMED', 'TERMINATED'] as const)(
+    '%s 상태에서도 조회자 기준으로 발신자 또는 수신자 이름을 표시한다',
+    (status) => {
+      const handoff = { ...receivedUnconfirmed, status };
+      expect(toHandoffDetailModel(handoff, handoff.recipient.user.userId).participantLabel).toBe(
+        '박현우님 보냄',
+      );
+      expect(toHandoffDetailModel(handoff, handoff.sender.userId).participantLabel).toBe(
+        '김지원님께',
+      );
+    },
+  );
 
   it('작성 요청의 문자열을 정리하고 검증된 첨부 ID만 보낸다', () => {
     const recipient = MOCK_RECIPIENT_RECOMMENDATION.candidates[0];
