@@ -180,4 +180,19 @@ describe('handoff mapper', () => {
 
     expect(recipients[0]?.nextShiftLabel).toBe(label);
   });
+
+  it.each([
+    ['2026-09-27T06:00:00Z', '2026-09-27T09:00:00Z', '일요일 15:00 - 18:00'],
+    ['2026-09-27T15:00:00+09:00', '2026-09-27T18:00:00+09:00', '일요일 15:00 - 18:00'],
+    ['2026-09-26T15:00:00Z', '2026-09-26T18:00:00Z', '일요일 00:00 - 03:00'],
+    ['2026-09-27T06:00:00Z', null, '일요일 15:00 - 미정'],
+  ])('후보의 시작·종료 시각을 서울 기준으로 표시한다: %s → %s', (startAt, endAt, label) => {
+    const recipients = toRecipientModels(
+      { candidates: [{ ...MOCK_MEMBERS[1], startAt, endAt }] },
+      CURRENT_USER_ID,
+    );
+
+    expect(recipients[0]?.nextShiftLabel).toBe(label);
+    expect(recipients[0]?.member).toEqual(MOCK_MEMBERS[1]);
+  });
 });

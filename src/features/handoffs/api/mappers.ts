@@ -27,13 +27,21 @@ const SHIFT_START_FORMATTER = new Intl.DateTimeFormat('ko-KR', {
   hourCycle: 'h23',
 });
 
-function formatRecipientShift(startAt: string): string {
+const SHIFT_END_FORMATTER = new Intl.DateTimeFormat('ko-KR', {
+  timeZone: SEOUL_TIME_ZONE,
+  hour: '2-digit',
+  minute: '2-digit',
+  hourCycle: 'h23',
+});
+
+function formatRecipientShift(startAt: string, endAt?: string | null): string {
   const parts = SHIFT_START_FORMATTER.formatToParts(new Date(startAt));
   const weekday = parts.find(({ type }) => type === 'weekday')?.value;
   const hour = parts.find(({ type }) => type === 'hour')?.value;
   const minute = parts.find(({ type }) => type === 'minute')?.value;
-  // 추천 API는 종료 시각을 제공하지 않으므로 추정하지 않는다.
-  return `${weekday} ${hour}:${minute} - 미정`;
+  // ADR-036 배포 전 응답과 근무 시각이 없는 후보도 수용한다.
+  const endTime = endAt ? SHIFT_END_FORMATTER.format(new Date(endAt)) : '미정';
+  return `${weekday} ${hour}:${minute} - ${endTime}`;
 }
 
 const TYPE_LABELS: Record<HandoffTypeDto, string> = {
@@ -124,11 +132,11 @@ export function toRecipientModels(
 ): RecipientModel[] {
   return dto.candidates
     .filter((member) => member.status === 'ACTIVE' && member.userId !== viewerId)
-    .map(({ startAt, ...member }) => {
+    .map(({ startAt, endAt, ...member }) => {
       return {
         member,
         isRecommended: dto.recommended?.userId === member.userId,
-        nextShiftLabel: startAt ? formatRecipientShift(startAt) : undefined,
+        nextShiftLabel: startAt ? formatRecipientShift(startAt, endAt) : undefined,
       };
     })
     .sort(

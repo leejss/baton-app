@@ -89,7 +89,11 @@ it('추천 API만 조회해 후보별 근무시간을 표시하고 유일한 다
 });
 
 it('27일 근무에서 진입하면 다른 날짜의 캐시 대신 27일 시간을 조회하고 선택한다', async () => {
-  const candidate = { ...MOCK_MEMBERS[1], startAt: '2026-09-27T06:00:00Z' };
+  const candidate = {
+    ...MOCK_MEMBERS[1],
+    startAt: '2026-09-27T06:00:00Z',
+    endAt: '2026-09-27T09:00:00Z',
+  };
   const { fetch } = await renderRecipients(
     { recommended: MOCK_MEMBERS[1], candidates: [candidate] },
     '2026-09-27',
@@ -98,10 +102,27 @@ it('27일 근무에서 진입하면 다른 날짜의 캐시 대신 27일 시간�
   expect(fetch).toHaveBeenCalledTimes(1);
   const requestUrl = new URL(String(fetch.mock.calls[0][0]));
   expect(requestUrl.searchParams.get('referenceAt')).toBe('2026-09-27T00:00:00+09:00');
-  expect(screen.getByRole('radio', { name: '이서연, 일요일 15:00 - 미정' })).toBeSelected();
+  expect(screen.getByRole('radio', { name: '이서연, 일요일 15:00 - 18:00' })).toBeSelected();
   expect(screen.queryByText('근무 시간 미정')).not.toBeOnTheScreen();
   await fireEvent.press(screen.getByRole('button', { name: '확인' }));
-  expect(useHandoffDraftStore.getState().recipient?.nextShiftLabel).toBe('일요일 15:00 - 미정');
+  expect(useHandoffDraftStore.getState().recipient?.nextShiftLabel).toBe('일요일 15:00 - 18:00');
+});
+
+it('추천 여부와 관계없이 각 후보의 종료시간을 표시하고 null 종료시간은 미정으로 둔다', async () => {
+  const { fetch } = await renderRecipients({
+    recommended: MOCK_MEMBERS[1],
+    candidates: [
+      { ...morning, endAt: null },
+      { ...evening, endAt: '2026-09-18T22:00:00+09:00' },
+    ],
+  });
+
+  expect(fetch).toHaveBeenCalledTimes(1);
+  expect(screen.getByRole('radio', { name: '이서연, 금요일 10:00 - 미정' })).toBeSelected();
+  const recipient = screen.getByRole('radio', { name: '박현우, 금요일 17:00 - 22:00' });
+  await fireEvent.press(recipient);
+  await fireEvent.press(screen.getByRole('button', { name: '확인' }));
+  expect(useHandoffDraftStore.getState().recipient?.nextShiftLabel).toBe('금요일 17:00 - 22:00');
 });
 
 it('동시 시작 후보는 시간만 표시하고 사용자가 직접 선택한다', async () => {
@@ -120,7 +141,7 @@ it('근무가 없는 후보의 null 또는 생략된 시작 시각은 미정으�
   await renderRecipients({
     recommended: null,
     recommendedStartAt: null,
-    candidates: [{ ...MOCK_MEMBERS[1], startAt: null }, MOCK_MEMBERS[2]],
+    candidates: [{ ...MOCK_MEMBERS[1], startAt: null, endAt: null }, MOCK_MEMBERS[2]],
   });
 
   expect(screen.getByRole('radio', { name: '이서연, 근무 시간 미정' })).toBeOnTheScreen();

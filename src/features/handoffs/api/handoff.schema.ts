@@ -64,7 +64,12 @@ export const handoffUpdateRequestSchema = handoffCreateRequestSchema.omit({
 export const recipientRecommendationSchema = z.object({
   recommended: memberSchema.nullish(),
   recommendedStartAt: z.iso.datetime({ offset: true }).nullish(),
-  candidates: z.array(memberSchema.extend({ startAt: z.iso.datetime({ offset: true }).nullish() })),
+  candidates: z.array(
+    memberSchema.extend({
+      startAt: z.iso.datetime({ offset: true }).nullish(),
+      endAt: z.iso.datetime({ offset: true }).nullish(),
+    }),
+  ),
 });
 
 export type HandoffTypeDto = z.infer<typeof handoffTypeSchema>;
