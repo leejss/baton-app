@@ -57,7 +57,8 @@ export function DaySchedules({
     return <ScheduleMessage message="관리자만 근무 일정을 편집할 수 있습니다." />;
   const items = query.data.pages.flatMap((page) => page.items);
   const workerCount = query.data.pages[0]?.totalEmployeeCount ?? 0;
-  const handleHandoff = (id: number) => router.push(ROUTES.handoffs.createForRecipient(String(id)));
+  const handleHandoff = (id: number) =>
+    router.push(ROUTES.handoffs.createForRecipient(String(id), date));
   const renderItem = ({ item }: ListRenderItemInfo<ScheduleItem>) => (
     <ScheduleWorkerRow
       item={item}

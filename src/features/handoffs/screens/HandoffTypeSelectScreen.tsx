@@ -15,6 +15,7 @@ import { SCREEN_PADDING_X, useTheme } from '@/theme';
 
 type HandoffTypeSelectScreenProps = {
   initialRecipientId?: string;
+  workDate?: string;
   onExit: () => void;
   onNext: () => void;
 };
@@ -38,6 +39,7 @@ export function HandoffTypeSelectScreen({
   onExit,
   onNext,
   initialRecipientId,
+  workDate,
 }: HandoffTypeSelectScreenProps) {
   const theme = useTheme();
   const type = useHandoffDraftStore((state) => state.type);
@@ -82,7 +84,11 @@ export function HandoffTypeSelectScreen({
         </View>
       </ScrollView>
       {initialRecipientId ? (
-        <HandoffPresetRecipientNext recipientId={initialRecipientId} onNext={handleNext} />
+        <HandoffPresetRecipientNext
+          recipientId={initialRecipientId}
+          workDate={workDate}
+          onNext={handleNext}
+        />
       ) : (
         <HandoffFooterActions primaryLabel="다음" onPrimaryPress={handleNext} />
       )}

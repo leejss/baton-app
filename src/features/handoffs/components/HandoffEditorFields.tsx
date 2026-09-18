@@ -1,3 +1,4 @@
+import { type ComponentRef, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { Text, TextInput } from '@/shared/ui';
@@ -27,7 +28,32 @@ export function HandoffEditorFields({
   onChangeTitle,
 }: HandoffEditorFieldsProps) {
   const theme = useTheme();
+  const bodyInputRef = useRef<ComponentRef<typeof TextInput>>(null);
+  const [isFocused, setIsFocused] = useState(false);
   const hasError = titleError !== undefined || bodyError !== undefined;
+  const borderColor = hasError
+    ? theme.colors.borderWarningDefault
+    : isFocused
+      ? theme.colors.staticBlack
+      : theme.colors.borderDefault;
+
+  function handleFocus() {
+    setIsFocused(true);
+  }
+
+  function handleSubmitTitle() {
+    bodyInputRef.current?.focus();
+  }
+
+  function handleBlurTitle() {
+    setIsFocused(false);
+    onBlurTitle();
+  }
+
+  function handleBlurBody() {
+    setIsFocused(false);
+    onBlurBody();
+  }
 
   return (
     <View style={styles.group}>
@@ -36,7 +62,7 @@ export function HandoffEditorFields({
           styles.card,
           {
             backgroundColor: theme.colors.backgroundDefault,
-            borderColor: hasError ? theme.colors.borderWarningDefault : theme.colors.borderDefault,
+            borderColor,
           },
         ]}
       >
@@ -45,21 +71,26 @@ export function HandoffEditorFields({
           accessibilityState={{ disabled }}
           accessibilityLabel="인수인계 제목"
           maxLength={20}
-          onBlur={onBlurTitle}
+          onBlur={handleBlurTitle}
+          onFocus={handleFocus}
           onChangeText={onChangeTitle}
+          onSubmitEditing={handleSubmitTitle}
           placeholder="제목을 입력해주세요."
           returnKeyType="next"
+          submitBehavior="submit"
           style={[styles.titleInput, { color: theme.colors.foregroundStrong }]}
           value={title}
         />
         <View style={[styles.divider, { backgroundColor: theme.colors.surfaceNeutralSubtle }]} />
         <TextInput
+          ref={bodyInputRef}
           editable={!disabled}
           accessibilityState={{ disabled }}
           accessibilityLabel="인수인계 내용"
           maxLength={200}
           multiline
-          onBlur={onBlurBody}
+          onBlur={handleBlurBody}
+          onFocus={handleFocus}
           onChangeText={onChangeBody}
           placeholder="인수인계 할 내용을 입력해주세요."
           style={[styles.bodyInput, { color: theme.colors.foregroundStrong }]}
@@ -90,7 +121,6 @@ export function HandoffEditorFields({
 }
 
 const styles = StyleSheet.create({
-  // TODO(design-system): 작성 필드의 264px 높이·20px 세로 여백을 토큰화한다.
   group: { gap: spacing.xs },
   card: {
     height: 264,
@@ -101,7 +131,9 @@ const styles = StyleSheet.create({
     borderCurve: 'continuous',
   },
   titleInput: {
-    ...typography.body.medium,
+    fontFamily: typography.body.medium.fontFamily,
+    fontSize: typography.body.medium.fontSize,
+    minHeight: typography.body.medium.lineHeight,
     padding: 0,
   },
   divider: {

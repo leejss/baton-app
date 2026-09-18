@@ -72,7 +72,7 @@ export function EmployeePicker({
         onPress={() => setOpen(true)}
         style={styles.field}
       >
-        {selected && <EmployeeAvatar />}
+        {selected && <EmployeeAvatar role={selected.role} />}
         <Text weight="semibold">{selected?.name ?? '근무자 선택'}</Text>
       </Pressable>
       <BottomSheet

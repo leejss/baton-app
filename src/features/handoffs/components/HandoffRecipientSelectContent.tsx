@@ -10,16 +10,22 @@ import { HandoffRecipientRow } from '@/features/handoffs/components/HandoffRecip
 import type { RecipientModel } from '@/features/handoffs/types';
 import { useHandoffDraftStore } from '@/features/handoffs/store/handoffDraftStore';
 import { EmptyState } from '@/shared/ui';
-import { useTheme } from '@/theme';
+import { SCREEN_PADDING_X, spacing, useTheme } from '@/theme';
 
 type HandoffRecipientSelectContentProps = {
+  workDate?: string;
   onConfirm: () => void;
 };
 
-export function HandoffRecipientSelectContent({ onConfirm }: HandoffRecipientSelectContentProps) {
+export function HandoffRecipientSelectContent({
+  onConfirm,
+  workDate,
+}: HandoffRecipientSelectContentProps) {
   const context = useMainContext();
   const theme = useTheme();
-  const { data } = useSuspenseQuery(handoffQueries.recipients(context.storeId, context.userId));
+  const { data } = useSuspenseQuery(
+    handoffQueries.recipients(context.storeId, context.userId, workDate),
+  );
   const recipient = useHandoffDraftStore((state) => state.recipient);
   const setRecipient = useHandoffDraftStore((state) => state.setRecipient);
   const [selectedId, setSelectedId] = useState<number | null>(recipient?.member.userId ?? null);
@@ -45,7 +51,7 @@ export function HandoffRecipientSelectContent({ onConfirm }: HandoffRecipientSel
     />
   );
   const separator = () => (
-    <View style={[styles.separator, { backgroundColor: theme.colors.borderDefault }]} />
+    <View style={[styles.separator, { backgroundColor: theme.colors.dividerStrong }]} />
   );
 
   return (
@@ -53,7 +59,9 @@ export function HandoffRecipientSelectContent({ onConfirm }: HandoffRecipientSel
       <FlashList
         data={data}
         contentInsetAdjustmentBehavior="automatic"
+        contentContainerStyle={styles.listContent}
         ItemSeparatorComponent={separator}
+        ListFooterComponent={data.length > 0 ? separator : null}
         keyExtractor={keyExtractor}
         ListEmptyComponent={<EmptyState title="선택할 수 있는 직원이 없어요" />}
         renderItem={renderItem}
@@ -75,6 +83,6 @@ function keyExtractor(item: RecipientModel) {
 const styles = StyleSheet.create({
   root: { flex: 1 },
   list: { flex: 1 },
-  separator: { height: StyleSheet.hairlineWidth, marginHorizontal: 18 },
-  // TODO(design-system): 수신자 목록 구분선의 18px 좌우 여백을 레이아웃 토큰으로 동기화한다.
+  listContent: { paddingHorizontal: SCREEN_PADDING_X, paddingTop: 20 },
+  separator: { height: 1, marginVertical: spacing.md },
 });

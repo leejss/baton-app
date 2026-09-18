@@ -5,10 +5,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Pressable } from '@/shared/ui/Pressable';
 import { Text } from '@/shared/ui/Text';
 import { ArrowLeftS, NavHomeLine, X } from '@/shared/ui/icons';
-import { SCREEN_PADDING_X, spacing, useTheme } from '@/theme';
+import { SCREEN_PADDING_X, spacing, useTheme, type TextVariant } from '@/theme';
 
 type ScreenHeaderProps = {
   title?: string;
+  titleVariant?: TextVariant;
   titleAlign?: 'left' | 'center';
   onBack?: () => void;
   onClose?: () => void;
@@ -18,6 +19,7 @@ type ScreenHeaderProps = {
 
 export function ScreenHeader({
   title,
+  titleVariant,
   titleAlign = 'center',
   onBack,
   onClose,
@@ -64,7 +66,7 @@ export function ScreenHeader({
         </View>
         {title !== undefined && (
           <Text
-            variant={isCentered ? 'title' : 'subheading'}
+            variant={titleVariant ?? (isCentered ? 'title' : 'subheading')}
             weight={isCentered ? 'semibold' : 'bold'}
             numberOfLines={1}
             style={[styles.title, isCentered && styles.centeredTitle]}

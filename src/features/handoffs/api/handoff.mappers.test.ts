@@ -147,19 +147,37 @@ describe('handoff mapper', () => {
     });
   });
 
-  it('서버 추천만 표시하고 일반 후보의 근무 시각을 만들어 넣지 않는다', () => {
+  it('서버 후보만 표시하고 후보에 없는 근무 시각을 만들어 넣지 않는다', () => {
     const recipients = toRecipientModels(
       { ...MOCK_RECIPIENT_RECOMMENDATION, candidates: [MOCK_MEMBERS[1]] },
-      MOCK_MEMBERS,
       CURRENT_USER_ID,
     );
 
-    expect(recipients).toHaveLength(3);
-    expect(recipients[0]).toMatchObject({ isRecommended: true });
-    expect(
-      recipients
-        .filter((item) => !item.isRecommended)
-        .every(({ nextShiftLabel }) => nextShiftLabel === undefined),
-    ).toBe(true);
+    expect(recipients).toEqual([
+      { member: MOCK_MEMBERS[1], isRecommended: true, nextShiftLabel: undefined },
+    ]);
+  });
+
+  it('후보에 본인이나 탈퇴한 직원이 포함되어도 선택 목록에서 제외한다', () => {
+    const recipients = toRecipientModels(
+      {
+        candidates: [MOCK_MEMBERS[0], MOCK_MEMBERS[1], { ...MOCK_MEMBERS[2], status: 'LEFT' }],
+      },
+      CURRENT_USER_ID,
+    );
+
+    expect(recipients.map(({ member }) => member.userId)).toEqual([MOCK_MEMBERS[1].userId]);
+  });
+
+  it.each([
+    ['2026-09-26T15:00:00Z', '일요일 00:00 - 미정'],
+    ['2026-09-27T06:00:00Z', '일요일 15:00 - 미정'],
+  ])('서울 기준 요일과 시작 시간을 표시하고 종료시간은 미정으로 둔다: %s', (startAt, label) => {
+    const recipients = toRecipientModels(
+      { candidates: [{ ...MOCK_MEMBERS[1], startAt }] },
+      CURRENT_USER_ID,
+    );
+
+    expect(recipients[0]?.nextShiftLabel).toBe(label);
   });
 });

@@ -22,12 +22,12 @@ afterEach(async () => {
   useHandoffDraftStore.getState().reset();
 });
 
-it('근무표의 직원 식별자를 조회하고 다음 버튼을 누를 때 수신자로 확정한다', async () => {
+it('근무표에서 선택한 날짜의 직원 정보를 조회하고 다음 버튼에서 수신자로 확정한다', async () => {
   const client = new QueryClient({
     defaultOptions: { queries: { retry: false, gcTime: Infinity } },
   });
   client.setQueryData(
-    handoffQueries.recipients(101, 1).queryKey,
+    handoffQueries.recipients(101, 1, '2026-09-27').queryKey,
     MOCK_MEMBERS.filter((member) => member.userId !== 1).map((member) => ({
       member,
       isRecommended: false,
@@ -42,12 +42,12 @@ it('근무표의 직원 식별자를 조회하고 다음 버튼을 누를 때 �
     <SafeAreaProvider initialMetrics={metrics}>
       <QueryClientProvider client={client}>
         <MainContextProvider value={TEST_CONTEXT}>
-          <HandoffPresetRecipientNext recipientId="2" onNext={onNext} />
+          <HandoffPresetRecipientNext recipientId="2" workDate="2026-09-27" onNext={onNext} />
         </MainContextProvider>
       </QueryClientProvider>
     </SafeAreaProvider>,
   );
-  expect(await screen.findByText('받는 사람: 이서연')).toBeOnTheScreen();
+  expect(await screen.findByRole('button', { name: '다음' })).toBeEnabled();
   expect(useHandoffDraftStore.getState().recipient).toBeNull();
   await fireEvent.press(screen.getByLabelText('다음'));
   expect(useHandoffDraftStore.getState().recipient?.member.userId).toBe(2);

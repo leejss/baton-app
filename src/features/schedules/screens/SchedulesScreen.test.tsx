@@ -113,6 +113,11 @@ describe('근무표 화면의 로컬 조회 경계', () => {
     expect(screen.getByText('총 2명')).toBeOnTheScreen();
     expect(screen.queryByLabelText('전체 근무 일정 더 보기')).not.toBeOnTheScreen();
     expect(screen.getByLabelText('9월 15일 화, 근무 2건')).toBeOnTheScreen();
+    await fireEvent.press(screen.getByLabelText('이서연님에게 인수인계 작성'));
+    expect(mockPush).toHaveBeenCalledWith({
+      pathname: '/handoffs/new',
+      params: { recipientId: '2', workDate: '2026-09-15' },
+    });
   });
 
   it('일정이 정확히 세 개면 모두 표시하고 더보기를 숨긴다', async () => {

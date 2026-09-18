@@ -5,10 +5,11 @@ import * as notifications from '@/features/notifications/api/notification.api';
 import * as handoffs from '@/features/handoffs/api/handoff.api';
 import { HomeScreen } from '@/features/home/screens/HomeScreen';
 import { MainTestProvider, createTestClient } from '@/test/MainTestProvider';
-import { INITIAL_MOCK_HANDOFFS } from '@/test/fixtures/handoffs';
+import { INITIAL_MOCK_HANDOFFS, MOCK_MEMBERS } from '@/test/fixtures/handoffs';
 const mockNavigate = jest.fn();
+const mockPush = jest.fn();
 jest.mock('expo-router', () => ({
-  useRouter: () => ({ navigate: mockNavigate, push: jest.fn() }),
+  useRouter: () => ({ navigate: mockNavigate, push: mockPush }),
 }));
 let client = createTestClient();
 beforeEach(() => {
@@ -22,6 +23,36 @@ afterEach(async () => {
   client.clear();
   jest.restoreAllMocks();
   mockNavigate.mockReset();
+  mockPush.mockReset();
+});
+
+it('홈에서 날짜를 바꾼 뒤 인수인계를 누르면 선택한 근무 날짜를 전달한다', async () => {
+  jest.spyOn(homeApi, 'fetchHome').mockImplementation(async (_storeId, date) => ({
+    date,
+    schedulePreview: [
+      {
+        id: 177,
+        employee: MOCK_MEMBERS[1],
+        workDate: date,
+        startTime: '15:00',
+        endTime: '18:00',
+        status: 'ACTIVE',
+      },
+    ],
+    receivedHandoverCount: 0,
+    receivedHandovers: [],
+  }));
+  await render(
+    <MainTestProvider client={client}>
+      <HomeScreen initialDate="2026-09-21" />
+    </MainTestProvider>,
+  );
+  await fireEvent.press(await screen.findByRole('button', { name: '9월 27일 일요일' }));
+  await fireEvent.press(await screen.findByLabelText('이서연님에게 인수인계 작성'));
+  expect(mockPush).toHaveBeenCalledWith({
+    pathname: '/handoffs/new',
+    params: { recipientId: '2', workDate: '2026-09-27' },
+  });
 });
 it('빈 인수인계와 빈 근무일을 정상 상태로 표시한다', async () => {
   jest.spyOn(homeApi, 'fetchHome').mockResolvedValue({

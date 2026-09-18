@@ -24,10 +24,20 @@ export const fetchHandoffs = (
 };
 export const fetchHandoff = (id: string | number, signal?: AbortSignal) =>
   get(`/handovers/${parseApiId(id)}`, handoffSchema, { signal });
-export const fetchRecommendation = (storeId: number, signal?: AbortSignal) =>
-  get(`/stores/${storeId}/handovers/recipient-recommendation`, recipientRecommendationSchema, {
-    signal,
-  });
+export const fetchRecommendation = (
+  storeId: number,
+  referenceAt?: string,
+  signal?: AbortSignal,
+) => {
+  const query = referenceAt ? `?${new URLSearchParams({ referenceAt })}` : '';
+  return get(
+    `/stores/${storeId}/handovers/recipient-recommendation${query}`,
+    recipientRecommendationSchema,
+    {
+      signal,
+    },
+  );
+};
 export const createHandoff = (storeId: number, input: HandoffCreateRequestDto) =>
   post(`/stores/${storeId}/handovers`, handoffCreateRequestSchema.parse(input), handoffSchema);
 export const updateHandoff = (id: string | number, input: HandoffUpdateRequestDto) =>

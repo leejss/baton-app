@@ -72,7 +72,7 @@ export function CalendarDay({
               style={[styles.dot, { backgroundColor: colors.foregroundBlueSoft }]}
             />
           ))}
-          {count >= 3 && (
+          {count > 3 && (
             <View style={styles.more}>
               <Image
                 source={require('@/assets/images/schedules/calendar-more.svg')}

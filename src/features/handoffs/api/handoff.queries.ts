@@ -5,7 +5,6 @@ import {
   fetchRecommendation,
 } from '@/features/handoffs/api/handoff.api';
 import { toHandoffScopeDto, toRecipientModels } from '@/features/handoffs/api/mappers';
-import { storeQueries } from '@/features/stores/api/store.queries';
 import type { HandoffScope } from '@/features/handoffs/types';
 export const handoffQueries = {
   all: () => ['handoffs'] as const,
@@ -25,15 +24,14 @@ export const handoffQueries = {
       queryFn: ({ signal }) => fetchHandoff(handoffId, signal),
     }),
   recipientsKey: (storeId: number) => [...handoffQueries.store(storeId), 'recipients'] as const,
-  recipients: (storeId: number, userId: number) =>
+  recipients: (storeId: number, userId: number, workDate?: string) =>
     queryOptions({
-      queryKey: [...handoffQueries.recipientsKey(storeId), userId],
-      queryFn: async ({ signal, client }) => {
-        const [recommendation, members] = await Promise.all([
-          fetchRecommendation(storeId, signal),
-          client.fetchQuery(storeQueries.members(storeId)),
-        ]);
-        return toRecipientModels(recommendation, members, userId);
+      queryKey: [...handoffQueries.recipientsKey(storeId), userId, workDate ?? null],
+      queryFn: async ({ signal }) => {
+        // 근무표에서 진입하면 선택한 날짜 전체의 후보를 조회한다.
+        const referenceAt = workDate ? `${workDate}T00:00:00+09:00` : undefined;
+        const recommendation = await fetchRecommendation(storeId, referenceAt, signal);
+        return toRecipientModels(recommendation, userId);
       },
     }),
 };

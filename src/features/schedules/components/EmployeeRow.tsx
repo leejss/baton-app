@@ -24,7 +24,7 @@ export function EmployeeRow({ member, selected, disabled = false, onSelect }: Em
       onPress={() => onSelect(member.id)}
       style={styles.row}
     >
-      <EmployeeAvatar size={34} />
+      <EmployeeAvatar role={member.role} size={34} />
       <View style={styles.info}>
         <Text
           variant="title"
