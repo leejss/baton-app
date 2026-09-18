@@ -1,21 +1,21 @@
-import { StyleSheet, View } from 'react-native';
-
-import { Text } from '@/shared/ui';
-import { useTheme } from '@/theme';
+import { Image } from 'expo-image';
+import { StyleSheet, type StyleProp, type ImageStyle } from 'react-native';
+import type { ProfileImage } from '@/features/auth/api/auth.schema';
+import { getProfileImageSource } from '@/shared/ui/profileImageAssets';
 
 type HandoffAvatarProps = {
-  name: string;
+  profileImage: ProfileImage;
+  style?: StyleProp<ImageStyle>;
 };
 
-export function HandoffAvatar({ name }: HandoffAvatarProps) {
-  const theme = useTheme();
-
+export function HandoffAvatar({ profileImage, style }: HandoffAvatarProps) {
   return (
-    <View style={[styles.root, { backgroundColor: theme.colors.surfaceBlueDefault }]}>
-      <Text variant="bodySmall" weight="semibold" color="foregroundBlueDefault">
-        {name.slice(0, 1)}
-      </Text>
-    </View>
+    <Image
+      source={getProfileImageSource(profileImage.key)}
+      contentFit="cover"
+      accessible={false}
+      style={[styles.root, style]}
+    />
   );
 }
 
@@ -25,7 +25,5 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 999,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
 });

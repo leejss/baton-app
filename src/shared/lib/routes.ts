@@ -64,11 +64,13 @@ export const ROUTES = {
       ({ pathname: HANDOFFS_PATH, params: { scope } }) satisfies Href,
     new: {
       index: NEW_HANDOFF_PATH,
-      content: '/handoffs/new/content',
-      recipient: '/handoffs/new/recipient',
-    } as const satisfies Record<string, Href>,
-    createForRecipient: (recipientId: string) =>
-      ({ pathname: NEW_HANDOFF_PATH, params: { recipientId } }) satisfies Href,
+      content: (workDate?: string) =>
+        ({ pathname: '/handoffs/new/content', params: { workDate } }) satisfies Href,
+      recipient: (workDate?: string) =>
+        ({ pathname: '/handoffs/new/recipient', params: { workDate } }) satisfies Href,
+    },
+    createForRecipient: (recipientId: string, workDate: string) =>
+      ({ pathname: NEW_HANDOFF_PATH, params: { recipientId, workDate } }) satisfies Href,
     detail: (handoffId: string) =>
       ({ pathname: '/handoffs/[handoffId]', params: { handoffId } }) satisfies Href,
     edit: (handoffId: string) =>

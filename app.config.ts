@@ -72,14 +72,14 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     version: packageJson.version,
     platforms: ['ios', 'android'],
     orientation: 'portrait',
-    icon: './assets/images/icon.png',
+    icon: './assets/images/ios-icon.png',
     scheme: `${APP.scheme}${variantConfig.schemeSuffix}`,
     userInterfaceStyle: 'light',
     ios: {
       ...config.ios,
       appleTeamId: '3PVV8DQPL6',
       bundleIdentifier: `${APP.identifier}${variantConfig.identifierSuffix}`,
-      icon: './assets/expo.icon',
+      icon: './assets/images/ios-icon.png',
       usesAppleSignIn: true,
       infoPlist: {
         ITSAppUsesNonExemptEncryption: false,
@@ -89,12 +89,8 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       ...config.android,
       package: `${APP.identifier}${variantConfig.identifierSuffix}`,
       googleServicesFile: variantConfig.googleServicesFile,
-      adaptiveIcon: {
-        backgroundColor: '#E6F4FE',
-        foregroundImage: './assets/images/android-icon-foreground.png',
-        backgroundImage: './assets/images/android-icon-background.png',
-        monochromeImage: './assets/images/android-icon-monochrome.png',
-      },
+      // 배경까지 포함된 완성형 에셋이므로 adaptiveIcon 전경으로 잘라 쓰지 않는다.
+      icon: './assets/images/android-icon.png',
       predictiveBackGestureEnabled: false,
     },
     plugins: [

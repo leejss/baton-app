@@ -28,7 +28,7 @@ export function ScheduleWorkerRow({
   const { colors } = useTheme();
   return (
     <View style={styles.row}>
-      <EmployeeAvatar />
+      <EmployeeAvatar role={item.member.role} />
       <View style={styles.details}>
         <Text weight="semibold" numberOfLines={1}>
           {item.member.name}

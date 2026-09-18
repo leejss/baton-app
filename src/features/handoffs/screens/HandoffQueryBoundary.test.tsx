@@ -26,7 +26,7 @@ const clients: ReturnType<typeof createTestClient>[] = [];
 const cases = [
   { name: '상세', content: handoff.title },
   { name: '수정', content: '전달할 내용을 수정해 주세요' },
-  { name: '수신자 선택', content: recipients[0].member.displayName },
+  { name: '수신자 선택', content: `${recipients[0].member.displayName} 님` },
 ] as const;
 
 function renderScreen(name: (typeof cases)[number]['name']) {

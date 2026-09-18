@@ -1,7 +1,7 @@
 import { Image } from 'expo-image';
 import { Pressable, StyleSheet, View } from 'react-native';
 
-import { getHomeProfileImageSource } from '@/features/home/lib/homeAssets';
+import { getProfileImageSource } from '@/shared/ui/profileImageAssets';
 import type { HomeShiftItem } from '@/features/home/types';
 import { Text } from '@/shared/ui';
 import { SendFill } from '@/shared/ui/icons';
@@ -20,7 +20,7 @@ export function HomeShiftRow({ item, onCreateHandoff }: HomeShiftRowProps) {
     <View style={styles.root}>
       <View style={styles.employee}>
         <Image
-          source={getHomeProfileImageSource(item.profileImageKey)}
+          source={getProfileImageSource(item.profileImageKey)}
           contentFit="cover"
           accessible={false}
           style={[styles.profile, { borderColor: theme.colors.surfaceNeutralSubtle }]}

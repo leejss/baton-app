@@ -15,6 +15,7 @@ import { useMainContext } from '@/features/stores/hooks/useMainContext';
 import { MainHeader } from '@/features/tabs/components/MainHeader';
 import { normalizeError } from '@/shared/api/errors';
 import { ROUTES } from '@/shared/lib/routes';
+import { getProfileImageSource } from '@/shared/ui/profileImageAssets';
 import { radius, SCREEN_PADDING_X, useTheme } from '@/theme';
 
 export function MyPageScreen() {
@@ -37,11 +38,7 @@ export function MyPageScreen() {
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.avatar}>
           <Image
-            source={
-              canManage
-                ? require('@/assets/images/settings/manager-profile.png')
-                : require('@/assets/images/schedules/employee-profile.png')
-            }
+            source={getProfileImageSource(profile.profileImage.key)}
             contentFit="cover"
             accessible={false}
             style={[styles.profile, { borderColor: colors.borderSubtle }]}

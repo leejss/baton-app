@@ -53,6 +53,8 @@ const colors = {
   tagSurfaceFillNeutral: palette.gray500, // tag/surface/fill/neutral
   // Figma semantic direct value. It is intentionally not a primitive palette value.
   tagSurfaceSoftBlue: '#EFF6FF', // tag/surface/soft/blue
+  tagForegroundBlue: palette.blue600, // tag/foreground/blue
+  dividerStrong: palette.gray200, // divider/strong
   tagSurfaceSoftOrange: palette.orange50, // tag/surface/soft/orange
   tagForegroundOrange: palette.orange600, // tag/foreground/orange
 

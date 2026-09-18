@@ -16,7 +16,25 @@ import type {
   RecipientModel,
   LocalAttachment,
 } from '@/features/handoffs/types';
-import { formatRelativeSeoulDate, formatSeoulDateTime } from '@/shared/lib/formatters';
+import { SEOUL_TIME_ZONE } from '@/shared/lib/date';
+import { formatRelativeSeoulDate } from '@/shared/lib/formatters';
+
+const SHIFT_START_FORMATTER = new Intl.DateTimeFormat('ko-KR', {
+  timeZone: SEOUL_TIME_ZONE,
+  weekday: 'long',
+  hour: '2-digit',
+  minute: '2-digit',
+  hourCycle: 'h23',
+});
+
+function formatRecipientShift(startAt: string): string {
+  const parts = SHIFT_START_FORMATTER.formatToParts(new Date(startAt));
+  const weekday = parts.find(({ type }) => type === 'weekday')?.value;
+  const hour = parts.find(({ type }) => type === 'hour')?.value;
+  const minute = parts.find(({ type }) => type === 'minute')?.value;
+  // 추천 API는 종료 시각을 제공하지 않으므로 추정하지 않는다.
+  return `${weekday} ${hour}:${minute} - 미정`;
+}
 
 const TYPE_LABELS: Record<HandoffTypeDto, string> = {
   WORK_TASK: '업무 처리',
@@ -102,18 +120,15 @@ export function toHandoffDetailModel(
 
 export function toRecipientModels(
   dto: RecipientRecommendationDto,
-  members: import('@/features/stores/api/store.schema').MemberDto[],
   viewerId: number,
 ): RecipientModel[] {
-  const candidatesById = new Map(dto.candidates.map((candidate) => [candidate.userId, candidate]));
-  return members
+  return dto.candidates
     .filter((member) => member.status === 'ACTIVE' && member.userId !== viewerId)
-    .map((member) => {
-      const startAt = candidatesById.get(member.userId)?.startAt;
+    .map(({ startAt, ...member }) => {
       return {
         member,
         isRecommended: dto.recommended?.userId === member.userId,
-        nextShiftLabel: startAt ? formatSeoulDateTime(startAt) : undefined,
+        nextShiftLabel: startAt ? formatRecipientShift(startAt) : undefined,
       };
     })
     .sort(

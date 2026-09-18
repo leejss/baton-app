@@ -22,8 +22,8 @@ export function HomeScreen({ initialDate = getTodayInSeoul() }: HomeScreenProps)
   const handleHandoffDetailsPress = () => router.navigate(ROUTES.handoffs.list('all'));
   const handleScheduleDetailsPress = (selectedDate: string) =>
     router.navigate(ROUTES.schedules.list(selectedDate));
-  const handleCreateHandoff = (recipientId: number) =>
-    router.push(ROUTES.handoffs.createForRecipient(String(recipientId)));
+  const handleCreateHandoff = (recipientId: number, workDate: string) =>
+    router.push(ROUTES.handoffs.createForRecipient(String(recipientId), workDate));
 
   return (
     <View style={[styles.root, { backgroundColor: colors.surfaceBlueDefault }]}>

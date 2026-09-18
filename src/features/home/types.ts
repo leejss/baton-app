@@ -1,6 +1,8 @@
+import type { ProfileImage } from '@/features/auth/api/auth.schema';
+
 export type HomeRole = 'MANAGER' | 'EMPLOYEE';
 
-export type HomeProfileImageKey = 'DEFAULT_01' | 'DEFAULT_MANAGER' | 'DEFAULT_EMPLOYEE';
+export type HomeProfileImageKey = ProfileImage['key'];
 
 export type HomeHandoffStatus = 'UNCONFIRMED' | 'CONFIRMED' | 'TERMINATED';
 

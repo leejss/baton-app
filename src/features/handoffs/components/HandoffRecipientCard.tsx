@@ -4,6 +4,7 @@ import { StyleSheet, View } from 'react-native';
 import type { MemberDto } from '@/features/handoffs/api/handoff.schema';
 import { Pressable, Text } from '@/shared/ui';
 import { ArrowRightS } from '@/shared/ui/icons';
+import { getProfileImageSource } from '@/shared/ui/profileImageAssets';
 import { radius, spacing, useTheme } from '@/theme';
 
 type HandoffRecipientCardProps = {
@@ -37,7 +38,7 @@ export function HandoffRecipientCard({
     >
       <View style={[styles.avatarFrame, { borderColor: theme.colors.surfaceNeutralSubtle }]}>
         <Image
-          source={require('@/assets/images/home/profile-placeholder.png')}
+          source={getProfileImageSource(recipient?.profileImage.key ?? 'DEFAULT_01')}
           contentFit="cover"
           accessible={false}
           accessibilityElementsHidden

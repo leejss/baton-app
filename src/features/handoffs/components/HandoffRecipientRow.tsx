@@ -24,63 +24,56 @@ export function HandoffRecipientRow({ item, selected, onSelect }: HandoffRecipie
       onPress={handlePress}
       style={({ pressed }) => [styles.root, pressed && styles.pressed]}
     >
-      <HandoffAvatar name={item.member.displayName} />
+      <HandoffAvatar
+        profileImage={item.member.profileImage}
+        style={[styles.avatar, { borderColor: theme.colors.borderSubtle }]}
+      />
       <View style={styles.copy}>
         <View style={styles.nameRow}>
-          <Text weight="semibold">{item.member.displayName}</Text>
+          <Text
+            weight="semibold"
+            color={selected ? 'foregroundStrong' : 'foregroundDisabled'}
+            style={styles.name}
+          >
+            {item.member.displayName} 님
+          </Text>
           {item.isRecommended && (
-            <View style={[styles.badge, { backgroundColor: theme.colors.surfaceBlueDefault }]}>
-              <Text variant="caption" weight="medium" color="foregroundBlueDefault">
+            <View style={[styles.badge, { backgroundColor: theme.colors.tagSurfaceSoftBlue }]}>
+              <Text variant="caption" weight="medium" color="tagForegroundBlue">
                 다음 근무자
               </Text>
             </View>
           )}
         </View>
-        <Text variant="bodySmall" color="foregroundDefault">
+        <Text
+          variant="caption"
+          weight="medium"
+          color={selected ? 'foregroundDefault' : 'foregroundSubtle'}
+        >
           {item.nextShiftLabel ?? '근무 시간 미정'}
         </Text>
       </View>
-      <View
-        style={[
-          styles.check,
-          {
-            backgroundColor: selected
-              ? theme.colors.surfaceNeutralStrong
-              : theme.colors.backgroundDefault,
-            borderColor: selected ? theme.colors.borderPressed : theme.colors.borderDefault,
-          },
-        ]}
-      >
-        {selected && <Check size={16} color="foregroundInverse" />}
-      </View>
+      {selected && <Check size={24} color="foregroundBlueSoft" />}
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
   root: {
-    minHeight: 76,
-    paddingHorizontal: spacing.md,
-    paddingVertical: 12,
+    minHeight: 46,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-    // TODO(design-system): 수신자 행의 12px 세로·요소 간격을 토큰화한다.
+    gap: 10,
   },
   pressed: { opacity: 0.72 },
   copy: { flex: 1, minWidth: 0, gap: 2 },
-  nameRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  nameRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
+  name: { flexShrink: 1 },
+  // Figma 받는 사람 선택(732:21516)의 프로필 크기와 테두리.
+  avatar: { width: 33, height: 33, borderWidth: 1.375 },
   badge: {
-    paddingHorizontal: spacing.sm,
+    paddingHorizontal: 6,
     paddingVertical: 2,
-    borderRadius: 999,
-  },
-  check: {
-    width: 24,
-    height: 24,
-    borderWidth: 1,
-    borderRadius: 999,
-    alignItems: 'center',
-    justifyContent: 'center',
+    borderRadius: 4,
   },
 });

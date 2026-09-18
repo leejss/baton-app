@@ -26,12 +26,14 @@ import { Button, Text } from '@/shared/ui';
 import { SCREEN_PADDING_X, spacing, useTheme } from '@/theme';
 
 type HandoffContentScreenProps = {
+  workDate?: string;
   onBack: () => void;
   onRecipientPress: () => void;
   onSent: (handoffId: string) => void;
 };
 
 export function HandoffContentScreen({
+  workDate,
   onBack,
   onRecipientPress,
   onSent,
@@ -82,7 +84,9 @@ export function HandoffContentScreen({
     attachmentCount: attachments.length,
     onSelected: uploads.add,
   });
-  const recipientsQuery = useQuery(handoffQueries.recipients(context.storeId, context.userId));
+  const recipientsQuery = useQuery(
+    handoffQueries.recipients(context.storeId, context.userId, workDate),
+  );
   // 추천값은 화면 기본 선택으로만 사용하고, 사용자가 고른 값만 작성 상태에 저장한다.
   const effectiveRecipient =
     (recipient

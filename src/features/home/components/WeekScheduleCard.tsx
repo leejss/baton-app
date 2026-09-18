@@ -17,7 +17,7 @@ import { shadows, spacing, useTheme } from '@/theme';
 type WeekScheduleCardProps = {
   currentUserId: number;
   initialDate: string;
-  onCreateHandoff: (userId: number) => void;
+  onCreateHandoff: (userId: number, workDate: string) => void;
   onDetailsPress: (date: string) => void;
   storeId: number;
 };
@@ -39,6 +39,7 @@ export function WeekScheduleCard({
   const title = formatKoreanDate(selectedDate);
   const weekDays = getHomeWeekDays(selectedDate);
   const handleDetailsPress = () => onDetailsPress(selectedDate);
+  const handleCreateHandoff = (userId: number) => onCreateHandoff(userId, selectedDate);
   const handleQueryRetry = () => void summaryQuery.refetch();
 
   return (
@@ -83,7 +84,7 @@ export function WeekScheduleCard({
             ) : (
               <View style={styles.shifts}>
                 {model.items.map((item) => (
-                  <HomeShiftRow key={item.id} item={item} onCreateHandoff={onCreateHandoff} />
+                  <HomeShiftRow key={item.id} item={item} onCreateHandoff={handleCreateHandoff} />
                 ))}
               </View>
             ))}

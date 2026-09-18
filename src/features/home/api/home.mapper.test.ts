@@ -2,7 +2,6 @@ import { describe, expect, it } from '@jest/globals';
 
 import { mapHomeHandoffSectionModel, mapHomeScheduleModel } from '@/features/home/api/mappers';
 import { homeSummarySchema } from '@/features/home/api/home.schema';
-import { getHomeProfileImageSource } from '@/features/home/lib/homeAssets';
 
 const meta = { result: 'SUCCESS', errorCode: null, message: null } as const;
 
@@ -99,12 +98,24 @@ describe('home mapper', () => {
     ]);
   });
 
-  it('세 프로필 키를 같은 임시 Figma asset에 매핑한다', () => {
-    expect(getHomeProfileImageSource('DEFAULT_01')).toBe(
-      getHomeProfileImageSource('DEFAULT_MANAGER'),
-    );
-    expect(getHomeProfileImageSource('DEFAULT_MANAGER')).toBe(
-      getHomeProfileImageSource('DEFAULT_EMPLOYEE'),
-    );
+  it('관리자와 직원의 서버 프로필 키를 화면 모델에 보존한다', () => {
+    const summary = homeSummarySchema.parse({
+      date: '2026-09-06',
+      receivedHandoverCount: 0,
+      receivedHandovers: [],
+      schedulePreview: ['DEFAULT_MANAGER', 'DEFAULT_EMPLOYEE'].map((key, index) => ({
+        id: index + 1,
+        employee: { ...member(index + 1), profileImage: { source: 'STATIC', key } },
+        workDate: '2026-09-06',
+        startTime: '09:00',
+        endTime: '18:00',
+        status: 'ACTIVE',
+      })),
+    });
+
+    expect(mapHomeScheduleModel(1, summary).items.map((item) => item.profileImageKey)).toEqual([
+      'DEFAULT_MANAGER',
+      'DEFAULT_EMPLOYEE',
+    ]);
   });
 });
