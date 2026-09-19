@@ -8,6 +8,12 @@ import { secureStorage } from '@/shared/lib/secureStorage';
 import { signOutFromServer } from '@/features/auth/api/auth.api';
 import { sessionSchema, type Session } from '@/features/auth/api/auth.schema';
 import { signOutFromKakao } from '@/features/auth/lib/kakaoAuth';
+import { disableCurrentPushToken } from '@/features/notifications/api/push.api';
+import {
+  forgetPushRegistration,
+  pausePushRegistration,
+  resumePushRegistration,
+} from '@/features/notifications/lib/pushRegistration';
 
 /**
  * 로그인 세션. 서버에서 온 데이터지만 TanStack Query가 아니라 여기 둔다 —
@@ -82,13 +88,21 @@ export const useAuthStore = create<AuthStore>()((set, get) => ({
     // 갱신 실패로 들어온 경우 서버 로그아웃의 401이 같은 갱신 작업을 기다리면
     // 서로 완료를 기다리게 된다. 이미 거부된 세션은 기기에서만 정리한다.
     if (reason === undefined) {
+      await pausePushRegistration();
       try {
+        await disableCurrentPushToken();
         await signOutFromServer();
       } catch (error) {
         // 401은 서버에서 세션이 이미 끊겼다는 뜻이라 로그아웃의 목적은 이뤄졌다. 기기 정리를 이어간다.
         // 그 밖의 실패(네트워크 등)는 서버 세션이 살아 있을 수 있어 호출부에 알린다.
-        if (!(isAppError(error) && error.status === 401)) throw error;
+        if (!(isAppError(error) && error.status === 401)) {
+          resumePushRegistration();
+          throw error;
+        }
       }
+    } else {
+      // 등록 요청 자체의 401로 들어오기도 한다. 여기서는 진행 중인 요청을 기다리지 않는다.
+      forgetPushRegistration();
     }
     await signOutFromKakao();
     await secureStorage.remove(SESSION_KEY);

@@ -5,6 +5,7 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { useAuthStore } from '@/features/auth/store/authStore';
+import { requestNotificationPermission } from '@/features/notifications/lib/notificationPermissions';
 import { EditNameDialog } from '@/features/settings/components/EditNameDialog';
 import { SettingsDialog } from '@/features/settings/components/SettingsDialog';
 import { SettingsMessage } from '@/features/settings/components/SettingsMessage';
@@ -74,6 +75,21 @@ export function MyPageScreen() {
           />
         </SettingsSection>
         <SettingsSection title="계정 관리">
+          <SettingsRow
+            label="알림 설정"
+            onPress={() => {
+              void requestNotificationPermission(
+                true,
+                () => useAuthStore.getState().session?.user.id === profile.id,
+              ).catch((error) => {
+                logger.error('알림 권한 설정 실패', error);
+                setFeedback({
+                  tone: 'error',
+                  message: '알림 설정을 열지 못했어요. 다시 시도해주세요.',
+                });
+              });
+            }}
+          />
           <SettingsRow label="로그아웃" onPress={() => setDialog('logout')} />
           <SettingsRow
             label="회원 탈퇴"

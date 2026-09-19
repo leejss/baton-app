@@ -7,6 +7,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 
 import { ForcedLogoutModal } from '@/features/auth/components/ForcedLogoutModal';
+import { PushNotifications } from '@/features/notifications/components/PushNotifications';
 import { useAuthStore } from '@/features/auth/store/authStore';
 import { reportError } from '@/shared/lib/reportError';
 import { ErrorState } from '@/shared/ui/ErrorState';
@@ -45,6 +46,7 @@ export default function RootLayout() {
             </Stack>
             {/* 어느 화면에 있든 위에 떠야 해서 라우트 트리 바깥에 둔다. */}
             <ForcedLogoutModal />
+            <PushNotifications />
           </ThemeProvider>
         </SessionQueryProvider>
         {/*

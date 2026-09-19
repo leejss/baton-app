@@ -76,7 +76,7 @@ it('동시 요청과 토큰 갱신이 401이면 대기를 끝내고 로컬 세�
   ]);
 }, 1000);
 
-it('사용자가 직접 로그아웃하면 서버 세션도 폐기한다', async () => {
+it('사용자가 직접 로그아웃하면 푸시 토큰을 먼저 비활성화하고 서버 세션을 폐기한다', async () => {
   const fetchMock = jest
     .spyOn(globalThis, 'fetch')
     .mockResolvedValue(new Response(null, { status: 204 }));
@@ -84,6 +84,10 @@ it('사용자가 직접 로그아웃하면 서버 세션도 폐기한다', async
   await useAuthStore.getState().signOut();
   expect(logger.info).toHaveBeenCalledTimes(1);
   expect(logger.info).toHaveBeenCalledWith('로그아웃 완료');
+  expect(fetchMock.mock.calls.map(([url, init]) => [url, init?.method])).toEqual([
+    ['https://api.example.com/api/v1/push-tokens/current', 'DELETE'],
+    ['https://api.example.com/api/v1/auth/logout', 'POST'],
+  ]);
 
   expect(fetchMock).toHaveBeenCalledWith(
     'https://api.example.com/api/v1/auth/logout',

@@ -17,7 +17,6 @@ type HandoffListContentProps = {
   onOpen: (handoffId: string) => void;
 };
 
-/** 탭별 서버 데이터만 이 컴포넌트에서 중단시켜 화면의 고정 영역은 계속 유지한다. */
 export function HandoffListContent({ scope, onManagePress, onOpen }: HandoffListContentProps) {
   const context = useMainContext();
   const query = useSuspenseInfiniteQuery(
@@ -38,6 +37,7 @@ export function HandoffListContent({ scope, onManagePress, onOpen }: HandoffList
 
   return (
     <FlashList
+      key={scope}
       data={items}
       onEndReached={() => {
         if (query.hasNextPage && !query.isFetching && !query.isFetchNextPageError)

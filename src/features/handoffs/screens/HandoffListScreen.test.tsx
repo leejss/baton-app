@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { afterEach, describe, expect, it, jest } from '@jest/globals';
-import { cleanup, render, screen } from '@testing-library/react-native';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import { useState } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import * as api from '@/features/handoffs/api/handoff.api';
@@ -8,6 +9,8 @@ import * as notifications from '@/features/notifications/api/notification.api';
 import { TEST_CONTEXT } from '@/test/MainTestProvider';
 import { MainContextProvider } from '@/features/stores/hooks/useMainContext';
 import { HandoffListScreen } from '@/features/handoffs/screens/HandoffListScreen';
+import type { HandoffScope } from '@/features/handoffs/types';
+import { INITIAL_MOCK_HANDOFFS } from '@/test/fixtures/handoffs';
 
 jest.mock('expo-router', () => ({ useRouter: () => ({ push: jest.fn() }) }));
 
@@ -22,6 +25,51 @@ afterEach(async () => {
 });
 
 describe('HandoffListScreen', () => {
+  it('발신에서 전체로 돌아오면 전체 쿼리의 항목을 표시한다', async () => {
+    const sent = INITIAL_MOCK_HANDOFFS[0];
+    const received = INITIAL_MOCK_HANDOFFS[1];
+    jest.spyOn(api, 'fetchHandoffs').mockImplementation(async (_storeId, scope) => ({
+      items: scope === 'SENT' ? [sent] : [sent, received],
+      nextCursor: null,
+      hasNext: false,
+    }));
+    jest
+      .spyOn(notifications, 'fetchNotifications')
+      .mockResolvedValue({ items: [], unreadCount: 0, badgeText: '' });
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false, gcTime: Infinity } },
+    });
+
+    function TestScreen() {
+      const [scope, setScope] = useState<HandoffScope>('all');
+      return (
+        <HandoffListScreen
+          scope={scope}
+          onCreate={jest.fn()}
+          onEdit={jest.fn()}
+          onOpen={jest.fn()}
+          onScopeChange={setScope}
+        />
+      );
+    }
+
+    await render(
+      <SafeAreaProvider initialMetrics={INITIAL_METRICS}>
+        <QueryClientProvider client={queryClient}>
+          <MainContextProvider value={TEST_CONTEXT}>
+            <TestScreen />
+          </MainContextProvider>
+        </QueryClientProvider>
+      </SafeAreaProvider>,
+    );
+
+    expect(await screen.findByText(received.title)).toBeOnTheScreen();
+    await fireEvent.press(screen.getByLabelText('발신 인수인계'));
+    await waitFor(() => expect(screen.queryByText(received.title)).not.toBeOnTheScreen());
+    await fireEvent.press(screen.getByLabelText('전체 인수인계'));
+    expect(await screen.findByText(received.title)).toBeOnTheScreen();
+  });
+
   it('목록 쿼리가 대기 중이어도 헤더와 탭을 유지한다', async () => {
     jest.spyOn(api, 'fetchHandoffs').mockImplementation(() => new Promise<never>(() => {}));
     jest
