@@ -60,22 +60,31 @@ export const useAuthStore = create<AuthStore>()((set, get) => ({
   signOutReason: null,
 
   restore: async () => {
-    const raw = await secureStorage.get(SESSION_KEY);
-    if (raw === null) {
-      set({ status: 'signedOut', session: null });
-      return;
+    try {
+      const raw = await secureStorage.get(SESSION_KEY);
+      if (raw === null) {
+        set({ status: 'signedOut', session: null });
+        return;
+      }
+
+      const parsed = sessionSchema.safeParse(JSON.parse(raw));
+      if (parsed.success) {
+        set({ status: 'signedIn', session: parsed.data });
+        return;
+      }
+    } catch {
+      // JSON 파싱 오류에는 저장된 값이 포함될 수 있으므로 원문과 오류를 로깅하지 않는다.
     }
 
-    // 저장된 값도 검증한다. 스키마가 바뀐 채 남아 있던 값이면 버리고 로그아웃 상태로 간다.
-    const parsed = sessionSchema.safeParse(JSON.parse(raw));
-    if (!parsed.success) {
-      logger.warn('저장된 세션 형식이 맞지 않아 폐기했습니다');
+    logger.warn('저장된 세션을 복원하지 못해 로그아웃했습니다');
+    try {
       await secureStorage.remove(SESSION_KEY);
+    } catch (error) {
+      logger.warn('복원할 수 없는 세션 정리 실패', error);
+    } finally {
+      // 저장소 정리까지 실패해도 restoring에 머물며 스플래시를 계속 띄우지 않는다.
       set({ status: 'signedOut', session: null });
-      return;
     }
-
-    set({ status: 'signedIn', session: parsed.data });
   },
 
   signIn: async (session) => {

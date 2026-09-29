@@ -103,6 +103,10 @@ export default ({ config }: ConfigContext): ExpoConfig => {
         // (`android/build.gradle`을 직접 고치면 prebuild 때마다 날아간다.)
         'expo-build-properties',
         {
+          // iOS 27 SDK로 빌드한 앱을 iOS 27에서 실행하려면 Scene 생명주기가 필요하다.
+          ios: {
+            enableSceneSupport: true,
+          },
           android: {
             extraMavenRepos: ['https://devrepo.kakao.com/nexus/content/groups/public/'],
           },
