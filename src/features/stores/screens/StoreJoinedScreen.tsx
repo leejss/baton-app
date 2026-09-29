@@ -1,3 +1,4 @@
+import { Image } from 'expo-image';
 import { StyleSheet, View } from 'react-native';
 
 import { BottomActionBar, Box, Button, ScreenHeader, Text, textStyles } from '@/shared/ui';
@@ -19,7 +20,7 @@ const SPEC = {
   titleTop: 26,
   /** 타이틀 ↔ 일러스트. */
   illustrationTop: 40,
-  /** 일러스트 크기(266×249). 아트워크가 오면 이 자리만 교체한다. */
+  /** 일러스트 크기(266×249). 에셋은 같은 프레임의 @2x 내보내기다. */
   illustrationWidth: 266,
   illustrationHeight: 249,
   /** 제목 ↔ 설명. */
@@ -51,12 +52,13 @@ export function StoreJoinedScreen({ onBack, onStart }: StoreJoinedScreenProps) {
   );
 }
 
-/** 시안에서 아직 회색 사각형인 자리. 일러스트가 나오면 이 컴포넌트만 교체한다. */
+/** 시안 "03 매장 참여 완료"의 일러스트. 장식이라 스크린리더에서 숨긴다. */
 function Illustration() {
   return (
-    <Box
-      background="surfaceNeutralDisabled"
+    <Image
+      source={require('@/assets/images/stores/store-joined.png')}
       style={styles.illustration}
+      contentFit="contain"
       accessibilityElementsHidden
       importantForAccessibility="no"
     />

@@ -1,3 +1,4 @@
+import { Image } from 'expo-image';
 import { useState } from 'react';
 import { Alert, ScrollView, StyleSheet, View } from 'react-native';
 
@@ -54,14 +55,32 @@ export type StoreJoinConfirmScreenProps = {
 const SPEC = {
   /** 진행 표시 ↔ 타이틀. */
   titleTop: 26,
-  /** 타이틀 ↔ 매장 카드. */
-  cardTop: 40,
+  /** 타이틀 ↔ 일러스트. */
+  illustrationTop: 52,
+  /** 일러스트 크기(160×154). 에셋은 같은 프레임의 @2x 내보내기다. */
+  illustrationWidth: 160,
+  illustrationHeight: 154,
+  /** 일러스트 ↔ 매장 카드. */
+  cardTop: 28,
   /** 제목 ↔ 설명. */
   headlineGap: 12,
   /** 안내 아이콘 ↔ 라벨. */
   noticeGap: 6,
   noticeIconSize: 18,
 } as const;
+
+/** 시안 "02 초대 매장 확인"의 일러스트. 장식이라 스크린리더에서 숨긴다. */
+function Illustration() {
+  return (
+    <Image
+      source={require('@/assets/images/stores/store-invitation.png')}
+      style={styles.illustration}
+      contentFit="contain"
+      accessibilityElementsHidden
+      importantForAccessibility="no"
+    />
+  );
+}
 
 /** 카드 하단에 붙는 "확인해주세요" 안내(`943:111819`). */
 function ConfirmNotice() {
@@ -139,6 +158,8 @@ export function StoreJoinConfirmScreen({
           </Text>
         </View>
 
+        <Illustration />
+
         <View style={styles.card}>
           <StoreSummaryCard
             storeName={storeName}
@@ -182,6 +203,12 @@ const styles = StyleSheet.create({
   },
   headline: {
     gap: SPEC.headlineGap,
+  },
+  illustration: {
+    width: SPEC.illustrationWidth,
+    height: SPEC.illustrationHeight,
+    marginTop: SPEC.illustrationTop,
+    alignSelf: 'center',
   },
   card: {
     marginTop: SPEC.cardTop,
