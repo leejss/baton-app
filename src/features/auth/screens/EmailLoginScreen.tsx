@@ -12,12 +12,13 @@ import { Box, Button, Snackbar, Text, TextField, textStyles } from '@/shared/ui'
 import { SCREEN_PADDING_X, spacing } from '@/theme';
 
 import { useEmailSignIn } from '@/features/auth/api/auth.mutations';
-import { MAX_SIGN_IN_ATTEMPTS } from '@/features/auth/api/auth.schema';
+
 import { AuthHeader } from '@/features/auth/components/AuthHeader';
 import { OrDivider } from '@/features/auth/components/OrDivider';
 import { PasswordToggle } from '@/features/auth/components/PasswordToggle';
 import { SocialCircleButton } from '@/features/auth/components/SocialCircleButton';
 import { useSocialSignIn } from '@/features/auth/hooks/useSocialSignIn';
+import { nextSignInAttempt } from '@/features/auth/lib/signInAttempts';
 import { signInFormSchema, type SignInForm } from '@/features/auth/lib/validation';
 import { useAuthStore } from '@/features/auth/store/authStore';
 
@@ -136,10 +137,10 @@ export function EmailLoginScreen({
             return;
           }
 
-          const attempts = failedAttempts + 1;
-          setFailedAttempts(attempts);
-          setAttemptMessage(`비밀번호를 다시 확인해주세요. (${attempts}/${MAX_SIGN_IN_ATTEMPTS})`);
-          setIsLimitNoticeVisible(attempts >= MAX_SIGN_IN_ATTEMPTS);
+          const attempt = nextSignInAttempt(failedAttempts);
+          setFailedAttempts(attempt.attempts);
+          setAttemptMessage(attempt.message);
+          setIsLimitNoticeVisible(attempt.isLimitReached);
         },
         onError: (error) => Alert.alert('로그인하지 못했어요', normalizeError(error).message),
       },
