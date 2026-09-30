@@ -5,6 +5,7 @@ import { StyleSheet, View } from 'react-native';
 import Animated, { Easing, Keyframe } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
 
+import { reportError } from '@/shared/lib/reportError';
 import { SPLASH_WORDMARK_ASPECT_RATIO, SPLASH_WORDMARK_WIDTH } from '@/theme/splash';
 import { palette } from '@/theme/tokens';
 
@@ -54,7 +55,9 @@ export function SplashOverlay({ isReady = true }: SplashOverlayProps) {
       <View
         style={styles.overlay}
         onLayout={() => {
-          SplashScreen.hideAsync().finally(() => setHasHiddenNativeSplash(true));
+          void SplashScreen.hideAsync()
+            .catch(reportError)
+            .finally(() => setHasHiddenNativeSplash(true));
         }}
       >
         {image}
