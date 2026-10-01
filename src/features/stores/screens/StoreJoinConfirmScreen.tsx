@@ -1,5 +1,5 @@
 import { Image } from 'expo-image';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, View } from 'react-native';
 
 import { normalizeError } from '@/shared/api/errors';
@@ -21,6 +21,8 @@ import {
   useJoinStore,
 } from '@/features/stores/api/store.mutations';
 import { StoreSummaryCard } from '@/features/stores/components/StoreSummaryCard';
+import { useStoreMembershipRecovery } from '@/features/stores/hooks/useStoreMembershipRecovery';
+import { logger } from '@/shared/lib/logger';
 import { JOIN_STEPS, JOIN_STEP_CONFIRM } from '@/features/stores/lib/joinSteps';
 
 /**
@@ -111,6 +113,17 @@ export function StoreJoinConfirmScreen({
   onAlreadyJoined,
 }: StoreJoinConfirmScreenProps) {
   const join = useJoinStore();
+  const recoverMembership = useStoreMembershipRecovery();
+  const submitting = useRef(false);
+  const needsMembershipCheck = useRef(false);
+  const mounted = useRef(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
   /**
    * "이미 소속된 매장" 안내. 시안은 이 팝업을 코드 입력 화면(`943:111954`)에 그려뒀지만,
    * 계약상 소속 충돌은 **미리보기가 아니라 참여 확정**에서만 내려온다
@@ -118,31 +131,79 @@ export function StoreJoinConfirmScreen({
    */
   const [isAlreadyJoinedVisible, setIsAlreadyJoinedVisible] = useState(false);
 
-  const confirm = () => {
-    join.mutate(
-      { invitationCode },
-      {
-        onSuccess: onJoined,
-        onError: (error) => {
-          if (isInvitationInvalid(error)) {
-            Alert.alert('초대코드를 사용할 수 없어요', '최신 코드를 확인해주세요.', [
-              { text: '확인', onPress: onInvitationExpired },
-            ]);
-            return;
-          }
-          if (isAlreadyJoined(error)) {
-            setIsAlreadyJoinedVisible(true);
-            return;
-          }
-          Alert.alert('매장에 참여하지 못했어요', normalizeError(error).message);
+  const recover = async (): Promise<boolean> => {
+    try {
+      const recovered = await recoverMembership();
+      needsMembershipCheck.current = false;
+      if (recovered) {
+        if (mounted.current) setIsAlreadyJoinedVisible(true);
+        return true;
+      }
+      if (mounted.current)
+        Alert.alert('매장 참여를 확인하지 못했어요', '소속된 매장이 없어요. 다시 시도해주세요.');
+      return false;
+    } catch {
+      // 조회 실패는 공통 로거가 보고한다.
+    }
+    if (mounted.current)
+      Alert.alert('소속을 확인하지 못했어요', '현재 소속을 다시 확인해주세요.', [
+        { text: '닫기', style: 'cancel' },
+        {
+          text: '다시 확인',
+          onPress: () => {
+            needsMembershipCheck.current = true;
+            void confirm();
+          },
         },
-      },
-    );
+      ]);
+    return false;
+  };
+
+  const confirm = async (): Promise<void> => {
+    if (submitting.current) return;
+    submitting.current = true;
+    setIsSubmitting(true);
+    let completed = false;
+    try {
+      if (needsMembershipCheck.current) {
+        completed = await recover();
+        return;
+      }
+      await join.mutateAsync({ invitationCode });
+      if (!mounted.current) return;
+      onJoined();
+      logger.info('매장 참여 완료 화면 이동');
+      completed = true;
+    } catch (error) {
+      if (!mounted.current) return;
+      const failure = normalizeError(error);
+      if (isInvitationInvalid(error)) {
+        Alert.alert('초대코드를 사용할 수 없어요', '최신 코드를 확인해주세요.', [
+          { text: '확인', onPress: onInvitationExpired },
+        ]);
+      } else if (
+        isAlreadyJoined(error) ||
+        failure.code === 'network' ||
+        failure.code === 'timeout'
+      ) {
+        needsMembershipCheck.current = true;
+        completed = await recover();
+      } else Alert.alert('매장에 참여하지 못했어요', failure.message);
+    } finally {
+      if (!completed) {
+        submitting.current = false;
+        if (mounted.current) setIsSubmitting(false);
+      }
+    }
   };
 
   return (
     <Box background="backgroundDefault" style={styles.root}>
-      <ScreenHeader onBack={onBack} />
+      <ScreenHeader
+        onBack={() => {
+          if (!submitting.current) onBack();
+        }}
+      />
 
       <View style={styles.progress}>
         <StepProgressBar total={JOIN_STEPS.length} current={JOIN_STEP_CONFIRM} />
@@ -172,7 +233,14 @@ export function StoreJoinConfirmScreen({
       </ScrollView>
 
       <BottomActionBar>
-        <Button label="다음" color="blue" isLoading={join.isPending} onPress={confirm} />
+        <Button
+          label="다음"
+          color="blue"
+          isLoading={isSubmitting}
+          onPress={() => {
+            void confirm();
+          }}
+        />
       </BottomActionBar>
 
       <Modal

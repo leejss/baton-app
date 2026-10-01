@@ -2,6 +2,7 @@ import { normalizeError } from '@/shared/api/errors';
 import { errorLogAttributes, wasErrorLogged } from '@/shared/lib/errorLog';
 import { sanitizeLogText } from '@/shared/lib/logSanitizer';
 import PostHog from 'posthog-react-native';
+import * as Device from 'expo-device';
 
 import { appInfo } from '@/shared/lib/appInfo';
 
@@ -62,7 +63,11 @@ function createPostHogClient(): PostHog | null {
       serviceName: 'baton-mobile',
       serviceVersion: appInfo.version ?? undefined,
       environment: appInfo.environment,
-      resourceAttributes: { 'app.build_number': appInfo.buildNumber },
+      resourceAttributes: {
+        'app.build_number': appInfo.buildNumber,
+        'app.identifier': appInfo.applicationId,
+        'device.is_physical': Device.isDevice,
+      },
     },
   });
 }

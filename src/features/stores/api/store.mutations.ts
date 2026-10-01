@@ -11,6 +11,7 @@ import {
 } from '@/features/stores/api/store.api';
 import { storeQueries } from '@/features/stores/api/store.queries';
 import type { CreateStoreParams } from '@/features/stores/api/store.schema';
+import { useAuthStore } from '@/features/auth/store/authStore';
 
 /** 초대 코드가 무효·만료인 경우(`404 STORE_INVITATION_INVALID`). 화면이 입력 오류로 안내한다. */
 export function isInvitationInvalid(error: unknown): boolean {
@@ -23,8 +24,7 @@ export function isAlreadyJoined(error: unknown): boolean {
 }
 
 /**
- * 매장 생성(STORE-07). 성공하면 사용자의 소속이 생기므로 `stores/me`를 무효화한다 —
- * 권한이 바뀌는 작업이라 낙관적 업데이트는 하지 않는다.
+ * 생성 응답의 확정된 소속을 캐시에 반영한다. 완료 화면 이동은 재조회에 의존하지 않는다.
  */
 export function useCreateStore() {
   const queryClient = useQueryClient();
@@ -34,9 +34,14 @@ export function useCreateStore() {
       logger.error('매장 생성 실패', error);
     },
     mutationFn: (params: CreateStoreParams) => createStore(params),
-    onSuccess: () => {
-      logger.info('매장 생성 완료');
-      return queryClient.invalidateQueries({ queryKey: storeQueries.all() });
+    onMutate: () => useAuthStore.getState().session?.user.id,
+    onSuccess: async (context, _params, userId) => {
+      if (userId !== useAuthStore.getState().session?.user.id) return;
+      // 생성 전 시작한 조회가 늦게 도착해 새 소속을 덮어쓰지 않게 한다.
+      await queryClient.cancelQueries({ queryKey: storeQueries.me().queryKey, exact: true });
+      if (userId !== useAuthStore.getState().session?.user.id) return;
+      queryClient.setQueryData(storeQueries.me().queryKey, { membership: context.membership });
+      logger.info('매장 생성 완료', { store_id: context.store.id });
     },
   });
 }
@@ -61,9 +66,13 @@ export function useJoinStore() {
       logger.error('매장 참여 실패', error);
     },
     mutationFn: ({ invitationCode }: { invitationCode: string }) => joinStore(invitationCode),
-    onSuccess: () => {
-      logger.info('매장 참여 완료');
-      return queryClient.invalidateQueries({ queryKey: storeQueries.all() });
+    onMutate: () => useAuthStore.getState().session?.user.id,
+    onSuccess: async (context, _params, userId) => {
+      if (userId !== useAuthStore.getState().session?.user.id) return;
+      await queryClient.cancelQueries({ queryKey: storeQueries.me().queryKey, exact: true });
+      if (userId !== useAuthStore.getState().session?.user.id) return;
+      queryClient.setQueryData(storeQueries.me().queryKey, { membership: context.membership });
+      logger.info('매장 참여 완료', { store_id: context.store.id });
     },
   });
 }

@@ -42,7 +42,8 @@ export function isSocialSignupTokenInvalid(error: unknown): boolean {
 export function useRequestSignupCode() {
   return useMutation({
     onError: (error) => {
-      logger.error('회원가입 인증 코드 발송 실패', error);
+      if (isEmailTaken(error)) logger.warn('회원가입 이메일 중복', error);
+      else logger.error('회원가입 인증 코드 발송 실패', error);
     },
     mutationFn: ({ email }: { email: string }) =>
       requestVerificationCode(email, { purpose: 'SIGN_UP' }),

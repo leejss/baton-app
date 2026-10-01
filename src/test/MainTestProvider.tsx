@@ -32,7 +32,7 @@ export function createTestClient() {
   return new QueryClient({
     defaultOptions: {
       queries: { retry: false, staleTime: Infinity, gcTime: Infinity },
-      mutations: { retry: false },
+      mutations: { retry: false, gcTime: Infinity },
     },
   });
 }

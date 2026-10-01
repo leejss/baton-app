@@ -1,4 +1,4 @@
-import type { AppError } from '@/shared/api/errors';
+import { isAppError, type AppError } from '@/shared/api/errors';
 
 const handledErrors = new WeakSet<Error>();
 
@@ -29,6 +29,7 @@ export function errorLogAttributes(error: AppError) {
     code: error.code,
     error_code: error.errorCode,
     status: error.status,
+    ...nativeErrorAttributes(error),
     ...(http
       ? {
           method: http.method,
@@ -46,4 +47,23 @@ export function errorLogAttributes(error: AppError) {
         }
       : {}),
   };
+}
+
+/** 원인 객체 전체 대신 SDK가 준 코드만 보존한다. 토큰·세션 값은 복사하지 않는다. */
+function nativeErrorAttributes(error: AppError): { native_error_code?: string | number } {
+  const visited = new Set<unknown>();
+  let current: unknown = error.cause;
+  while (typeof current === 'object' && current !== null && !visited.has(current)) {
+    visited.add(current);
+    if (!isAppError(current) && 'code' in current) {
+      const code = current.code;
+      if (
+        (typeof code === 'number' && Number.isFinite(code)) ||
+        (typeof code === 'string' && /^[A-Za-z0-9_.-]{1,100}$/.test(code))
+      )
+        return { native_error_code: code };
+    }
+    current = 'cause' in current ? current.cause : undefined;
+  }
+  return {};
 }

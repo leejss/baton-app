@@ -59,7 +59,10 @@ export function useAppleSignIn() {
       logger.error('Apple 로그인 실패', error);
     },
     mutationFn: async () => {
+      logger.info('Apple 네이티브 인증 시작');
       const credential = await signInWithApple();
+      logger.info('Apple 네이티브 인증 완료');
+      logger.info('Apple 서버 인증 시작');
       return authenticateWithApple(credential);
     },
     onSuccess: async (outcome) => {

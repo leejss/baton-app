@@ -80,6 +80,23 @@ it('cause 순환과 보고 실패가 호출자를 실패시키지 않는다', ()
   expect(() => reportError(new Error('second'))).not.toThrow();
 });
 
+it('정규화 이후에도 네이티브 코드만 보존하고 자격 증명은 복사하지 않는다', () => {
+  const native = Object.assign(new Error('native failure'), {
+    code: 'ERR_REQUEST_UNKNOWN',
+    identityToken: 'private-identity-token',
+    userInfo: { secret: 'hidden' },
+  });
+  reportError(new AppError('unknown', 'wrapped', { cause: native }));
+  expect(mockLogs.error).toHaveBeenCalledWith(
+    'wrapped',
+    expect.objectContaining({ code: 'unknown', native_error_code: 'ERR_REQUEST_UNKNOWN' }),
+  );
+  expect(JSON.stringify(jest.mocked(mockLogs.error).mock.calls)).not.toContain(
+    'private-identity-token',
+  );
+  expect(JSON.stringify(jest.mocked(mockLogs.error).mock.calls)).not.toContain('userInfo');
+});
+
 afterEach(() => {
   jest.restoreAllMocks();
   if (originalKey === undefined) delete process.env.EXPO_PUBLIC_POSTHOG_API_KEY;
