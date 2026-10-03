@@ -29,7 +29,7 @@ export function SignupNameScreen({ onBack, onNext }: SignupNameScreenProps) {
      * 정확한 시점에 열린다. 빨간 문구는 아래에서 `isTouched`로 따로 막는다.
      */
     mode: 'onChange',
-    // 소셜 가입이면 제공자가 준 이름이 미리 들어 있다(AUTH-12). 뒤로 왔다 돌아와도 유지된다.
+    // 가입 중 이전 단계로 돌아오면 사용자가 직접 입력한 이름을 유지한다.
     defaultValues: { displayName },
   });
 

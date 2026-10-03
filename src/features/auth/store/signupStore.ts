@@ -70,14 +70,12 @@ type SignupState = VerificationState & {
 type SignupActions = VerificationActions & {
   /** 이메일 가입 시작. 이전에 하다 만 값이 있어도 전부 버린다. */
   startEmailSignup: () => void;
-  /** 소셜 인증 후 신규 식별자로 판정된 경우. 제공자가 준 기본값을 미리 채운다. */
+  /** 소셜 인증 후 신규 가입을 시작한다. 이름과 이메일은 사용자가 직접 입력한다. */
   startSocialSignup: (params: {
     provider: SocialProvider;
     socialSignupToken: string;
     /** 서버가 준 token 만료 시각(ISO 8601). */
     expiresAt: string;
-    suggestedDisplayName?: string;
-    suggestedEmail?: string;
   }) => void;
   setSubmissionUncertain: (value: boolean) => void;
   setDisplayName: (displayName: string) => void;
@@ -119,13 +117,7 @@ export const useSignupStore = create<SignupStore>()((set) => ({
       verificationRevision: state.verificationRevision + 1,
     })),
 
-  startSocialSignup: ({
-    provider,
-    socialSignupToken,
-    expiresAt,
-    suggestedDisplayName,
-    suggestedEmail,
-  }) =>
+  startSocialSignup: ({ provider, socialSignupToken, expiresAt }) =>
     set((state) => ({
       ...EMPTY,
       verificationRevision: state.verificationRevision + 1,
@@ -133,9 +125,6 @@ export const useSignupStore = create<SignupStore>()((set) => ({
       provider,
       socialSignupToken,
       socialSignupExpiresAt: Date.parse(expiresAt),
-      displayName: suggestedDisplayName ?? '',
-      // 제공자 기본값은 수정 가능한 초기값일 뿐이다. Baton 이메일 인증을 대체하지 않는다.
-      email: normalizeEmail(suggestedEmail ?? ''),
     })),
 
   setSubmissionUncertain: (submissionUncertain) => set({ submissionUncertain }),

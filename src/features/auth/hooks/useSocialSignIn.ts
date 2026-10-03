@@ -44,8 +44,6 @@ export function useSocialSignIn({ onSignupRequired }: UseSocialSignInParams) {
           provider,
           socialSignupToken: outcome.socialSignupToken,
           expiresAt: outcome.expiresAt,
-          suggestedDisplayName: outcome.suggestedDisplayName,
-          suggestedEmail: outcome.suggestedEmail,
         });
         complete(onSignupRequired);
       },
