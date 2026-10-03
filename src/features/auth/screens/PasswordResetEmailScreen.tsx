@@ -1,11 +1,9 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Controller, useForm } from 'react-hook-form';
-import { Alert } from 'react-native';
 
-import { normalizeError } from '@/shared/api/errors';
 import { Button, TextField } from '@/shared/ui';
 
-import { useRequestVerificationCode } from '@/features/auth/api/passwordReset.mutations';
+import { useEmailVerification } from '@/features/auth/hooks/useEmailVerification';
 import { PasswordResetLayout } from '@/features/auth/components/PasswordResetLayout';
 import {
   passwordResetEmailFormSchema,
@@ -26,8 +24,8 @@ export function PasswordResetEmailScreen({
   onBackToSignIn,
   onCodeSent,
 }: PasswordResetEmailScreenProps) {
-  const startChallenge = usePasswordResetStore((state) => state.startChallenge);
-  const requestCode = useRequestVerificationCode();
+  const email = usePasswordResetStore((state) => state.email);
+  const verification = useEmailVerification('PASSWORD_RESET');
 
   const { control, handleSubmit, formState } = useForm<PasswordResetEmailForm>({
     resolver: zodResolver(passwordResetEmailFormSchema),
@@ -38,22 +36,20 @@ export function PasswordResetEmailScreen({
      * 빨간 문구는 아래에서 `isTouched`로 따로 막는다 — 타이핑 중에 뜨면 거슬린다.
      */
     mode: 'onChange',
-    defaultValues: { email: '' },
+    defaultValues: { email },
   });
 
-  const submit = handleSubmit(({ email }) => {
-    requestCode.mutate(
-      { email },
-      {
-        onSuccess: (challenge) => {
-          startChallenge({ email, ...challenge });
-          onCodeSent();
-        },
-        onError: (error) =>
-          Alert.alert('인증번호를 보내지 못했어요', normalizeError(error).message),
+  const submit = () =>
+    verification.send(
+      async () => {
+        let address: string | null = null;
+        await handleSubmit((values) => {
+          address = values.email;
+        })();
+        return address;
       },
+      { onReady: onCodeSent },
     );
-  });
 
   return (
     <PasswordResetLayout
@@ -65,8 +61,8 @@ export function PasswordResetEmailScreen({
         <Button
           variant="accent"
           label="인증번호 받기"
-          disabled={!formState.isValid}
-          isLoading={requestCode.isPending}
+          disabled={!formState.isValid || verification.isPending}
+          isLoading={verification.isSending}
           onPress={submit}
         />
       }
@@ -78,6 +74,7 @@ export function PasswordResetEmailScreen({
           <TextField
             label="이메일"
             value={field.value}
+            disabled={verification.isPending}
             onChangeText={field.onChange}
             onBlur={field.onBlur}
             placeholder="example@gmail.com"

@@ -1,8 +1,12 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { StyleSheet, View } from 'react-native';
+import { Alert, StyleSheet, View } from 'react-native';
 
+import { normalizeError } from '@/shared/api/errors';
+import { useAuthOperation } from '@/features/auth/hooks/useAuthOperation';
+import { hasValidVerification } from '@/features/auth/lib/emailVerification';
+import { useCountdown } from '@/shared/hooks/useCountdown';
 import { Button, TextField } from '@/shared/ui';
 
 import { PasswordToggle } from '@/features/auth/components/PasswordToggle';
@@ -21,6 +25,7 @@ import { getStepProgress, useSignupStore } from '@/features/auth/store/signupSto
 export type SignupPasswordScreenProps = {
   onBack: () => void;
   onNext: () => void;
+  onVerificationExpired: () => void;
 };
 
 const SPEC = {
@@ -31,7 +36,14 @@ const SPEC = {
 /** 시안 07의 안내 문구. 규칙 자체는 `signupPasswordSchema`가 계약대로 검사한다. */
 const PASSWORD_HINT = `${PASSWORD_MIN_LENGTH}자 이상 입력 / 영문, 숫자, 특수문자 포함\n3번 연속된 문자, 숫자 사용 불가`;
 
-export function SignupPasswordScreen({ onBack, onNext }: SignupPasswordScreenProps) {
+export function SignupPasswordScreen({
+  onBack,
+  onNext,
+  onVerificationExpired,
+}: SignupPasswordScreenProps) {
+  const operation = useAuthOperation('signup');
+  const tokenExpiresAt = useSignupStore((state) => state.verificationTokenExpiresAt);
+  const expiry = useCountdown(tokenExpiresAt);
   const mode = useSignupStore((state) => state.mode);
   const storedPassword = useSignupStore((state) => state.password);
   const setPassword = useSignupStore((state) => state.setPassword);
@@ -46,10 +58,24 @@ export function SignupPasswordScreen({ onBack, onNext }: SignupPasswordScreenPro
     defaultValues: { password: storedPassword, confirmation: storedPassword },
   });
 
-  const submit = handleSubmit(({ password }) => {
-    setPassword(password);
-    onNext();
-  });
+  const submit = () =>
+    operation.run(
+      'password',
+      async ({ isCurrent, complete }) => {
+        if (!hasValidVerification(useSignupStore.getState())) {
+          complete(onVerificationExpired);
+          return;
+        }
+        await handleSubmit(({ password }) => {
+          if (!isCurrent()) return;
+          setPassword(password);
+          complete(
+            hasValidVerification(useSignupStore.getState()) ? onNext : onVerificationExpired,
+          );
+        })();
+      },
+      (error) => Alert.alert('계속하지 못했어요', normalizeError(error).message),
+    );
 
   return (
     <SignupLayout
@@ -57,7 +83,12 @@ export function SignupPasswordScreen({ onBack, onNext }: SignupPasswordScreenPro
       progress={getStepProgress(mode, 'password')}
       title="비밀번호를 설정해주세요"
       action={
-        <Button variant="accent" label="다음" disabled={!formState.isValid} onPress={submit} />
+        <Button
+          variant="accent"
+          label={expiry.isExpired ? '이메일 다시 인증' : '다음'}
+          disabled={operation.isPending || (!expiry.isExpired && !formState.isValid)}
+          onPress={submit}
+        />
       }
     >
       <View style={styles.fields}>
@@ -71,6 +102,7 @@ export function SignupPasswordScreen({ onBack, onNext }: SignupPasswordScreenPro
               <TextField
                 label="비밀번호"
                 value={field.value}
+                disabled={operation.isPending}
                 onChangeText={field.onChange}
                 onBlur={field.onBlur}
                 placeholder="비밀번호 입력"
@@ -100,6 +132,7 @@ export function SignupPasswordScreen({ onBack, onNext }: SignupPasswordScreenPro
             <TextField
               label="비밀번호 확인"
               value={field.value}
+              disabled={operation.isPending}
               onChangeText={field.onChange}
               onBlur={field.onBlur}
               placeholder="비밀번호 다시 입력"

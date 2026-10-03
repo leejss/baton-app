@@ -16,6 +16,7 @@ export type TermsCheckItemProps = {
   prefix?: string;
   label: string;
   isChecked: boolean;
+  disabled?: boolean;
   onToggle: () => void;
   /** 주면 오른쪽에 화살표가 생기고 약관 본문을 연다. 전체 동의 행에는 없다. */
   onOpen?: () => void;
@@ -45,6 +46,7 @@ export function TermsCheckItem({
   prefix,
   label,
   isChecked,
+  disabled = false,
   onToggle,
   onOpen,
 }: TermsCheckItemProps) {
@@ -63,14 +65,18 @@ export function TermsCheckItem({
           ? [styles.allRow, { backgroundColor: colors.surfaceNeutralSubtle }]
           : [
               styles.itemRow,
-              { backgroundColor: colors.backgroundDefault, borderColor: colors.borderDefault },
+              {
+                backgroundColor: colors.backgroundDefault,
+                borderColor: colors.borderDefault,
+              },
             ],
       ]}
     >
       <Pressable
         accessibilityRole="checkbox"
         accessibilityLabel={fullLabel}
-        accessibilityState={{ checked: isChecked }}
+        accessibilityState={{ checked: isChecked, disabled }}
+        disabled={disabled}
         onPress={onToggle}
         style={styles.toggleArea}
       >
@@ -93,6 +99,7 @@ export function TermsCheckItem({
       {onOpen !== undefined && (
         <Pressable
           accessibilityRole="button"
+          disabled={disabled}
           accessibilityLabel={`${label} 내용 보기`}
           onPress={onOpen}
           // 28 슬롯이라 최소 터치 영역 44에 못 미친다. hitSlop으로 채운다.

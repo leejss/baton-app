@@ -15,6 +15,7 @@ export const PASSWORD_MIN_LENGTH = 8;
 export const emailSchema = z
   .string()
   .trim()
+  .toLowerCase()
   .min(1, '이메일을 입력해주세요.')
   .pipe(z.email('올바른 이메일 형식이 아니에요.'));
 
@@ -76,7 +77,7 @@ export const verificationCodeFormSchema = z.object({
 
 export const newPasswordFormSchema = z
   .object({
-    password: passwordSchema,
+    password: signupPasswordSchema,
     confirmation: z.string().min(1, '비밀번호를 다시 입력해주세요.'),
   })
   // 확인란 불일치는 개별 필드 규칙이 아니라 두 값의 관계라서 refine으로 검사한다.

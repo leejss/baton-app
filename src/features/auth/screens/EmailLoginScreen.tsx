@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect, useState } from 'react';
-import { Controller, useForm } from 'react-hook-form';
+import { Controller, useForm, useWatch } from 'react-hook-form';
 import { Alert, Pressable, StyleSheet, View } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -18,7 +18,9 @@ import { OrDivider } from '@/features/auth/components/OrDivider';
 import { PasswordToggle } from '@/features/auth/components/PasswordToggle';
 import { SocialCircleButton } from '@/features/auth/components/SocialCircleButton';
 import { useSocialSignIn } from '@/features/auth/hooks/useSocialSignIn';
-import { nextSignInAttempt } from '@/features/auth/lib/signInAttempts';
+import { useAuthOperation } from '@/features/auth/hooks/useAuthOperation';
+import { normalizeEmail } from '@/features/auth/lib/emailVerification';
+import { useLoginAttemptsStore } from '@/features/auth/store/loginAttemptsStore';
 import { signInFormSchema, type SignInForm } from '@/features/auth/lib/validation';
 import { useAuthStore } from '@/features/auth/store/authStore';
 
@@ -76,24 +78,15 @@ export function EmailLoginScreen({
 }: EmailLoginScreenProps) {
   const insets = useSafeAreaInsets();
   const signIn = useEmailSignIn();
+  const operation = useAuthOperation('login');
   const social = useSocialSignIn({ onSignupRequired: onSocialSignupRequired });
 
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
-  /** 시안 01-1·01-2의 "비밀번호를 다시 확인해주세요. (n/5)". */
-  const [attemptMessage, setAttemptMessage] = useState<string | null>(null);
-  /** 시안 01-2의 하단 스낵바. 사용자가 닫을 수 있다. */
-  const [isLimitNoticeVisible, setIsLimitNoticeVisible] = useState(false);
-  /** 시안 01-3의 "로그인 제한 mm:ss". 서버가 준 해제 시각(epoch ms). */
-  const [lockedUntil, setLockedUntil] = useState<number | null>(null);
-  /**
-   * 시안의 "(n/5)"용 실패 횟수.
-   *
-   * ⚠️ 계약의 `401 AUTH_INVALID_CREDENTIALS`는 횟수를 싣지 않아서 화면이 직접 센다.
-   * 기준은 어디까지나 서버이고(5회 초과 시 `429`), 이 값은 안내 문구 전용이다 —
-   * 화면을 벗어났다 돌아오면 0부터 세므로 서버가 잠근 시점과 어긋날 수 있다.
-   * 서버가 남은 횟수를 응답에 주면 그때 이 상태를 지운다.
-   */
-  const [failedAttempts, setFailedAttempts] = useState(0);
+  const [failure, setFailure] = useState<{
+    email: string;
+    message: string;
+  } | null>(null);
+  const [limitNoticeEmail, setLimitNoticeEmail] = useState<string | null>(null);
 
   /**
    * 강제 로그아웃 안내(시안 01-2). 모달에서 넘어온 경우에만 뜬다.
@@ -102,9 +95,6 @@ export function EmailLoginScreen({
   const signOutReason = useAuthStore((state) => state.signOutReason);
   const clearSignOutReason = useAuthStore((state) => state.clearSignOutReason);
   useEffect(() => clearSignOutReason, [clearSignOutReason]);
-
-  const lockout = useCountdown(lockedUntil);
-  const isLocked = lockedUntil !== null && !lockout.isExpired;
 
   const { control, handleSubmit, formState } = useForm<SignInForm>({
     resolver: zodResolver(signInFormSchema),
@@ -118,34 +108,46 @@ export function EmailLoginScreen({
     defaultValues: { email: '', password: '' },
   });
 
-  const submit = handleSubmit(({ email, password }) => {
-    signIn.mutate(
-      { email, password },
-      {
-        onSuccess: (outcome) => {
+  const email = normalizeEmail(useWatch({ control, name: 'email' }));
+  const lockedUntil = useLoginAttemptsStore((state) => state.byEmail[email]?.lockedUntil ?? null);
+  const lockout = useCountdown(lockedUntil);
+  const isLocked = lockedUntil !== null && !lockout.isExpired;
+  const attemptMessage = failure?.email === email ? failure.message : null;
+  const isLimitNoticeVisible = limitNoticeEmail === email && isLocked;
+
+  const submit = () =>
+    operation.run(
+      'email',
+      async ({ signal, isCurrent }) => {
+        await handleSubmit(async ({ email: address, password }) => {
+          if (!isCurrent()) return;
+          const attempts = useLoginAttemptsStore.getState();
+          const until = attempts.byEmail[address]?.lockedUntil;
+          if (until && until > Date.now()) return;
+          const outcome = await signIn.mutateAsync({
+            email: address,
+            password,
+            signal,
+          });
+          if (!isCurrent()) return;
           if (outcome.status === 'signedIn') {
-            // 세션이 생기면 `(auth)/_layout`의 가드가 알아서 앱 안쪽으로 보낸다.
+            await useAuthStore.getState().signIn(outcome.session, signal);
+            attempts.clear(address);
             return;
           }
-
           if (outcome.status === 'locked') {
-            // 제한 중에는 횟수 문구 대신 남은 시간만 보여준다(시안 01-3).
-            setAttemptMessage(null);
-            setIsLimitNoticeVisible(false);
-            setFailedAttempts(0);
-            setLockedUntil(Date.parse(outcome.lockedUntil));
+            setFailure(null);
+            setLimitNoticeEmail(address);
+            attempts.lock(address, Date.parse(outcome.lockedUntil));
             return;
           }
-
-          const attempt = nextSignInAttempt(failedAttempts);
-          setFailedAttempts(attempt.attempts);
-          setAttemptMessage(attempt.message);
-          setIsLimitNoticeVisible(attempt.isLimitReached);
-        },
-        onError: (error) => Alert.alert('로그인하지 못했어요', normalizeError(error).message),
+          const attempt = attempts.recordFailure(address);
+          setFailure({ email: address, message: attempt.message });
+          setLimitNoticeEmail(null);
+        })();
       },
+      (error) => Alert.alert('로그인하지 못했어요', normalizeError(error).message),
     );
-  });
 
   return (
     <Box background="backgroundDefault" style={[styles.root, { paddingTop: insets.top }]}>
@@ -176,6 +178,7 @@ export function EmailLoginScreen({
               <TextField
                 label="이메일"
                 value={field.value}
+                disabled={operation.isPending}
                 onChangeText={field.onChange}
                 onBlur={field.onBlur}
                 placeholder="example@gmail.com"
@@ -197,9 +200,10 @@ export function EmailLoginScreen({
               <TextField
                 label="비밀번호"
                 value={field.value}
+                disabled={operation.isPending}
                 onChangeText={(text) => {
                   // 다시 입력하기 시작하면 이전 실패 문구는 치운다.
-                  setAttemptMessage(null);
+                  setFailure(null);
                   field.onChange(text);
                 }}
                 onBlur={field.onBlur}
@@ -231,25 +235,23 @@ export function EmailLoginScreen({
                     </Text>
                   ) : (
                     (attemptMessage ??
-                    (fieldState.isTouched ? fieldState.error?.message : undefined) ?? (
-                      <Pressable
-                        accessibilityRole="button"
-                        accessibilityLabel="비밀번호를 잊으셨나요?"
-                        onPress={onForgotPassword}
-                        hitSlop={spacing.sm}
-                        // 기본값은 줄 전체 폭이라 문구 왼쪽 빈 곳을 눌러도 이동한다. 문구만큼만 차지하게 한다.
-                        style={styles.forgotPassword}
-                      >
-                        <Text variant="caption" color="foregroundSubtle" style={textStyles.right}>
-                          비밀번호를 잊으셨나요?
-                        </Text>
-                      </Pressable>
-                    ))
+                    (fieldState.isTouched ? fieldState.error?.message : undefined))
                   )
                 }
               />
             )}
           />
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="비밀번호를 잊으셨나요?"
+            onPress={onForgotPassword}
+            hitSlop={spacing.sm}
+            style={styles.forgotPassword}
+          >
+            <Text variant="caption" color="foregroundSubtle" style={textStyles.right}>
+              비밀번호를 잊으셨나요?
+            </Text>
+          </Pressable>
         </View>
 
         <View style={styles.spacer} />
@@ -257,8 +259,8 @@ export function EmailLoginScreen({
         <View style={styles.actions}>
           <Button
             label="로그인"
-            disabled={!formState.isValid || isLocked}
-            isLoading={signIn.isPending}
+            disabled={!formState.isValid || isLocked || operation.isPending}
+            isLoading={operation.kind === 'email'}
             onPress={submit}
           />
 
@@ -268,6 +270,8 @@ export function EmailLoginScreen({
             <SocialCircleButton
               provider="kakao"
               label="카카오로 시작하기"
+              disabled={operation.isPending}
+              isLoading={social.isKakaoPending}
               onPress={onStartWithKakao ?? social.signInWithKakao}
             />
             {/* Apple 로그인은 iOS 전용이라 안드로이드에서는 아예 그리지 않는다. */}
@@ -275,6 +279,8 @@ export function EmailLoginScreen({
               <SocialCircleButton
                 provider="apple"
                 label="Apple로 시작하기"
+                disabled={operation.isPending}
+                isLoading={social.isApplePending}
                 onPress={onStartWithApple ?? social.signInWithApple}
               />
             ) : null}
@@ -307,9 +313,9 @@ export function EmailLoginScreen({
           {isLimitNoticeVisible ? (
             <Snackbar
               title="비밀번호 입력 횟수 초과"
-              description="5분 후 다시 시도해주세요"
+              description={`${lockout.formatted} 후 다시 시도해주세요`}
               actionLabel="확인"
-              onAction={() => setIsLimitNoticeVisible(false)}
+              onAction={() => setLimitNoticeEmail(null)}
             />
           ) : (
             <Snackbar

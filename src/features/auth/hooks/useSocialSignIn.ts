@@ -3,88 +3,61 @@ import { Alert } from 'react-native';
 
 import { normalizeError } from '@/shared/api/errors';
 import { reportError } from '@/shared/lib/reportError';
-
-import { isCanceled, useAppleSignIn, useKakaoSignIn } from '@/features/auth/api/auth.mutations';
+import { useAppleSignIn, useKakaoSignIn } from '@/features/auth/api/auth.mutations';
 import type { SocialProvider } from '@/features/auth/api/signup.schema';
+import { useAuthOperation } from '@/features/auth/hooks/useAuthOperation';
 import { isAppleSignInAvailable } from '@/features/auth/lib/appleAuth';
+import { useAuthStore } from '@/features/auth/store/authStore';
 import { useSignupStore } from '@/features/auth/store/signupStore';
 
-/**
- * 카카오·Apple 로그인 처리. 시작 화면과 이메일 로그인 화면이 같은 버튼을 갖고 있어
- * 로직을 한 곳에 둔다 — 한쪽만 고쳐서 다른 쪽이 조용히 안 되는 일을 막는다.
- *
- * 두 제공자의 결과 처리는 완전히 같다(계약 §12-1). 연결된 계정이면 세션이 생기고
- * `(auth)/_layout`의 가드가 앱 안쪽으로 보내며, 신규 소셜 식별자면 가입 플로우로 잇는다.
- */
-export type UseSocialSignInParams = {
-  /** 신규 소셜 식별자라 가입이 필요할 때. 라우트가 가입 첫 화면으로 보낸다. */
-  onSignupRequired: () => void;
-};
+export type UseSocialSignInParams = { onSignupRequired: () => void };
 
 export function useSocialSignIn({ onSignupRequired }: UseSocialSignInParams) {
   const kakao = useKakaoSignIn();
   const apple = useAppleSignIn();
-  const startSocialSignup = useSignupStore((state) => state.startSocialSignup);
-
-  /**
-   * Apple 로그인은 iOS 13 이상에서만 쓸 수 있다. 안드로이드에서는 버튼 자체를 숨긴다 —
-   * 눌러도 안 되는 버튼을 보여주는 것보다 없는 게 낫다.
-   */
+  const operation = useAuthOperation('login');
   const [canUseApple, setCanUseApple] = useState(false);
+
   useEffect(() => {
-    void isAppleSignInAvailable().then(setCanUseApple).catch(reportError);
+    let mounted = true;
+    void isAppleSignInAvailable()
+      .then((available) => {
+        if (mounted) setCanUseApple(available);
+      })
+      .catch(reportError);
+    return () => {
+      mounted = false;
+    };
   }, []);
 
-  type Outcome =
-    | { status: 'signedIn' }
-    | {
-        status: 'signupRequired';
-        socialSignupToken: string;
-        expiresAt: string;
-        suggestedEmail?: string;
-        suggestedDisplayName?: string;
-      };
-
-  const handleOutcome = (provider: SocialProvider, outcome: Outcome) => {
-    if (outcome.status === 'signedIn') {
-      return;
-    }
-
-    startSocialSignup({
+  const signIn = (provider: SocialProvider) =>
+    operation.run(
       provider,
-      socialSignupToken: outcome.socialSignupToken,
-      // 가입 화면들이 token 만료를 알아야 한다. 여기서 흘리면 제출 단계에서만 알게 된다.
-      expiresAt: outcome.expiresAt,
-      suggestedDisplayName: outcome.suggestedDisplayName,
-      suggestedEmail: outcome.suggestedEmail,
-    });
-    onSignupRequired();
-  };
-
-  const handleError = (error: unknown) => {
-    // 사용자가 직접 닫은 경우엔 아무것도 띄우지 않는다.
-    if (isCanceled(error)) {
-      return;
-    }
-    Alert.alert('로그인하지 못했어요', normalizeError(error).message);
-  };
+      async ({ signal, isCurrent, complete }) => {
+        const outcome = await (provider === 'kakao' ? kakao : apple).mutateAsync({ signal });
+        if (!isCurrent()) return;
+        if (outcome.status === 'signedIn') {
+          await useAuthStore.getState().signIn(outcome.session, signal);
+          return;
+        }
+        useSignupStore.getState().startSocialSignup({
+          provider,
+          socialSignupToken: outcome.socialSignupToken,
+          expiresAt: outcome.expiresAt,
+          suggestedDisplayName: outcome.suggestedDisplayName,
+          suggestedEmail: outcome.suggestedEmail,
+        });
+        complete(onSignupRequired);
+      },
+      (error) => Alert.alert('로그인하지 못했어요', normalizeError(error).message),
+    );
 
   return {
     canUseApple,
-    isPending: kakao.isPending || apple.isPending,
-    isKakaoPending: kakao.isPending,
-    isApplePending: apple.isPending,
-
-    signInWithKakao: () =>
-      kakao.mutate(undefined, {
-        onSuccess: (outcome) => handleOutcome('kakao', outcome),
-        onError: handleError,
-      }),
-
-    signInWithApple: () =>
-      apple.mutate(undefined, {
-        onSuccess: (outcome) => handleOutcome('apple', outcome),
-        onError: handleError,
-      }),
+    isPending: operation.isPending,
+    isKakaoPending: operation.kind === 'kakao',
+    isApplePending: operation.kind === 'apple',
+    signInWithKakao: () => signIn('kakao'),
+    signInWithApple: () => signIn('apple'),
   };
 }

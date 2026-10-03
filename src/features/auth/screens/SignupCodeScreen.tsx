@@ -1,11 +1,9 @@
 import { useState } from 'react';
-import { Alert, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
-import { normalizeError } from '@/shared/api/errors';
-import { useCountdown } from '@/shared/hooks/useCountdown';
 import { Button, CodeInput, Text } from '@/shared/ui';
 
-import { useRequestSignupCode, useVerifySignupCode } from '@/features/auth/api/signup.mutations';
+import { useEmailVerification } from '@/features/auth/hooks/useEmailVerification';
 import { SignupLayout } from '@/features/auth/components/SignupLayout';
 import { VERIFICATION_CODE_LENGTH } from '@/features/auth/lib/validation';
 import {
@@ -29,78 +27,40 @@ const SPEC = {
   messageGap: 8,
 } as const;
 
-/**
- * ⚠️ 시안에 인증코드 입력의 오류 상태가 없어서 문구를 새로 썼다.
- * `invalid`는 계약의 `400` 하나에 대응한다 — 서버가 불일치와 만료를 구분하지 않는다.
- * 만료는 화면이 자기 카운트다운으로 먼저 알아채서 `expired` 문구를 띄운다.
- */
-const MESSAGES = {
-  invalid: '인증번호가 일치하지 않아요.',
-  expired: '인증 시간이 지났어요. 인증번호를 다시 받아주세요.',
-} as const;
-
 export function SignupCodeScreen({ onBack, onNext }: SignupCodeScreenProps) {
   const mode = useSignupStore((state) => state.mode);
-  const email = useSignupStore((state) => state.email);
-  const expiresAt = useSignupStore((state) => state.expiresAt);
-  const resendAvailableAt = useSignupStore((state) => state.resendAvailableAt);
-  const refreshChallenge = useSignupStore((state) => state.refreshChallenge);
-  const completeVerification = useSignupStore((state) => state.completeVerification);
-
-  const requestCode = useRequestSignupCode();
-  const verify = useVerifySignupCode();
-
+  const verification = useEmailVerification('SIGN_UP');
   const [code, setCode] = useState('');
-  /** 서버가 준 결과. 폼 검증(6자리)과 달리 제출해봐야 아는 값이라 따로 들고 있는다. */
   const [serverError, setServerError] = useState<string | null>(null);
-
-  const expiry = useCountdown(expiresAt);
-  const cooldown = useCountdown(resendAvailableAt);
-
-  const isComplete = code.length === VERIFICATION_CODE_LENGTH;
-  const canResend = cooldown.isExpired && !requestCode.isPending;
-  const canSubmit = isComplete && !expiry.isExpired;
+  const canSubmit =
+    !verification.isPending &&
+    (verification.isVerified || (code.length === VERIFICATION_CODE_LENGTH && verification.hasCode));
 
   const submit = () => {
-    if (!canSubmit) {
-      return;
-    }
-
     setServerError(null);
-    verify.mutate(
-      { email, code },
-      {
-        onSuccess: (outcome) => {
-          if (outcome.status === 'verified') {
-            completeVerification(outcome.verificationToken);
-            const nextStep = getNextStep(mode, 'code');
-            if (nextStep !== null) {
-              onNext(nextStep);
-            }
-            return;
-          }
-          setServerError(MESSAGES[outcome.status]);
-        },
-        onError: (error) => Alert.alert('확인하지 못했어요', normalizeError(error).message),
+    return verification.confirm(
+      code,
+      () => {
+        const next = getNextStep(mode, 'code');
+        if (next !== null) onNext(next);
       },
+      setServerError,
     );
   };
-
-  const handleResend = () => {
-    setServerError(null);
-    setCode('');
-    requestCode.mutate(
-      { email },
-      {
-        onSuccess: (challenge) => refreshChallenge(challenge),
-        onError: (error) =>
-          Alert.alert('인증번호를 다시 보내지 못했어요', normalizeError(error).message),
+  const handleResend = () =>
+    verification.send(verification.email, {
+      resend: true,
+      onSent: (recovered) => {
+        if (!recovered) setCode('');
+        setServerError(recovered ? '이미 보낸 인증번호가 있어요. 메일함을 확인해주세요.' : null);
       },
-    );
-  };
-
-  // 만료됐으면 서버 응답보다 먼저 만료 안내를 띄운다.
-  const message = serverError ?? (expiry.isExpired ? MESSAGES.expired : null);
+    });
+  const message = verification.isVerified
+    ? '이메일 인증이 완료됐어요. 다음 단계로 이동해주세요.'
+    : (serverError ??
+      (!verification.hasCode
+        ? '인증 시간이 지났거나 발송 결과를 확인하지 못했어요. 인증번호를 다시 받아주세요.'
+        : null));
 
   return (
     <SignupLayout
@@ -113,7 +73,7 @@ export function SignupCodeScreen({ onBack, onNext }: SignupCodeScreenProps) {
           variant="accent"
           label="다음"
           disabled={!canSubmit}
-          isLoading={verify.isPending}
+          isLoading={verification.isVerifying}
           onPress={submit}
         />
       }
@@ -121,13 +81,14 @@ export function SignupCodeScreen({ onBack, onNext }: SignupCodeScreenProps) {
       <View style={styles.inputGroup}>
         <CodeInput
           value={code}
+          editable={!verification.isPending && !verification.isVerified}
           onChangeText={(next) => {
             setServerError(null);
             setCode(next);
           }}
           length={VERIFICATION_CODE_LENGTH}
-          timer={expiry.formatted}
-          status={message !== null ? 'error' : 'none'}
+          timer={verification.isVerified ? undefined : verification.expiry.formatted}
+          status={message !== null && !verification.isVerified ? 'error' : 'none'}
           accessibilityLabel={`인증번호 ${VERIFICATION_CODE_LENGTH}자리`}
           autoFocus
           onSubmitEditing={submit}
@@ -142,9 +103,11 @@ export function SignupCodeScreen({ onBack, onNext }: SignupCodeScreenProps) {
       <View style={styles.resend}>
         <Button
           variant="secondary"
-          label="인증번호 재전송"
-          disabled={!canResend}
-          isLoading={requestCode.isPending}
+          label={
+            verification.canResend ? '인증번호 재전송' : `재전송 ${verification.cooldown.formatted}`
+          }
+          disabled={!verification.canResend}
+          isLoading={verification.isSending}
           onPress={handleResend}
         />
       </View>

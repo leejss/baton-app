@@ -1,3 +1,5 @@
+import { normalizeEmail } from '@/features/auth/lib/emailVerification';
+import { assertAuthRequestAvailable } from '@/features/auth/lib/authRequest';
 import { post, postVoid } from '@/shared/api/client';
 import { normalizeError } from '@/shared/api/errors';
 
@@ -25,12 +27,18 @@ export async function requestVerificationCode(
   email: string,
   options?: { purpose?: VerificationPurpose; signal?: AbortSignal },
 ): Promise<VerificationChallenge> {
+  assertAuthRequestAvailable(options?.signal);
   const purpose = options?.purpose ?? 'PASSWORD_RESET';
 
-  return post('/auth/email-verifications', { email, purpose }, verificationChallengeSchema, {
-    signal: options?.signal,
-    auth: false,
-  });
+  return post(
+    '/auth/email-verifications',
+    { email: normalizeEmail(email), purpose },
+    verificationChallengeSchema,
+    {
+      signal: options?.signal,
+      auth: false,
+    },
+  );
 }
 
 /**
@@ -44,19 +52,20 @@ export async function verifyCode(
   code: string,
   options?: { purpose?: VerificationPurpose; signal?: AbortSignal },
 ): Promise<VerifyCodeOutcome> {
+  assertAuthRequestAvailable(options?.signal);
   const purpose = options?.purpose ?? 'PASSWORD_RESET';
 
   try {
     const result = await post(
       '/auth/email-verifications/confirm',
-      { email, purpose, code },
+      { email: normalizeEmail(email), purpose, code },
       verificationTokenSchema,
       { signal: options?.signal, auth: false },
     );
     return { status: 'verified', ...result };
   } catch (error) {
     const appError = normalizeError(error);
-    if (appError.status === 400) {
+    if (appError.status === 400 && appError.errorCode === 'VALIDATION_ERROR') {
       return { status: 'invalid' };
     }
     throw appError;
@@ -68,8 +77,17 @@ export async function verifyCode(
  * 성공하면 서버가 **기존 세션을 모두 폐기**한다 — 다른 기기도 로그아웃된다.
  */
 export async function resetPassword(
-  params: { email: string; emailVerificationToken: string; newPassword: string },
+  params: {
+    email: string;
+    emailVerificationToken: string;
+    newPassword: string;
+  },
   signal?: AbortSignal,
 ): Promise<void> {
-  await postVoid('/auth/password-resets', params, { signal, auth: false });
+  assertAuthRequestAvailable(signal);
+  await postVoid(
+    '/auth/password-resets',
+    { ...params, email: normalizeEmail(params.email) },
+    { signal, auth: false },
+  );
 }

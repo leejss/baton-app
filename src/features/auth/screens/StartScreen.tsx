@@ -79,7 +79,10 @@ export function StartScreen({
       background="backgroundDefault"
       style={[
         styles.root,
-        { paddingTop: insets.top, paddingBottom: insets.bottom + SPEC.bottomInset },
+        {
+          paddingTop: insets.top,
+          paddingBottom: insets.bottom + SPEC.bottomInset,
+        },
       ]}
     >
       {/* 뒤로가기는 없지만 로그인 화면과 높이를 맞추려고 자리는 그대로 둔다. */}
@@ -115,6 +118,7 @@ export function StartScreen({
                 label="카카오로 시작하기"
                 onPress={handleKakaoPress}
                 isLoading={social.isKakaoPending}
+                disabled={social.isPending}
               />
               {social.canUseApple ? (
                 <StartButton
@@ -122,7 +126,7 @@ export function StartScreen({
                   label="Apple로 시작하기"
                   onPress={handleApplePress}
                   isLoading={social.isApplePending}
-                  disabled={social.isKakaoPending}
+                  disabled={social.isPending}
                 />
               ) : null}
             </View>

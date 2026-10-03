@@ -36,6 +36,7 @@ export type SignupLayoutProps = {
   onBack?: () => void;
   /** 진행 표시. 생략하면(완료 화면) 표시하지 않고 제목이 헤더 바로 아래 온다. */
   progress?: { current: number; total: number };
+  isBackDisabled?: boolean;
   title: string;
   description?: string;
   isTitleCentered?: boolean;
@@ -55,6 +56,7 @@ export type SignupLayoutProps = {
 
 export function SignupLayout({
   onBack,
+  isBackDisabled = false,
   progress,
   title,
   description,
@@ -75,7 +77,7 @@ export function SignupLayout({
         </View>
       )}
 
-      <AuthHeader onBack={onBack} />
+      <AuthHeader onBack={onBack} isBackDisabled={isBackDisabled} />
 
       {progress !== undefined && (
         <View style={styles.progress}>

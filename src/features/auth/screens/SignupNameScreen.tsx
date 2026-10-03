@@ -1,6 +1,9 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Controller, useForm } from 'react-hook-form';
 
+import { Alert } from 'react-native';
+import { normalizeError } from '@/shared/api/errors';
+import { useAuthOperation } from '@/features/auth/hooks/useAuthOperation';
 import { Button, TextField } from '@/shared/ui';
 
 import { SignupLayout } from '@/features/auth/components/SignupLayout';
@@ -14,6 +17,7 @@ export type SignupNameScreenProps = {
 };
 
 export function SignupNameScreen({ onBack, onNext }: SignupNameScreenProps) {
+  const operation = useAuthOperation('signup');
   const mode = useSignupStore((state) => state.mode);
   const displayName = useSignupStore((state) => state.displayName);
   const setDisplayName = useSignupStore((state) => state.setDisplayName);
@@ -29,10 +33,18 @@ export function SignupNameScreen({ onBack, onNext }: SignupNameScreenProps) {
     defaultValues: { displayName },
   });
 
-  const submit = handleSubmit((values) => {
-    setDisplayName(values.displayName.trim());
-    onNext();
-  });
+  const submit = () =>
+    operation.run(
+      'name',
+      async ({ isCurrent, complete }) => {
+        await handleSubmit((values) => {
+          if (!isCurrent()) return;
+          setDisplayName(values.displayName.trim());
+          complete(onNext);
+        })();
+      },
+      (error) => Alert.alert('계속하지 못했어요', normalizeError(error).message),
+    );
 
   return (
     <SignupLayout
@@ -40,7 +52,12 @@ export function SignupNameScreen({ onBack, onNext }: SignupNameScreenProps) {
       progress={getStepProgress(mode, 'name')}
       title="이름을 입력해주세요"
       action={
-        <Button variant="accent" label="다음" disabled={!formState.isValid} onPress={submit} />
+        <Button
+          variant="accent"
+          label="다음"
+          disabled={!formState.isValid || operation.isPending}
+          onPress={submit}
+        />
       }
     >
       <Controller
@@ -49,6 +66,7 @@ export function SignupNameScreen({ onBack, onNext }: SignupNameScreenProps) {
         render={({ field, fieldState }) => (
           <TextField
             value={field.value}
+            disabled={operation.isPending}
             onChangeText={field.onChange}
             onBlur={field.onBlur}
             placeholder="이름"
