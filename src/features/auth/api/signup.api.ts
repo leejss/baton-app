@@ -1,3 +1,4 @@
+import { assertAuthRequestAvailable } from '@/features/auth/lib/authRequest';
 import { post } from '@/shared/api/client';
 import { getDeviceId } from '@/shared/lib/deviceId';
 
@@ -20,9 +21,14 @@ export async function signUpWithEmail(
   params: SignUpParams,
   signal?: AbortSignal,
 ): Promise<Session> {
+  assertAuthRequestAvailable(signal);
   const deviceId = await getDeviceId();
+  assertAuthRequestAvailable(signal);
 
-  return post('/auth/signup', { ...params, deviceId }, sessionSchema, { signal, auth: false });
+  return post('/auth/signup', { ...params, deviceId }, sessionSchema, {
+    signal,
+    auth: false,
+  });
 }
 
 /**
@@ -33,7 +39,9 @@ export async function signUpWithSocial(
   { provider, ...params }: SocialSignUpParams,
   signal?: AbortSignal,
 ): Promise<Session> {
+  assertAuthRequestAvailable(signal);
   const deviceId = await getDeviceId();
+  assertAuthRequestAvailable(signal);
 
   return post(`/auth/social/${provider}/signup`, { ...params, deviceId }, sessionSchema, {
     signal,

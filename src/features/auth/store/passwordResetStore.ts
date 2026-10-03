@@ -1,63 +1,96 @@
 import { create } from 'zustand';
 
-/**
- * 비밀번호 재설정 플로우가 4개 화면에 걸쳐 들고 다니는 값.
- *
- * 라우터 search params 대신 store를 쓰는 이유:
- *   - `verificationToken`은 화면 주소에 노출되면 안 되는 단기 인증 토큰이다.
- *   - 이메일도 주소창·딥링크 기록에 남길 이유가 없다.
- *
- * **저장소에 persist 하지 않는다.** 재설정은 한 번에 끝내는 흐름이라 앱을 다시 켰을 때
- * 중간 단계가 되살아나면 오히려 이상하고, 인증 토큰이 디스크에 남는 것도 피한다.
- */
-type PasswordResetState = {
-  email: string | null;
-  /** 인증코드 만료 시각(epoch ms). 카운트다운의 기준. */
-  expiresAt: number | null;
-  /** 재발송이 가능해지는 시각(epoch ms). */
-  resendAvailableAt: number | null;
-  /** 인증 완료 후 서버가 준 일회성 token. `emailVerificationToken`으로 제출한다. */
-  verificationToken: string | null;
-};
+import {
+  EMPTY_VERIFICATION,
+  normalizeEmail,
+  verificationTokenValues,
+  type VerificationState,
+  type VerificationActions,
+} from '@/features/auth/lib/emailVerification';
 
-type PasswordResetActions = {
-  /** 인증코드를 보냈다. 이메일이 바뀌면 이전 인증 결과는 무효다. */
-  startChallenge: (params: { email: string; expiresAt: string; resendAvailableAt: string }) => void;
-  /** 재발송. 이메일은 그대로 두고 만료·재발송 시각만 새로 받는다. */
-  refreshChallenge: (params: { expiresAt: string; resendAvailableAt: string }) => void;
-  completeVerification: (verificationToken: string) => void;
-  clear: () => void;
-};
-
-export type PasswordResetStore = PasswordResetState & PasswordResetActions;
-
-const EMPTY: PasswordResetState = {
-  email: null,
-  expiresAt: null,
-  resendAvailableAt: null,
-  verificationToken: null,
-};
+// 인증 중인 값은 메모리에만 보관하고 앱 재시작 시 초기화한다.
+export type PasswordResetStore = VerificationState &
+  VerificationActions & {
+    isComplete: boolean;
+    markComplete: () => void;
+    submissionUncertain: boolean;
+    setSubmissionUncertain: (value: boolean) => void;
+    clear: () => void;
+  };
 
 export const usePasswordResetStore = create<PasswordResetStore>()((set) => ({
-  ...EMPTY,
+  ...EMPTY_VERIFICATION,
+  submissionUncertain: false,
+  isComplete: false,
+  markComplete: () => set({ isComplete: true }),
+  setSubmissionUncertain: (submissionUncertain) => set({ submissionUncertain }),
+  setVerificationEmail: (email) =>
+    set((state) =>
+      normalizeEmail(email) === state.email
+        ? state
+        : {
+            ...EMPTY_VERIFICATION,
+            email: normalizeEmail(email),
+            verificationRevision: state.verificationRevision + 1,
+          },
+    ),
 
-  startChallenge: ({ email, expiresAt, resendAvailableAt }) =>
-    set({
-      email,
+  startChallenge: ({ email, expiresAt, resendAvailableAt, recovered }) =>
+    set((state) => ({
+      email: normalizeEmail(email),
       expiresAt: Date.parse(expiresAt),
       resendAvailableAt: Date.parse(resendAvailableAt),
-      // 이메일이 바뀌었을 수 있으므로 이전 인증 결과를 반드시 버린다.
       verificationToken: null,
-    }),
+      verificationTokenExpiresAt: null,
+      challengeStatus: recovered ? 'recovered' : 'sent',
+      verificationRevision: state.verificationRevision + 1,
+    })),
 
   refreshChallenge: ({ expiresAt, resendAvailableAt }) =>
-    set({
+    set((state) => ({
       expiresAt: Date.parse(expiresAt),
       resendAvailableAt: Date.parse(resendAvailableAt),
       verificationToken: null,
-    }),
+      verificationTokenExpiresAt: null,
+      challengeStatus: 'sent',
+      verificationRevision: state.verificationRevision + 1,
+    })),
 
-  completeVerification: (verificationToken) => set({ verificationToken }),
+  resetChallenge: () =>
+    set((state) => ({
+      ...EMPTY_VERIFICATION,
+      email: state.email,
+      verificationRevision: state.verificationRevision + 1,
+    })),
 
-  clear: () => set(EMPTY),
+  invalidateChallenge: () =>
+    set((state) => ({
+      ...EMPTY_VERIFICATION,
+      email: state.email,
+      challengeStatus: 'uncertain',
+      verificationRevision: state.verificationRevision + 1,
+    })),
+
+  clearVerification: () =>
+    set((state) => ({
+      verificationToken: null,
+      verificationTokenExpiresAt: null,
+      verificationRevision: state.verificationRevision + 1,
+    })),
+
+  completeVerification: (token, expiresAt) =>
+    set((state) => ({
+      isComplete: false,
+      submissionUncertain: false,
+      ...verificationTokenValues(token, expiresAt),
+      verificationRevision: state.verificationRevision + 1,
+    })),
+
+  clear: () =>
+    set((state) => ({
+      ...EMPTY_VERIFICATION,
+      submissionUncertain: false,
+      isComplete: false,
+      verificationRevision: state.verificationRevision + 1,
+    })),
 }));

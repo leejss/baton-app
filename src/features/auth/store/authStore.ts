@@ -1,3 +1,4 @@
+import { throwIfAborted } from '@/shared/api/abort';
 import { create } from 'zustand';
 
 import { registerAuthBridge, type RefreshedTokens } from '@/shared/api/client';
@@ -23,6 +24,8 @@ import {
  * 토큰은 mmkv가 아니라 expo-secure-store(키체인/키스토어)에 넣는다.
  */
 const SESSION_KEY = 'auth.session';
+// 취소된 저장 정리가 뒤따르는 로그인 세션을 지우지 않도록 쓰기를 직렬화한다.
+let signInWrite: Promise<void> = Promise.resolve();
 
 /**
  * 세션이 사라진 이유. 사용자가 직접 로그아웃한 경우와 서버가 세션을 끊은 경우를
@@ -43,7 +46,7 @@ type AuthSnapshot =
 type AuthActions = {
   /** 앱 시작 시 1회. 끝나기 전에는 로그인 화면을 그리지 않아야 깜빡임이 없다. */
   restore: () => Promise<void>;
-  signIn: (session: Session) => Promise<void>;
+  signIn: (session: Session, signal?: AbortSignal) => Promise<void>;
   /** 사유를 주면 화면이 그에 맞는 안내를 띄운다. 사용자가 직접 누른 로그아웃은 생략한다. */
   signOut: (reason?: SignOutReason) => Promise<void>;
   /** 안내를 한 번 보여준 뒤 지운다. 남겨두면 다음 로그아웃 때 또 뜬다. */
@@ -52,7 +55,9 @@ type AuthActions = {
   applyTokens: (tokens: RefreshedTokens) => Promise<void>;
 };
 
-export type AuthStore = AuthSnapshot & { signOutReason: SignOutReason | null } & AuthActions;
+export type AuthStore = AuthSnapshot & {
+  signOutReason: SignOutReason | null;
+} & AuthActions;
 
 export const useAuthStore = create<AuthStore>()((set, get) => ({
   status: 'restoring',
@@ -87,10 +92,18 @@ export const useAuthStore = create<AuthStore>()((set, get) => ({
     }
   },
 
-  signIn: async (session) => {
-    await secureStorage.set(SESSION_KEY, JSON.stringify(session));
-    // 새로 로그인했으면 이전 로그아웃 안내는 의미가 없다.
-    set({ status: 'signedIn', session, signOutReason: null });
+  signIn: (session, signal) => {
+    const write = signInWrite.then(async () => {
+      if (signal) throwIfAborted(signal);
+      await secureStorage.set(SESSION_KEY, JSON.stringify(session));
+      if (signal?.aborted) {
+        await secureStorage.remove(SESSION_KEY);
+        throwIfAborted(signal);
+      }
+      set({ status: 'signedIn', session, signOutReason: null });
+    });
+    signInWrite = write.catch(() => {});
+    return write;
   },
 
   signOut: async (reason) => {

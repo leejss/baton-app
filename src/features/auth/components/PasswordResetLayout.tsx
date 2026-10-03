@@ -24,6 +24,7 @@ const SPEC = {
 
 export type PasswordResetLayoutProps = {
   onBack: () => void;
+  isBackDisabled?: boolean;
   title: string;
   description?: string;
   isTitleCentered?: boolean;
@@ -39,6 +40,7 @@ export type PasswordResetLayoutProps = {
 
 export function PasswordResetLayout({
   onBack,
+  isBackDisabled = false,
   title,
   description,
   isTitleCentered = false,
@@ -51,7 +53,7 @@ export function PasswordResetLayout({
 
   return (
     <Box background="backgroundDefault" style={[styles.root, { paddingTop: insets.top }]}>
-      <AuthHeader onBack={onBack} />
+      <AuthHeader onBack={onBack} isBackDisabled={isBackDisabled} />
 
       <KeyboardAwareScrollView
         contentContainerStyle={styles.scrollContent}

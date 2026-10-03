@@ -13,29 +13,44 @@ import {
  */
 export function useRequestVerificationCode() {
   return useMutation({
+    networkMode: 'always',
+    retry: false,
     onError: (error) => {
       logger.error('비밀번호 재설정 인증 코드 발송 실패', error);
     },
-    mutationFn: ({ email }: { email: string }) => requestVerificationCode(email),
+    mutationFn: ({ email, signal }: { email: string; signal?: AbortSignal }) =>
+      requestVerificationCode(email, { signal }),
   });
 }
 
 export function useVerifyCode() {
   return useMutation({
+    networkMode: 'always',
+    retry: false,
     onError: (error) => {
       logger.error('비밀번호 재설정 인증 코드 확인 실패', error);
     },
-    mutationFn: ({ email, code }: { email: string; code: string }) => verifyCode(email, code),
+    mutationFn: ({ email, code, signal }: { email: string; code: string; signal?: AbortSignal }) =>
+      verifyCode(email, code, { signal }),
   });
 }
 
 export function useResetPassword() {
   return useMutation({
+    networkMode: 'always',
+    retry: false,
     onError: (error) => {
       logger.error('비밀번호 재설정 실패', error);
     },
-    mutationFn: (params: { email: string; emailVerificationToken: string; newPassword: string }) =>
-      resetPassword(params),
+    mutationFn: ({
+      signal,
+      ...params
+    }: {
+      email: string;
+      emailVerificationToken: string;
+      newPassword: string;
+      signal?: AbortSignal;
+    }) => resetPassword(params, signal),
     onSuccess: () => logger.info('비밀번호 재설정 완료'),
   });
 }

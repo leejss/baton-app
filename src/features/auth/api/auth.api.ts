@@ -1,3 +1,5 @@
+import { normalizeEmail } from '@/features/auth/lib/emailVerification';
+import { assertAuthRequestAvailable } from '@/features/auth/lib/authRequest';
 import { post, postVoid } from '@/shared/api/client';
 import { normalizeError } from '@/shared/api/errors';
 import { getDeviceId } from '@/shared/lib/deviceId';
@@ -36,7 +38,9 @@ export async function authenticateWithKakao(
   signal?: AbortSignal,
 ): Promise<SocialSignInOutcome> {
   // 카카오 SDK에서 받은 토큰을 서버 세션으로 교환한다.
+  assertAuthRequestAvailable(signal);
   const deviceId = await getDeviceId();
+  assertAuthRequestAvailable(signal);
 
   const result = await post(
     '/auth/social/kakao',
@@ -73,7 +77,9 @@ export async function authenticateWithApple(
   credential: AppleCredential,
   signal?: AbortSignal,
 ): Promise<SocialSignInOutcome> {
+  assertAuthRequestAvailable(signal);
   const deviceId = await getDeviceId();
+  assertAuthRequestAvailable(signal);
 
   const result = await post(
     '/auth/social/apple',
@@ -113,13 +119,20 @@ export async function signInWithEmail(
   password: string,
   signal?: AbortSignal,
 ): Promise<SignInOutcome> {
+  assertAuthRequestAvailable(signal);
   const deviceId = await getDeviceId();
+  assertAuthRequestAvailable(signal);
 
   try {
-    const session = await post('/auth/login', { email, password, deviceId }, sessionSchema, {
-      signal,
-      auth: false,
-    });
+    const session = await post(
+      '/auth/login',
+      { email: normalizeEmail(email), password, deviceId },
+      sessionSchema,
+      {
+        signal,
+        auth: false,
+      },
+    );
     return { status: 'signedIn', session };
   } catch (error) {
     const appError = normalizeError(error);
@@ -129,7 +142,10 @@ export async function signInWithEmail(
     }
 
     if (appError.errorCode === 'AUTH_LOGIN_TEMPORARILY_LOCKED') {
-      return { status: 'locked', lockedUntil: toLockedUntil(appError.retryAfterSeconds) };
+      return {
+        status: 'locked',
+        lockedUntil: toLockedUntil(appError.retryAfterSeconds),
+      };
     }
 
     throw appError;

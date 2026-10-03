@@ -36,27 +36,31 @@ export function isSocialSignupTokenInvalid(error: unknown): boolean {
 }
 
 /**
- * 가입용 인증코드 발송·재발송. 시안의 "중복확인" 버튼이 이걸 부른다 —
+ * 가입용 인증코드 발송·재발송.
  * 계약상 이메일 중복은 이 요청의 `409 AUTH_ACCOUNT_ALREADY_EXISTS`로만 알 수 있다.
  */
 export function useRequestSignupCode() {
   return useMutation({
+    networkMode: 'always',
+    retry: false,
     onError: (error) => {
       if (isEmailTaken(error)) logger.warn('회원가입 이메일 중복', error);
       else logger.error('회원가입 인증 코드 발송 실패', error);
     },
-    mutationFn: ({ email }: { email: string }) =>
-      requestVerificationCode(email, { purpose: 'SIGN_UP' }),
+    mutationFn: ({ email, signal }: { email: string; signal?: AbortSignal }) =>
+      requestVerificationCode(email, { purpose: 'SIGN_UP', signal }),
   });
 }
 
 export function useVerifySignupCode() {
   return useMutation({
+    networkMode: 'always',
+    retry: false,
     onError: (error) => {
       logger.error('회원가입 인증 코드 확인 실패', error);
     },
-    mutationFn: ({ email, code }: { email: string; code: string }) =>
-      verifyCode(email, code, { purpose: 'SIGN_UP' }),
+    mutationFn: ({ email, code, signal }: { email: string; code: string; signal?: AbortSignal }) =>
+      verifyCode(email, code, { purpose: 'SIGN_UP', signal }),
   });
 }
 
@@ -67,11 +71,18 @@ export function useVerifySignupCode() {
  */
 export function useSignUp() {
   return useMutation({
+    networkMode: 'always',
+    retry: false,
     onError: (error) => {
       logger.error('회원가입 실패', error);
     },
-    mutationFn: (params: SignUpParams | SocialSignUpParams) =>
-      'socialSignupToken' in params ? signUpWithSocial(params) : signUpWithEmail(params),
+    mutationFn: ({
+      signal,
+      ...params
+    }: (SignUpParams | SocialSignUpParams) & { signal?: AbortSignal }) =>
+      'socialSignupToken' in params
+        ? signUpWithSocial(params, signal)
+        : signUpWithEmail(params, signal),
     onSuccess: () => logger.info('회원가입 완료'),
   });
 }

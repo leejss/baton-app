@@ -1,10 +1,10 @@
-import { useState } from 'react';
 import { Image } from 'expo-image';
 import { Alert, StyleSheet } from 'react-native';
 
 import { normalizeError } from '@/shared/api/errors';
 import { Button } from '@/shared/ui';
 
+import { useAuthOperation } from '@/features/auth/hooks/useAuthOperation';
 import { SignupLayout } from '@/features/auth/components/SignupLayout';
 import { useAuthStore } from '@/features/auth/store/authStore';
 import { useSignupStore } from '@/features/auth/store/signupStore';
@@ -43,24 +43,21 @@ export function SignupCompleteScreen({ onStarted }: SignupCompleteScreenProps) {
   const clearSignup = useSignupStore((state) => state.clear);
   const signIn = useAuthStore((state) => state.signIn);
 
-  const [isStarting, setIsStarting] = useState(false);
-
-  const handleStart = async () => {
-    if (pendingSession === null) {
-      Alert.alert('가입 정보를 찾지 못했어요', '처음부터 다시 진행해주세요.');
-      return;
-    }
-
-    setIsStarting(true);
-    try {
-      await signIn(pendingSession);
-      clearSignup();
-      onStarted?.();
-    } catch (error) {
-      setIsStarting(false);
-      Alert.alert('시작하지 못했어요', normalizeError(error).message);
-    }
-  };
+  const operation = useAuthOperation('signup');
+  const handleStart = () =>
+    operation.run(
+      'start',
+      async ({ signal }) => {
+        if (pendingSession === null) {
+          Alert.alert('가입 정보를 찾지 못했어요', '로그인 화면에서 로그인해주세요.');
+          return;
+        }
+        await signIn(pendingSession, signal);
+        clearSignup();
+        onStarted?.();
+      },
+      (error) => Alert.alert('시작하지 못했어요', normalizeError(error).message),
+    );
 
   return (
     <SignupLayout
@@ -69,7 +66,13 @@ export function SignupCompleteScreen({ onStarted }: SignupCompleteScreenProps) {
       description="이제 Baton을 시작해보세요"
       bodyTop={SPEC.illustrationTop}
       action={
-        <Button variant="accent" label="시작하기" isLoading={isStarting} onPress={handleStart} />
+        <Button
+          variant="accent"
+          label="시작하기"
+          disabled={operation.isPending}
+          isLoading={operation.isPending}
+          onPress={handleStart}
+        />
       }
       backdrop={<Confetti />}
     >

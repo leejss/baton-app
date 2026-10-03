@@ -11,7 +11,7 @@ import { radius, typography, useTheme } from '@/theme';
  * 보이는 칸은 그냥 View고, 실제 입력은 그 위에 투명하게 덮은 `TextInput` 하나가 받는다.
  * 칸마다 TextInput을 두면 포커스 이동·붙여넣기·OTP 자동완성이 전부 꼬인다.
  */
-export type CodeInputProps = Pick<TextInputProps, 'autoFocus' | 'onSubmitEditing'> & {
+export type CodeInputProps = Pick<TextInputProps, 'autoFocus' | 'onSubmitEditing' | 'editable'> & {
   value: string;
   onChangeText: (value: string) => void;
   length: number;
@@ -35,6 +35,7 @@ export function CodeInput({
   length,
   timer,
   status = 'none',
+  editable = true,
   accessibilityLabel = '인증코드',
   ...rest
 }: CodeInputProps) {
@@ -55,6 +56,7 @@ export function CodeInput({
     <View style={styles.container}>
       <Pressable
         accessibilityRole="none"
+        disabled={!editable}
         onPress={() => inputRef.current?.focus()}
         style={styles.cells}
       >
@@ -83,6 +85,7 @@ export function CodeInput({
 
         <TextInput
           ref={inputRef}
+          editable={editable}
           accessibilityLabel={accessibilityLabel}
           style={styles.hiddenInput}
           value={value}

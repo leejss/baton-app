@@ -1,5 +1,4 @@
 import { Alert, StyleSheet, View } from 'react-native';
-import { useShallow } from 'zustand/react/shallow';
 
 import { normalizeError } from '@/shared/api/errors';
 import { logger } from '@/shared/lib/logger';
@@ -7,6 +6,11 @@ import { Button } from '@/shared/ui';
 
 import { isSocialSignupTokenInvalid, useSignUp } from '@/features/auth/api/signup.mutations';
 import { TERMS, type TermsCode } from '@/features/auth/api/signup.schema';
+import { useAuthOperation } from '@/features/auth/hooks/useAuthOperation';
+import { AuthNavigationBlocker } from '@/features/auth/components/AuthNavigationBlocker';
+import { hasValidVerification } from '@/features/auth/lib/emailVerification';
+import { assertAuthRequestAvailable, isAuthResultUncertain } from '@/features/auth/lib/authRequest';
+import { useCountdown } from '@/shared/hooks/useCountdown';
 import { SignupLayout } from '@/features/auth/components/SignupLayout';
 import { TermsCheckItem } from '@/features/auth/components/TermsCheckItem';
 import {
@@ -29,6 +33,8 @@ export type SignupTermsScreenProps = {
    * 라우트가 소셜 로그인 화면으로 되돌린다 — 거기서 다시 인증하면 서버가 새 token을 준다.
    */
   onSocialSignupExpired: () => void;
+  onVerificationExpired: () => void;
+  onSignIn: () => void;
 };
 
 const SPEC = {
@@ -48,125 +54,150 @@ export function SignupTermsScreen({
   onOpenTerm = notWired,
   onComplete,
   onSocialSignupExpired,
+  onVerificationExpired,
+  onSignIn,
 }: SignupTermsScreenProps) {
-  const {
-    mode,
-    provider,
-    socialSignupToken,
-    socialSignupExpiresAt,
-    displayName,
-    email,
-    verificationToken,
-    password,
-    agreements,
-  } = useSignupStore(
-    useShallow((state) => ({
-      mode: state.mode,
-      provider: state.provider,
-      socialSignupToken: state.socialSignupToken,
-      socialSignupExpiresAt: state.socialSignupExpiresAt,
-      displayName: state.displayName,
-      email: state.email,
-      verificationToken: state.verificationToken,
-      password: state.password,
-      agreements: state.agreements,
-    })),
-  );
+  const mode = useSignupStore((state) => state.mode);
+  const agreements = useSignupStore((state) => state.agreements);
+  const tokenExpiresAt = useSignupStore((state) => state.verificationTokenExpiresAt);
+  const submissionUncertain = useSignupStore((state) => state.submissionUncertain);
   const setAgreement = useSignupStore((state) => state.setAgreement);
   const setAllAgreements = useSignupStore((state) => state.setAllAgreements);
-  const setPendingSession = useSignupStore((state) => state.setPendingSession);
-  const setPassword = useSignupStore((state) => state.setPassword);
-  const clearSignup = useSignupStore((state) => state.clear);
-
+  const operation = useAuthOperation('signup');
+  const expiry = useCountdown(tokenExpiresAt);
   const signUp = useSignUp();
+  const isAllChecked = TERMS.every((term) => agreements[term.code]);
+  const canSubmit = hasRequiredAgreements(agreements);
 
-  const isSocialSignup = mode === 'social' && provider !== null && socialSignupToken !== null;
-
-  /**
-   * 소셜 가입 token이 죽었을 때의 유일한 복구 경로. 이 화면에서 다시 눌러봐야 계속
-   * 같은 `409`라 가입 흐름을 접고 소셜 로그인부터 다시 시킨다. 재인증은 서버에서
-   * 정상 복구로 처리돼(ADR-030) 새 token과 함께 `SIGNUP_REQUIRED`가 다시 온다.
-   */
   const restartSocialSignup = () => {
     Alert.alert(
       '소셜 로그인을 다시 해주세요',
-      '가입 시간이 지나 소셜 인증이 만료됐어요. 다시 로그인하면 이어서 가입할 수 있어요.',
+      '소셜 인증을 이어갈 수 없어요. 다시 로그인해주세요.',
       [
         {
           text: '확인',
           onPress: () => {
-            clearSignup();
+            useSignupStore.getState().clear();
             onSocialSignupExpired();
           },
         },
       ],
     );
   };
-
-  const isAllChecked = TERMS.every((term) => agreements[term.code]);
-  const canSubmit = hasRequiredAgreements(agreements);
-
-  const submit = () => {
-    // 앞 단계를 건너뛰고 올 수 있는 경로는 없지만, token 없이 요청을 보내면 안 된다.
-    if (verificationToken === null) {
-      Alert.alert('이메일 인증이 필요해요', '이메일 인증을 먼저 완료해주세요.');
-      return;
-    }
-
-    // 이미 만료된 token으로 제출하면 어차피 409다. 왕복 없이 바로 복구로 보낸다.
-    if (isSocialSignup && hasSocialSignupTokenExpired(socialSignupExpiresAt)) {
-      restartSocialSignup();
-      return;
-    }
-
-    const common = {
-      email,
-      displayName,
-      emailVerificationToken: verificationToken,
-      agreements: toAgreementDecisions(agreements),
-    };
-
-    const params =
-      isSocialSignup && provider !== null && socialSignupToken !== null
-        ? { ...common, provider, socialSignupToken }
-        : { ...common, password };
-
-    signUp.mutate(params, {
-      onSuccess: (session) => {
-        // 비밀번호는 더 들고 있을 이유가 없다. 세션은 완료 화면이 "시작하기"에서 넘긴다.
-        setPassword('');
-        setPendingSession(session);
-        onComplete();
-      },
-      onError: (error) => {
-        if (isSocialSignupTokenInvalid(error)) {
+  const submit = () =>
+    operation.run(
+      'signup',
+      async ({ signal, isCurrent, complete }) => {
+        const state = useSignupStore.getState();
+        if (state.pendingSession !== null) {
+          complete(onComplete);
+          return;
+        }
+        if (state.submissionUncertain) {
+          complete(onSignIn);
+          return;
+        }
+        if (!hasValidVerification(state) || state.verificationToken === null) {
+          complete(onVerificationExpired);
+          return;
+        }
+        if (!hasRequiredAgreements(state.agreements)) return;
+        if (
+          state.mode === 'social' &&
+          (!state.provider ||
+            !state.socialSignupToken ||
+            hasSocialSignupTokenExpired(state.socialSignupExpiresAt))
+        ) {
           restartSocialSignup();
           return;
         }
-        Alert.alert('가입하지 못했어요', normalizeError(error).message);
+        assertAuthRequestAvailable(signal);
+        const common = {
+          email: state.email,
+          displayName: state.displayName,
+          emailVerificationToken: state.verificationToken,
+          agreements: toAgreementDecisions(state.agreements),
+          signal,
+        };
+        const params =
+          state.mode === 'social' && state.provider && state.socialSignupToken
+            ? {
+                ...common,
+                provider: state.provider,
+                socialSignupToken: state.socialSignupToken,
+              }
+            : { ...common, password: state.password };
+        try {
+          const session = await signUp.mutateAsync(params);
+          if (!isCurrent()) return;
+          complete(() => {
+            useSignupStore.getState().setPassword('');
+            useSignupStore.getState().setPendingSession(session);
+            onComplete();
+          });
+        } catch (error) {
+          if (!isCurrent()) return;
+          if (isAuthResultUncertain(error)) {
+            useSignupStore.getState().setSubmissionUncertain(true);
+            Alert.alert(
+              '가입 결과를 확인하지 못했어요',
+              '가입이 완료됐을 수 있어요. 로그인 화면에서 같은 방법으로 로그인해 확인해주세요.',
+            );
+            return;
+          }
+          if (isSocialSignupTokenInvalid(error)) {
+            restartSocialSignup();
+            return;
+          }
+          const failure = normalizeError(error);
+          Alert.alert(
+            '가입하지 못했어요',
+            failure.message,
+            failure.status === 400
+              ? [
+                  { text: '입력 확인', style: 'cancel' },
+                  { text: '이메일 다시 인증', onPress: onVerificationExpired },
+                ]
+              : undefined,
+          );
+        }
       },
-    });
-  };
+      (error) => Alert.alert('가입하지 못했어요', normalizeError(error).message),
+    );
 
   return (
     <SignupLayout
       onBack={onBack}
+      isBackDisabled={operation.isPending}
       progress={getStepProgress(mode, 'terms')}
       title="약관에 동의해주세요"
+      description={
+        submissionUncertain
+          ? '가입 결과를 로그인 화면에서 확인해주세요.'
+          : expiry.isExpired
+            ? '이메일 인증 시간이 지났어요. 다시 인증해주세요.'
+            : undefined
+      }
       action={
         <Button
           variant="accent"
-          label="다음"
-          disabled={!canSubmit}
-          isLoading={signUp.isPending}
+          label={
+            submissionUncertain ? '로그인으로 확인' : expiry.isExpired ? '이메일 다시 인증' : '다음'
+          }
+          disabled={
+            operation.isPending || (!submissionUncertain && !expiry.isExpired && !canSubmit)
+          }
+          isLoading={operation.isRunning}
           onPress={submit}
         />
       }
     >
+      <AuthNavigationBlocker isPending={operation.isRunning} />
       <TermsCheckItem
         variant="all"
         label="전체 동의"
         isChecked={isAllChecked}
+        disabled={operation.isPending}
         onToggle={() => setAllAgreements(!isAllChecked)}
       />
 
@@ -178,6 +209,7 @@ export function SignupTermsScreen({
             prefix={term.isRequired ? '[필수]' : '[선택]'}
             label={term.label}
             isChecked={agreements[term.code]}
+            disabled={operation.isPending}
             onToggle={() => setAgreement(term.code, !agreements[term.code])}
             onOpen={() => onOpenTerm(term.code)}
           />

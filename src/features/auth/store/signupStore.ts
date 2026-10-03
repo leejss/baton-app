@@ -1,3 +1,10 @@
+import {
+  EMPTY_VERIFICATION,
+  normalizeEmail,
+  verificationTokenValues,
+  type VerificationState,
+  type VerificationActions,
+} from '@/features/auth/lib/emailVerification';
 import { create } from 'zustand';
 
 import type { Session } from '@/features/auth/api/auth.schema';
@@ -33,8 +40,9 @@ export const SIGNUP_STEPS: Record<SignupMode, readonly SignupStep[]> = {
 
 type Agreements = Record<TermsCode, boolean>;
 
-type SignupState = {
+type SignupState = VerificationState & {
   mode: SignupMode;
+  submissionUncertain: boolean;
   /** 소셜 가입일 때만. 가입 완료 요청의 경로(`/auth/social/{provider}/signup`)를 정한다. */
   provider: SocialProvider | null;
   /** 소셜 인증이 발급한 10분 유효·단회 사용 token. 가입 완료 전까지 메모리에만 둔다. */
@@ -49,13 +57,6 @@ type SignupState = {
    */
   socialSignupExpiresAt: number | null;
   displayName: string;
-  email: string;
-  /** 인증코드 만료 시각(epoch ms). 카운트다운의 기준. */
-  expiresAt: number | null;
-  /** 재발송이 가능해지는 시각(epoch ms). */
-  resendAvailableAt: number | null;
-  /** 인증 완료 후 서버가 준 일회성 token. `emailVerificationToken`으로 제출한다. */
-  verificationToken: string | null;
   /** 이메일 가입일 때만. 약관 단계까지 들고 갔다가 제출과 함께 지운다. */
   password: string;
   agreements: Agreements;
@@ -66,7 +67,7 @@ type SignupState = {
   pendingSession: Session | null;
 };
 
-type SignupActions = {
+type SignupActions = VerificationActions & {
   /** 이메일 가입 시작. 이전에 하다 만 값이 있어도 전부 버린다. */
   startEmailSignup: () => void;
   /** 소셜 인증 후 신규 식별자로 판정된 경우. 제공자가 준 기본값을 미리 채운다. */
@@ -78,14 +79,8 @@ type SignupActions = {
     suggestedDisplayName?: string;
     suggestedEmail?: string;
   }) => void;
+  setSubmissionUncertain: (value: boolean) => void;
   setDisplayName: (displayName: string) => void;
-  /** 인증코드를 보냈다. 이메일이 바뀌면 이전 인증 결과는 무효다. */
-  startChallenge: (params: { email: string; expiresAt: string; resendAvailableAt: string }) => void;
-  /** 재발송. 이메일은 그대로 두고 만료·재발송 시각만 새로 받는다. */
-  refreshChallenge: (params: { expiresAt: string; resendAvailableAt: string }) => void;
-  /** 이메일 입력이 바뀌었다. 인증 상태를 반드시 초기화한다(AUTH-07 우회 방지). */
-  resetChallenge: () => void;
-  completeVerification: (verificationToken: string) => void;
   setPassword: (password: string) => void;
   setAgreement: (code: TermsCode, agreed: boolean) => void;
   setAllAgreements: (agreed: boolean) => void;
@@ -102,15 +97,13 @@ const EMPTY_AGREEMENTS: Agreements = {
 };
 
 const EMPTY: SignupState = {
+  ...EMPTY_VERIFICATION,
   mode: 'email',
+  submissionUncertain: false,
   provider: null,
   socialSignupToken: null,
   socialSignupExpiresAt: null,
   displayName: '',
-  email: '',
-  expiresAt: null,
-  resendAvailableAt: null,
-  verificationToken: null,
   password: '',
   agreements: EMPTY_AGREEMENTS,
   pendingSession: null,
@@ -119,7 +112,12 @@ const EMPTY: SignupState = {
 export const useSignupStore = create<SignupStore>()((set) => ({
   ...EMPTY,
 
-  startEmailSignup: () => set({ ...EMPTY, mode: 'email' }),
+  startEmailSignup: () =>
+    set((state) => ({
+      ...EMPTY,
+      mode: 'email',
+      verificationRevision: state.verificationRevision + 1,
+    })),
 
   startSocialSignup: ({
     provider,
@@ -128,37 +126,82 @@ export const useSignupStore = create<SignupStore>()((set) => ({
     suggestedDisplayName,
     suggestedEmail,
   }) =>
-    set({
+    set((state) => ({
       ...EMPTY,
+      verificationRevision: state.verificationRevision + 1,
       mode: 'social',
       provider,
       socialSignupToken,
       socialSignupExpiresAt: Date.parse(expiresAt),
       displayName: suggestedDisplayName ?? '',
       // 제공자 기본값은 수정 가능한 초기값일 뿐이다. Baton 이메일 인증을 대체하지 않는다.
-      email: suggestedEmail ?? '',
-    }),
+      email: normalizeEmail(suggestedEmail ?? ''),
+    })),
+
+  setSubmissionUncertain: (submissionUncertain) => set({ submissionUncertain }),
 
   setDisplayName: (displayName) => set({ displayName }),
 
-  startChallenge: ({ email, expiresAt, resendAvailableAt }) =>
-    set({
-      email,
+  setVerificationEmail: (email) =>
+    set((state) =>
+      normalizeEmail(email) === state.email
+        ? state
+        : {
+            ...EMPTY_VERIFICATION,
+            email: normalizeEmail(email),
+            verificationRevision: state.verificationRevision + 1,
+          },
+    ),
+
+  startChallenge: ({ email, expiresAt, resendAvailableAt, recovered }) =>
+    set((state) => ({
+      email: normalizeEmail(email),
       expiresAt: Date.parse(expiresAt),
       resendAvailableAt: Date.parse(resendAvailableAt),
       verificationToken: null,
-    }),
+      verificationTokenExpiresAt: null,
+      challengeStatus: recovered ? 'recovered' : 'sent',
+      verificationRevision: state.verificationRevision + 1,
+    })),
 
   refreshChallenge: ({ expiresAt, resendAvailableAt }) =>
-    set({
+    set((state) => ({
       expiresAt: Date.parse(expiresAt),
       resendAvailableAt: Date.parse(resendAvailableAt),
       verificationToken: null,
-    }),
+      verificationTokenExpiresAt: null,
+      challengeStatus: 'sent',
+      verificationRevision: state.verificationRevision + 1,
+    })),
 
-  resetChallenge: () => set({ expiresAt: null, resendAvailableAt: null, verificationToken: null }),
+  resetChallenge: () =>
+    set((state) => ({
+      ...EMPTY_VERIFICATION,
+      email: state.email,
+      verificationRevision: state.verificationRevision + 1,
+    })),
 
-  completeVerification: (verificationToken) => set({ verificationToken }),
+  invalidateChallenge: () =>
+    set((state) => ({
+      ...EMPTY_VERIFICATION,
+      email: state.email,
+      challengeStatus: 'uncertain',
+      verificationRevision: state.verificationRevision + 1,
+    })),
+
+  clearVerification: () =>
+    set((state) => ({
+      verificationToken: null,
+      verificationTokenExpiresAt: null,
+      verificationRevision: state.verificationRevision + 1,
+    })),
+
+  completeVerification: (token, expiresAt) =>
+    set((state) => ({
+      submissionUncertain: false,
+      ...verificationTokenValues(token, expiresAt),
+      verificationRevision: state.verificationRevision + 1,
+    })),
 
   setPassword: (password) => set({ password }),
 
@@ -176,7 +219,11 @@ export const useSignupStore = create<SignupStore>()((set) => ({
 
   setPendingSession: (pendingSession) => set({ pendingSession }),
 
-  clear: () => set(EMPTY),
+  clear: () =>
+    set((state) => ({
+      ...EMPTY,
+      verificationRevision: state.verificationRevision + 1,
+    })),
 }));
 
 /** 현재 단계의 위치(1부터)와 전체 단계 수. 진행 표시용. */
@@ -212,5 +259,8 @@ export function hasRequiredAgreements(agreements: Agreements): boolean {
 
 /** 계약이 요구하는 형태 — 세 코드를 중복 없이 모두, 선택 약관은 `agreed: false`로. */
 export function toAgreementDecisions(agreements: Agreements): AgreementDecision[] {
-  return TERMS.map((term) => ({ termsCode: term.code, agreed: agreements[term.code] }));
+  return TERMS.map((term) => ({
+    termsCode: term.code,
+    agreed: agreements[term.code],
+  }));
 }
