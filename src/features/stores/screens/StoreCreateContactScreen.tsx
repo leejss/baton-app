@@ -165,7 +165,7 @@ export function StoreCreateContactScreen({
             value={field.value}
             onChangeText={field.onChange}
             onBlur={field.onBlur}
-            placeholder="02-1234-5678"
+            placeholder="0212345678"
             keyboardType="phone-pad"
             returnKeyType="done"
             onSubmitEditing={() => {
