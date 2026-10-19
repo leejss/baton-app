@@ -5,7 +5,7 @@ export const MOCK_STORE_MEMBERS = [
     displayName: '김지원',
     email: 'jiwon@baton.app',
     profileImage: { source: 'STATIC', key: 'DEFAULT_MANAGER' },
-    role: 'MANAGER',
+    role: 'ADMIN',
     status: 'ACTIVE',
   },
   {
@@ -13,7 +13,7 @@ export const MOCK_STORE_MEMBERS = [
     displayName: '이서연',
     email: 'seoyeon@baton.app',
     profileImage: { source: 'STATIC', key: 'DEFAULT_EMPLOYEE' },
-    role: 'EMPLOYEE',
+    role: 'MEMBER',
     status: 'ACTIVE',
   },
   {
@@ -21,7 +21,7 @@ export const MOCK_STORE_MEMBERS = [
     displayName: '박현우',
     email: 'hyunwoo@baton.app',
     profileImage: { source: 'STATIC', key: 'DEFAULT_EMPLOYEE' },
-    role: 'EMPLOYEE',
+    role: 'MEMBER',
     status: 'ACTIVE',
   },
   {
@@ -29,7 +29,7 @@ export const MOCK_STORE_MEMBERS = [
     displayName: '최민지',
     email: 'minji@baton.app',
     profileImage: { source: 'STATIC', key: 'DEFAULT_EMPLOYEE' },
-    role: 'EMPLOYEE',
+    role: 'MEMBER',
     status: 'ACTIVE',
   },
 ] as const;

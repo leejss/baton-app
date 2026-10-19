@@ -8,7 +8,7 @@ const FOREGROUND_WAIT_MS = 120_000;
 
 /**
  * SDK에는 진행 중인 인증 창을 닫는 API가 없다. JS 대기를 끝내도 네이티브 요청은
- * 완료될 때까지 점유해 새 인증 창이 겹치지 않게 한다. 이메일 로그인은 계속 사용할 수 있다.
+ * 완료될 때까지 점유해 새 인증 창이 겹치지 않게 한다.
  */
 export async function requestNativeSignIn<T>(
   request: () => Promise<T>,
@@ -18,7 +18,7 @@ export async function requestNativeSignIn<T>(
   if (nativeRequest) {
     throw new AppError(
       'unknown',
-      '이전 로그인 창을 닫은 뒤 다시 시도해주세요. 계속 기다리는 경우 앱을 다시 실행하거나 이메일로 로그인해주세요.',
+      '이전 로그인 창을 닫은 뒤 다시 시도해주세요. 계속 기다리는 경우 앱을 다시 실행한 뒤 같은 소셜 로그인으로 다시 시도해주세요.',
     );
   }
   const pending = Promise.resolve().then(() => {
@@ -48,7 +48,7 @@ export async function requestNativeSignIn<T>(
         reject(
           new AppError(
             'timeout',
-            '인증 결과를 받지 못했어요. 로그인 창을 닫아주세요. 계속되지 않으면 앱을 다시 실행하거나 이메일로 로그인해주세요.',
+            '인증 결과를 받지 못했어요. 로그인 창을 닫아주세요. 계속되지 않으면 앱을 다시 실행한 뒤 같은 소셜 로그인으로 다시 시도해주세요.',
           ),
         );
       }, FOREGROUND_WAIT_MS);

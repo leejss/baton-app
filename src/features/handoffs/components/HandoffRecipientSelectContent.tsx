@@ -9,36 +9,30 @@ import { HandoffFooterActions } from '@/features/handoffs/components/HandoffFoot
 import { HandoffRecipientRow } from '@/features/handoffs/components/HandoffRecipientRow';
 import type { RecipientModel } from '@/features/handoffs/types';
 import { useHandoffDraftStore } from '@/features/handoffs/store/handoffDraftStore';
-import { EmptyState } from '@/shared/ui';
+import { EmptyState, TextInput } from '@/shared/ui';
 import { SCREEN_PADDING_X, spacing, useTheme } from '@/theme';
 
 type HandoffRecipientSelectContentProps = {
-  workDate?: string;
   onConfirm: () => void;
 };
 
-export function HandoffRecipientSelectContent({
-  onConfirm,
-  workDate,
-}: HandoffRecipientSelectContentProps) {
+export function HandoffRecipientSelectContent({ onConfirm }: HandoffRecipientSelectContentProps) {
   const context = useMainContext();
   const theme = useTheme();
-  const { data } = useSuspenseQuery(
-    handoffQueries.recipients(context.storeId, context.userId, workDate),
-  );
+  const { data } = useSuspenseQuery(handoffQueries.recipients(context.workspaceId, context.userId));
   const recipient = useHandoffDraftStore((state) => state.recipient);
   const setRecipient = useHandoffDraftStore((state) => state.setRecipient);
   const [selectedId, setSelectedId] = useState<number | null>(recipient?.member.userId ?? null);
-  const effectiveSelectedId =
-    selectedId ??
-    (data.filter((item) => item.isRecommended).length === 1
-      ? data.find((item) => item.isRecommended)?.member.userId
-      : null) ??
-    null;
+  const [search, setSearch] = useState('');
+  const filtered = data.filter(({ member }) =>
+    `${member.displayName} ${member.email ?? ''}`
+      .toLowerCase()
+      .includes(search.trim().toLowerCase()),
+  );
 
   const handleSelect = (item: RecipientModel) => setSelectedId(item.member.userId);
   const handleConfirm = () => {
-    const selected = data.find(({ member }) => member.userId === effectiveSelectedId);
+    const selected = data.find(({ member }) => member.userId === selectedId);
     if (selected === undefined) return;
     setRecipient(selected);
     onConfirm();
@@ -46,7 +40,7 @@ export function HandoffRecipientSelectContent({
   const renderItem: ListRenderItem<RecipientModel> = ({ item }) => (
     <HandoffRecipientRow
       item={item}
-      selected={item.member.userId === effectiveSelectedId}
+      selected={item.member.userId === selectedId}
       onSelect={handleSelect}
     />
   );
@@ -56,20 +50,27 @@ export function HandoffRecipientSelectContent({
 
   return (
     <View style={[styles.root, { backgroundColor: theme.colors.backgroundDefault }]}>
+      <TextInput
+        accessibilityLabel="담당자 이름 또는 이메일 검색"
+        placeholder="이름, 이메일로 검색해주세요."
+        value={search}
+        onChangeText={setSearch}
+        style={{ marginHorizontal: SCREEN_PADDING_X, marginTop: 16 }}
+      />
       <FlashList
-        data={data}
+        data={filtered}
         contentInsetAdjustmentBehavior="automatic"
         contentContainerStyle={styles.listContent}
         ItemSeparatorComponent={separator}
         ListFooterComponent={data.length > 0 ? separator : null}
         keyExtractor={keyExtractor}
-        ListEmptyComponent={<EmptyState title="선택할 수 있는 직원이 없어요" />}
+        ListEmptyComponent={<EmptyState title="선택할 수 있는 멤버가 없어요" />}
         renderItem={renderItem}
         style={styles.list}
       />
       <HandoffFooterActions
         primaryLabel="확인"
-        primaryDisabled={!data.some((item) => item.member.userId === effectiveSelectedId)}
+        primaryDisabled={!data.some((item) => item.member.userId === selectedId)}
         onPrimaryPress={handleConfirm}
       />
     </View>

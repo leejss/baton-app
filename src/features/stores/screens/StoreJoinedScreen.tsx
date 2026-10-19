@@ -35,10 +35,10 @@ export function StoreJoinedScreen({ onBack, onStart }: StoreJoinedScreenProps) {
       <View style={styles.content}>
         <View style={styles.headline}>
           <Text variant="display" weight="bold" style={textStyles.center}>
-            매장 참여가 완료 됐어요!
+            워크스페이스에 참여했어요!
           </Text>
           <Text variant="body" weight="medium" color="foregroundDefault" style={textStyles.center}>
-            이제 근무 매장의 인수인계를 시작해 보세요.
+            이 워크스페이스에서 인수인계를 시작해보세요.
           </Text>
         </View>
 

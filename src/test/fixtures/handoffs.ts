@@ -1,8 +1,4 @@
-import type {
-  HandoffDto,
-  MemberDto,
-  RecipientRecommendationDto,
-} from '@/features/handoffs/api/handoff.schema';
+import type { HandoffDto, MemberDto } from '@/features/handoffs/api/handoff.schema';
 
 import { MOCK_STORE_MEMBERS } from '@/test/fixtures/members';
 
@@ -32,6 +28,7 @@ const minutesAgo = (minutes: number) => new Date(Date.now() - minutes * 60_000).
 export const INITIAL_MOCK_HANDOFFS: HandoffDto[] = [
   {
     id: 101,
+    workspaceId: CURRENT_STORE_ID,
     type: 'WORK_TASK',
     title: '마감 정산 확인 부탁드려요',
     body: '포스 마감 금액과 현금 시재가 맞는지 한 번 더 확인해 주세요.',
@@ -43,6 +40,7 @@ export const INITIAL_MOCK_HANDOFFS: HandoffDto[] = [
   },
   {
     id: 102,
+    workspaceId: CURRENT_STORE_ID,
     type: 'STORE_STATUS',
     title: '제빙기 상태 확인 필요',
     body: '제빙기 소음이 평소보다 커졌습니다. 오픈 전에 상태 확인 부탁드립니다.',
@@ -54,6 +52,7 @@ export const INITIAL_MOCK_HANDOFFS: HandoffDto[] = [
   },
   {
     id: 103,
+    workspaceId: CURRENT_STORE_ID,
     type: 'OTHER',
     title: '단골 고객 예약 문의',
     body: '오후 3시 단체 주문 문의가 있었습니다. 재연락 예정입니다.',
@@ -65,6 +64,7 @@ export const INITIAL_MOCK_HANDOFFS: HandoffDto[] = [
   },
   {
     id: 104,
+    workspaceId: CURRENT_STORE_ID,
     type: 'WORK_TASK',
     title: '냉장고 발주 목록 공유',
     body: '우유와 휘핑크림은 발주 완료했습니다.',
@@ -76,6 +76,7 @@ export const INITIAL_MOCK_HANDOFFS: HandoffDto[] = [
   },
   {
     id: 105,
+    workspaceId: CURRENT_STORE_ID,
     type: 'STORE_STATUS',
     title: '창고 선반 정리 완료',
     body: '창고 선반 정리를 마쳤습니다.',
@@ -86,15 +87,3 @@ export const INITIAL_MOCK_HANDOFFS: HandoffDto[] = [
     attachments: [],
   },
 ];
-
-const recommendedStartAt = new Date(Date.now() + 2 * 60 * 60_000).toISOString();
-
-export const MOCK_RECIPIENT_RECOMMENDATION: RecipientRecommendationDto = {
-  recommended: minju,
-  recommendedStartAt,
-  candidates: [
-    { ...minju, startAt: recommendedStartAt },
-    { ...seojun, startAt: new Date(Date.now() + 4 * 60 * 60_000).toISOString() },
-    { ...hayoon, startAt: new Date(Date.now() + 6 * 60 * 60_000).toISOString() },
-  ],
-};

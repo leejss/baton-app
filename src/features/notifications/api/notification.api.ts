@@ -4,7 +4,7 @@ import {
   notificationSchema,
   notificationListSchema,
 } from '@/features/notifications/api/notification.schema';
-export const fetchNotifications = (storeId: number, signal?: AbortSignal) =>
-  get(`/stores/${storeId}/notifications`, notificationListSchema, { signal });
+export const fetchNotifications = (workspaceId: number, signal?: AbortSignal) =>
+  get(`/workspaces/${workspaceId}/notifications`, notificationListSchema, { signal });
 export const markNotificationRead = (id: string) =>
   post(`/notifications/${parseApiId(id)}/read`, undefined, notificationSchema);

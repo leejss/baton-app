@@ -8,16 +8,11 @@ import { getProfileImageSource } from '@/shared/ui/profileImageAssets';
 import { radius, spacing, useTheme } from '@/theme';
 
 type HandoffRecipientCardProps = {
-  isRecommended?: boolean;
   recipient: MemberDto | null;
   onPress: () => void;
 };
 
-export function HandoffRecipientCard({
-  isRecommended = false,
-  recipient,
-  onPress,
-}: HandoffRecipientCardProps) {
+export function HandoffRecipientCard({ recipient, onPress }: HandoffRecipientCardProps) {
   const theme = useTheme();
 
   return (
@@ -38,7 +33,9 @@ export function HandoffRecipientCard({
     >
       <View style={[styles.avatarFrame, { borderColor: theme.colors.surfaceNeutralSubtle }]}>
         <Image
-          source={getProfileImageSource(recipient?.profileImage.key ?? 'DEFAULT_01')}
+          source={getProfileImageSource(
+            recipient?.profileImage ?? { source: 'STATIC', key: 'DEFAULT_01' },
+          )}
           contentFit="cover"
           accessible={false}
           accessibilityElementsHidden
@@ -53,9 +50,7 @@ export function HandoffRecipientCard({
         <Text variant="caption" weight="medium" color="foregroundSubtle">
           {recipient === null
             ? '한 명을 선택할 수 있어요'
-            : isRecommended
-              ? '다음 근무자'
-              : recipient.email}
+            : (recipient.email ?? '이메일 제공 안 됨')}
         </Text>
       </View>
       <ArrowRightS size={22} color="foregroundDisabled" />

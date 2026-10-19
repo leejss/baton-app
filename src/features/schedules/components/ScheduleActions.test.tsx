@@ -27,7 +27,8 @@ const metrics = {
 };
 const item = {
   id: 12,
-  employee: MOCK_STORE_MEMBERS[1],
+  workspaceId: 101,
+  employee: MOCK_STORE_MEMBERS[0],
   workDate: '2026-09-15',
   startTime: '09:00',
   endTime: '12:00',

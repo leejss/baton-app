@@ -11,7 +11,7 @@ export default function SignupCompleteRoute() {
   const pendingSession = useSignupStore((state) => state.pendingSession);
   const status = useAuthStore((state) => state.status);
   if (focused && pendingSession === null && status !== 'signedIn') {
-    return <Redirect href={ROUTES.auth.login} />;
+    return <Redirect href={ROUTES.auth.start} />;
   }
   return (
     <>

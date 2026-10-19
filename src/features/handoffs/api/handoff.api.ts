@@ -3,7 +3,6 @@ import { parseApiId } from '@/shared/api/ids';
 import {
   handoffSchema,
   handoffPageSchema,
-  recipientRecommendationSchema,
   handoffCreateRequestSchema,
   handoffUpdateRequestSchema,
   type HandoffScopeDto,
@@ -11,35 +10,25 @@ import {
   type HandoffUpdateRequestDto,
 } from '@/features/handoffs/api/handoff.schema';
 export const fetchHandoffs = (
-  storeId: number,
+  workspaceId: number,
   scope: HandoffScopeDto,
   cursor?: string,
   signal?: AbortSignal,
 ) => {
   const query = new URLSearchParams({ scope, size: '20' });
   if (cursor) query.set('cursor', cursor);
-  return get(`/stores/${storeId}/handovers?${query}`, handoffPageSchema, {
+  return get(`/workspaces/${workspaceId}/handovers?${query}`, handoffPageSchema, {
     signal,
   });
 };
 export const fetchHandoff = (id: string | number, signal?: AbortSignal) =>
   get(`/handovers/${parseApiId(id)}`, handoffSchema, { signal });
-export const fetchRecommendation = (
-  storeId: number,
-  referenceAt?: string,
-  signal?: AbortSignal,
-) => {
-  const query = referenceAt ? `?${new URLSearchParams({ referenceAt })}` : '';
-  return get(
-    `/stores/${storeId}/handovers/recipient-recommendation${query}`,
-    recipientRecommendationSchema,
-    {
-      signal,
-    },
+export const createHandoff = (workspaceId: number, input: HandoffCreateRequestDto) =>
+  post(
+    `/workspaces/${workspaceId}/handovers`,
+    handoffCreateRequestSchema.parse(input),
+    handoffSchema,
   );
-};
-export const createHandoff = (storeId: number, input: HandoffCreateRequestDto) =>
-  post(`/stores/${storeId}/handovers`, handoffCreateRequestSchema.parse(input), handoffSchema);
 export const updateHandoff = (id: string | number, input: HandoffUpdateRequestDto) =>
   patch(`/handovers/${parseApiId(id)}`, handoffUpdateRequestSchema.parse(input), handoffSchema);
 export const removeHandoff = (id: string | number) => del(`/handovers/${parseApiId(id)}`);

@@ -3,7 +3,6 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import type { HandoffTypeDto } from '@/features/handoffs/api/handoff.schema';
 import { HandoffFooterActions } from '@/features/handoffs/components/HandoffFooterActions';
 import { HandoffTypeOption } from '@/features/handoffs/components/HandoffTypeOption';
-import { HandoffPresetRecipientNext } from '@/features/handoffs/components/HandoffPresetRecipientNext';
 import {
   hasHandoffDraftChanges,
   useHandoffDraftStore,
@@ -14,8 +13,6 @@ import { Text } from '@/shared/ui';
 import { SCREEN_PADDING_X, useTheme } from '@/theme';
 
 type HandoffTypeSelectScreenProps = {
-  initialRecipientId?: string;
-  workDate?: string;
   onExit: () => void;
   onNext: () => void;
 };
@@ -35,12 +32,7 @@ const OPTIONS: readonly {
 ];
 const DEFAULT_HANDOFF_TYPE: HandoffTypeDto = 'WORK_TASK';
 
-export function HandoffTypeSelectScreen({
-  onExit,
-  onNext,
-  initialRecipientId,
-  workDate,
-}: HandoffTypeSelectScreenProps) {
+export function HandoffTypeSelectScreen({ onExit, onNext }: HandoffTypeSelectScreenProps) {
   const theme = useTheme();
   const type = useHandoffDraftStore((state) => state.type);
   const hasChanges = useHandoffDraftStore(hasHandoffDraftChanges);
@@ -83,15 +75,7 @@ export function HandoffTypeSelectScreen({
           ))}
         </View>
       </ScrollView>
-      {initialRecipientId ? (
-        <HandoffPresetRecipientNext
-          recipientId={initialRecipientId}
-          workDate={workDate}
-          onNext={handleNext}
-        />
-      ) : (
-        <HandoffFooterActions primaryLabel="다음" onPrimaryPress={handleNext} />
-      )}
+      <HandoffFooterActions primaryLabel="다음" onPrimaryPress={handleNext} />
     </View>
   );
 }

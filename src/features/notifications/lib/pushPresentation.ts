@@ -16,7 +16,6 @@ const titles: Record<PushPayload['type'], string> = {
   UPDATE_ANNOUNCEMENT: '새로운 서비스 공지가 있어요',
   HANDOVER_RECEIVED: '새로운 인수인계가 도착했어요',
   HANDOVER_CONFIRMED: '인수인계가 확인되었어요',
-  SCHEDULE_CHANGED: '근무 일정이 변경됐어요',
 };
 let presentationQueue = Promise.resolve();
 

@@ -5,7 +5,7 @@ import { throwIfAborted, withAbortTimeout } from '@/shared/api/abort';
 import { post, del } from '@/shared/api/client';
 import { AppError, isAppError, normalizeError, normalizeFetchError } from '@/shared/api/errors';
 import { readHttpResponse } from '@/shared/api/httpResponse';
-import { attachmentSchema } from '@/features/handoffs/api/handoff.schema';
+import { fileSchema } from '@/features/handoffs/api/handoff.schema';
 import type { LocalAttachment } from '@/features/handoffs/types';
 
 const extension = {
@@ -14,9 +14,17 @@ const extension = {
   'image/webp': 'webp',
 } as const;
 export const deleteAttachment = (id: number) => del(`/files/${id}`);
-export async function completeAttachment(id: number, signal?: AbortSignal) {
-  const attachment = await post(`/files/${id}/complete`, undefined, attachmentSchema, { signal });
-  if (attachment.id !== id || !['VERIFIED', 'LINKED'].includes(attachment.status))
+export async function completeAttachment(
+  id: number,
+  signal?: AbortSignal,
+  purpose: 'HANDOVER' | 'PROFILE' = 'HANDOVER',
+) {
+  const attachment = await post(`/files/${id}/complete`, undefined, fileSchema, { signal });
+  if (
+    attachment.id !== id ||
+    attachment.purpose !== purpose ||
+    !['VERIFIED', 'LINKED'].includes(attachment.status)
+  )
     throw new AppError('schema', '사진 업로드 완료 상태를 확인하지 못했습니다.');
   return attachment;
 }
@@ -26,13 +34,14 @@ export async function uploadAttachment(
   file: LocalAttachment,
   onProgress: (patch: Partial<LocalAttachment>) => void,
   signal: AbortSignal,
+  purpose: 'HANDOVER' | 'PROFILE' = 'HANDOVER',
 ): Promise<void> {
   try {
     if (file.isLinked || file.uploadStatus === 'complete') return;
     onProgress({ uploadStatus: 'uploading' });
     if (file.attachmentId !== undefined) {
       try {
-        await completeAttachment(file.attachmentId, signal);
+        await completeAttachment(file.attachmentId, signal, purpose);
         onProgress({ uploadStatus: 'complete' });
         return;
       } catch (error) {
@@ -44,7 +53,7 @@ export async function uploadAttachment(
     const ticket = await post(
       '/files/presign',
       {
-        purpose: 'HANDOVER',
+        purpose,
         contentType: file.mimeType,
         sizeBytes: file.sizeBytes,
         extension: extension[file.mimeType],
@@ -98,7 +107,7 @@ export async function uploadAttachment(
     throwIfAborted(signal);
     // PUT 응답이 유실되어도 실제 업로드가 됐을 수 있다. complete는 멱등이다.
     try {
-      await completeAttachment(ticket.attachmentId, signal);
+      await completeAttachment(ticket.attachmentId, signal, purpose);
     } catch (error) {
       throw putError ?? error;
     }

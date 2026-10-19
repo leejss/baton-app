@@ -14,9 +14,9 @@ const handoffRecipientSchema = z.object({
   participationEndedAt: z.iso.datetime({ offset: true }).nullish(),
 });
 
-export const attachmentSchema = z.object({
+export const fileSchema = z.object({
   id: z.number().int().positive(),
-  purpose: z.literal('HANDOVER'),
+  purpose: z.enum(['HANDOVER', 'PROFILE']),
   contentType: z.enum(['image/jpeg', 'image/png', 'image/webp']),
   sizeBytes: z
     .number()
@@ -28,7 +28,10 @@ export const attachmentSchema = z.object({
   downloadUrlExpiresAt: z.iso.datetime({ offset: true }).nullish(),
 });
 
+export const attachmentSchema = fileSchema.extend({ purpose: z.literal('HANDOVER') });
+
 export const handoffListItemSchema = z.object({
+  workspaceId: z.number().int().positive(),
   id: z.number().int().positive(),
   type: handoffTypeSchema,
   title: z.string().max(20),
@@ -61,17 +64,6 @@ export const handoffUpdateRequestSchema = handoffCreateRequestSchema.omit({
   type: true,
 });
 
-export const recipientRecommendationSchema = z.object({
-  recommended: memberSchema.nullish(),
-  recommendedStartAt: z.iso.datetime({ offset: true }).nullish(),
-  candidates: z.array(
-    memberSchema.extend({
-      startAt: z.iso.datetime({ offset: true }).nullish(),
-      endAt: z.iso.datetime({ offset: true }).nullish(),
-    }),
-  ),
-});
-
 export type HandoffTypeDto = z.infer<typeof handoffTypeSchema>;
 export type HandoffStatusDto = z.infer<typeof handoffStatusSchema>;
 export type HandoffScopeDto = z.infer<typeof handoffScopeSchema>;
@@ -82,4 +74,3 @@ export type HandoffPageDto = z.infer<typeof handoffPageSchema>;
 export type HandoffDto = z.infer<typeof handoffSchema>;
 export type HandoffCreateRequestDto = z.infer<typeof handoffCreateRequestSchema>;
 export type HandoffUpdateRequestDto = z.infer<typeof handoffUpdateRequestSchema>;
-export type RecipientRecommendationDto = z.infer<typeof recipientRecommendationSchema>;

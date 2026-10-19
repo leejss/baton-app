@@ -2,14 +2,13 @@ import { Image } from 'expo-image';
 import { ActivityIndicator, Pressable, StyleSheet } from 'react-native';
 
 import { buttonMetrics, Text } from '@/shared/ui';
-import { EmailLine } from '@/shared/ui/icons';
 import { socialBrand, useTheme } from '@/theme';
 
 /**
  * 시작 화면의 로그인 수단 버튼. 시안 `Action Button_square`를 그대로 따르되,
  * 카카오는 카카오의 고정 브랜드 색을 쓰므로 테마를 타지 않는다.
  */
-type StartButtonProvider = 'kakao' | 'apple' | 'email';
+type StartButtonProvider = 'kakao' | 'apple';
 
 export type StartButtonProps = {
   provider: StartButtonProvider;
@@ -42,20 +41,8 @@ export function StartButton({
   const containerStyle =
     provider === 'kakao'
       ? { backgroundColor: socialBrand.kakaoYellow }
-      : provider === 'apple'
-        ? { backgroundColor: colors.surfaceNeutralStrong }
-        : {
-            backgroundColor: colors.backgroundDefault,
-            borderWidth: 1,
-            borderColor: colors.borderStrong,
-          };
-
-  const labelColor =
-    provider === 'kakao'
-      ? 'staticBlack'
-      : provider === 'apple'
-        ? 'staticWhite'
-        : 'foregroundDefault';
+      : { backgroundColor: colors.surfaceNeutralStrong };
+  const labelColor = provider === 'kakao' ? 'staticBlack' : 'staticWhite';
 
   return (
     <Pressable
@@ -75,17 +62,13 @@ export function StartButton({
         <ActivityIndicator color={colors[labelColor]} />
       ) : (
         <>
-          {provider === 'email' ? (
-            <EmailLine size={buttonMetrics.iconSize} color={labelColor} />
-          ) : (
-            <Image
-              style={styles.icon}
-              source={BRAND_ICONS[provider]}
-              contentFit="contain"
-              accessibilityElementsHidden
-              importantForAccessibility="no"
-            />
-          )}
+          <Image
+            style={styles.icon}
+            source={BRAND_ICONS[provider]}
+            contentFit="contain"
+            accessibilityElementsHidden
+            importantForAccessibility="no"
+          />
           <Text variant="body" weight="semibold" color={labelColor}>
             {label}
           </Text>

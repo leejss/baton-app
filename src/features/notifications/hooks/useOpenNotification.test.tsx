@@ -20,7 +20,7 @@ it('읽음 처리 실패가 상세 이동을 막지 않고 배지 캐시를 유�
   const client = new QueryClient({
     defaultOptions: { mutations: { retry: false, gcTime: Infinity } },
   });
-  const scope = { storeId: 101, userId: 1 };
+  const scope = { workspaceId: 101, userId: 1 };
   const key = notificationQueries.list(scope).queryKey;
   client.setQueryData(key, { items: [], unreadCount: 2, badgeText: '2' });
   jest.spyOn(api, 'markNotificationRead').mockRejectedValue(new Error('오프라인'));
@@ -33,6 +33,7 @@ it('읽음 처리 실패가 상세 이동을 막지 않고 배지 캐시를 유�
   await act(() =>
     result.current.open({
       id: '1',
+      workspaceId: 101,
       kind: 'handoffReceived',
       heading: '알림',
       message: '',
@@ -56,7 +57,7 @@ it('원본이 사라진 알림의 오류 안내를 2초 후 자동으로 닫는�
   const client = new QueryClient({
     defaultOptions: { mutations: { retry: false, gcTime: Infinity } },
   });
-  const scope = { storeId: 101, userId: 1 };
+  const scope = { workspaceId: 101, userId: 1 };
   jest.spyOn(api, 'markNotificationRead').mockRejectedValue(new Error('알림을 찾을 수 없어요.'));
   const wrapper = ({ children }: { children: ReactNode }) => (
     <QueryClientProvider client={client}>{children}</QueryClientProvider>
@@ -66,9 +67,10 @@ it('원본이 사라진 알림의 오류 안내를 2초 후 자동으로 닫는�
   await act(() =>
     result.current.open({
       id: 'deleted-notification',
-      kind: 'schedule',
-      heading: '근무 일정',
-      message: '삭제된 근무 일정',
+      workspaceId: 101,
+      kind: 'announcement',
+      heading: '서비스 공지',
+      message: '삭제된 공지',
       createdAt: 0,
       expiresAt: Infinity,
       timeLabel: '',

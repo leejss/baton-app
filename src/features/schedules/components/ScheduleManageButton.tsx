@@ -1,4 +1,3 @@
-import { useMainContext } from '@/features/stores/hooks/useMainContext';
 import { type Href, useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
@@ -9,12 +8,10 @@ import { IllustIcon, Pressable, Text } from '@/shared/ui';
 import { radius, spacing, useTheme } from '@/theme';
 
 export function ScheduleManageButton({ date }: { date?: string }) {
-  const query = useMainContext();
   const [visible, setVisible] = useState(false);
   const pendingNavigation = useRef<(() => void) | null>(null);
   const router = useRouter();
   const { colors } = useTheme();
-  if (!query.canManage) return null;
   const navigate = (href: Href) => {
     pendingNavigation.current = () => router.push(href);
     setVisible(false);

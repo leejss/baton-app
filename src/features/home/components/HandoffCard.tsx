@@ -22,17 +22,17 @@ type ConfirmationFeedback = {
 type HandoffCardProps = {
   date: string;
   onDetailsPress: () => void;
-  storeId: number;
+  workspaceId: number;
 };
 
-export function HandoffCard({ date, onDetailsPress, storeId }: HandoffCardProps) {
+export function HandoffCard({ date, onDetailsPress, workspaceId }: HandoffCardProps) {
   const theme = useTheme();
   const queryClient = useQueryClient();
   const [feedback, setFeedback] = useState<ConfirmationFeedback>();
-  const summaryQuery = useQuery(homeQueries.summary(storeId, date));
+  const summaryQuery = useQuery(homeQueries.summary(workspaceId, date));
   const model =
     summaryQuery.data === undefined ? undefined : mapHomeHandoffSectionModel(summaryQuery.data);
-  const confirmMutation = useMutation(handoffMutations(queryClient, storeId).confirm());
+  const confirmMutation = useMutation(handoffMutations(queryClient, workspaceId).confirm());
 
   const handleConfirm = (handoverId: number) => {
     if (confirmMutation.isPending) return;

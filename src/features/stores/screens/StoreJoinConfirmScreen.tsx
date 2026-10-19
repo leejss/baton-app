@@ -1,292 +1,80 @@
-import { Image } from 'expo-image';
-import { useEffect, useRef, useState } from 'react';
-import { Alert, ScrollView, StyleSheet, View } from 'react-native';
-
+import { useRef } from 'react';
+import { Alert, StyleSheet, View } from 'react-native';
+import { BottomActionBar, Box, Button, ScreenHeader, Text } from '@/shared/ui';
 import { normalizeError } from '@/shared/api/errors';
-import {
-  BottomActionBar,
-  Box,
-  Button,
-  Modal,
-  ScreenHeader,
-  StepProgressBar,
-  Text,
-} from '@/shared/ui';
-import { AlertCircleLine } from '@/shared/ui/icons';
+import { useJoinStore, isInvitationInvalid } from '@/features/stores/api/store.mutations';
+import type { StoreInvitationPreview } from '@/features/stores/api/store.schema';
 import { SCREEN_PADDING_X, spacing } from '@/theme';
-
-import {
-  isAlreadyJoined,
-  isInvitationInvalid,
-  useJoinStore,
-} from '@/features/stores/api/store.mutations';
-import { StoreSummaryCard } from '@/features/stores/components/StoreSummaryCard';
-import { useStoreMembershipRecovery } from '@/features/stores/hooks/useStoreMembershipRecovery';
-import { logger } from '@/shared/lib/logger';
-import { JOIN_STEPS, JOIN_STEP_CONFIRM } from '@/features/stores/lib/joinSteps';
-
-/**
- * 초대 매장 확인(STORE-03·04). Figma "02 초대 매장 확인" — `943:111783`.
- *
- * 앞 화면의 `POST /stores/join/preview` 결과를 보여주고, "다음"에서
- * `POST /stores/join`으로 참여를 확정한다.
- *
- * ⚠️ 미리보기와 참여는 **분리된 요청**이라 이 화면에 머무는 사이 코드가 만료·폐기될 수
- * 있다. 참여 실패는 예외가 아니라 정상 시나리오로 다뤄 코드 입력 화면으로 되돌린다.
- */
-export type StoreJoinConfirmScreenProps = {
-  storeName: string;
-  address: string;
-  /** 모르면 생략한다. 카드에서 행이 빠진다. */
-  managerName?: string;
-  storeContact: string;
-  /** 참여 확정에 쓸 초대 코드. 미리보기 응답이 그대로 들고 있다. */
-  invitationCode: string;
-  onBack: () => void;
-  /** 참여 성공. 라우트가 완료 화면으로 보낸다. */
-  onJoined: () => void;
-  /** 코드가 더 이상 유효하지 않아 처음부터 다시 해야 할 때. */
-  onInvitationExpired: () => void;
-  /**
-   * 이미 다른 매장에 소속돼 참여할 수 없을 때. 안내를 확인하면 라우트가
-   * **기존 소속 매장 홈**으로 보낸다. 코드 입력 화면과 같은 처리다.
-   */
-  onAlreadyJoined: () => void;
-};
-
-const SPEC = {
-  /** 진행 표시 ↔ 타이틀. */
-  titleTop: 26,
-  /** 타이틀 ↔ 일러스트. */
-  illustrationTop: 52,
-  /** 일러스트 크기(160×154). 에셋은 같은 프레임의 @2x 내보내기다. */
-  illustrationWidth: 160,
-  illustrationHeight: 154,
-  /** 일러스트 ↔ 매장 카드. */
-  cardTop: 28,
-  /** 제목 ↔ 설명. */
-  headlineGap: 12,
-  /** 안내 아이콘 ↔ 라벨. */
-  noticeGap: 6,
-  noticeIconSize: 18,
-} as const;
-
-/** 시안 "02 초대 매장 확인"의 일러스트. 장식이라 스크린리더에서 숨긴다. */
-function Illustration() {
-  return (
-    <Image
-      source={require('@/assets/images/stores/store-invitation.png')}
-      style={styles.illustration}
-      contentFit="contain"
-      accessibilityElementsHidden
-      importantForAccessibility="no"
-    />
-  );
-}
-
-/** 카드 하단에 붙는 "확인해주세요" 안내(`943:111819`). */
-function ConfirmNotice() {
-  return (
-    <View style={styles.notice}>
-      <View style={styles.noticeLabel}>
-        <AlertCircleLine size={SPEC.noticeIconSize} color="foregroundWarningDefault" />
-        <Text variant="bodySmall" weight="semibold" color="foregroundWarningDefault">
-          확인해주세요
-        </Text>
-      </View>
-      <Text variant="caption" color="foregroundDefault">
-        매장 정보가 맞아야 정상적으로 인수인계를 확인할 수 있어요
-      </Text>
-    </View>
-  );
-}
-
 export function StoreJoinConfirmScreen({
-  storeName,
-  address,
-  managerName,
-  storeContact,
-  invitationCode,
+  preview,
+  token,
   onBack,
   onJoined,
   onInvitationExpired,
-  onAlreadyJoined,
-}: StoreJoinConfirmScreenProps) {
+}: {
+  preview: StoreInvitationPreview;
+  token: string;
+  onBack: () => void;
+  onJoined: () => void;
+  onInvitationExpired: () => void;
+}) {
   const join = useJoinStore();
-  const recoverMembership = useStoreMembershipRecovery();
   const submitting = useRef(false);
-  const needsMembershipCheck = useRef(false);
-  const mounted = useRef(true);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  useEffect(() => {
-    mounted.current = true;
-    return () => {
-      mounted.current = false;
-    };
-  }, []);
-  /**
-   * "이미 소속된 매장" 안내. 시안은 이 팝업을 코드 입력 화면(`943:111954`)에 그려뒀지만,
-   * 계약상 소속 충돌은 **미리보기가 아니라 참여 확정**에서만 내려온다
-   * (`/stores/join/preview`에는 409가 없다). 그래서 같은 팝업을 이 화면에도 둔다.
-   */
-  const [isAlreadyJoinedVisible, setIsAlreadyJoinedVisible] = useState(false);
-
-  const recover = async (): Promise<boolean> => {
-    try {
-      const recovered = await recoverMembership();
-      needsMembershipCheck.current = false;
-      if (recovered) {
-        if (mounted.current) setIsAlreadyJoinedVisible(true);
-        return true;
-      }
-      if (mounted.current)
-        Alert.alert('매장 참여를 확인하지 못했어요', '소속된 매장이 없어요. 다시 시도해주세요.');
-      return false;
-    } catch {
-      // 조회 실패는 공통 로거가 보고한다.
-    }
-    if (mounted.current)
-      Alert.alert('소속을 확인하지 못했어요', '현재 소속을 다시 확인해주세요.', [
-        { text: '닫기', style: 'cancel' },
-        {
-          text: '다시 확인',
-          onPress: () => {
-            needsMembershipCheck.current = true;
-            void confirm();
-          },
-        },
-      ]);
-    return false;
-  };
-
-  const confirm = async (): Promise<void> => {
-    if (submitting.current) return;
-    submitting.current = true;
-    setIsSubmitting(true);
-    let completed = false;
-    try {
-      if (needsMembershipCheck.current) {
-        completed = await recover();
-        return;
-      }
-      await join.mutateAsync({ invitationCode });
-      if (!mounted.current) return;
-      onJoined();
-      logger.info('매장 참여 완료 화면 이동');
-      completed = true;
-    } catch (error) {
-      if (!mounted.current) return;
-      const failure = normalizeError(error);
-      if (isInvitationInvalid(error)) {
-        Alert.alert('초대코드를 사용할 수 없어요', '최신 코드를 확인해주세요.', [
-          { text: '확인', onPress: onInvitationExpired },
-        ]);
-      } else if (
-        isAlreadyJoined(error) ||
-        failure.code === 'network' ||
-        failure.code === 'timeout'
-      ) {
-        needsMembershipCheck.current = true;
-        completed = await recover();
-      } else Alert.alert('매장에 참여하지 못했어요', failure.message);
-    } finally {
-      if (!completed) {
-        submitting.current = false;
-        if (mounted.current) setIsSubmitting(false);
-      }
-    }
-  };
-
   return (
     <Box background="backgroundDefault" style={styles.root}>
       <ScreenHeader
         onBack={() => {
-          if (!submitting.current) onBack();
+          if (!join.isPending) onBack();
         }}
       />
-
-      <View style={styles.progress}>
-        <StepProgressBar total={JOIN_STEPS.length} current={JOIN_STEP_CONFIRM} />
+      <View style={styles.content}>
+        <Text variant="display" weight="bold">
+          초대받은 워크스페이스를 확인해주세요
+        </Text>
+        <Text>{preview.workspace.name}</Text>
+        <Text>
+          {preview.alreadyJoined
+            ? '이미 참여 중인 워크스페이스예요. 이 공간으로 전환할 수 있어요.'
+            : '참여한 다른 워크스페이스도 계속 사용할 수 있어요.'}
+        </Text>
       </View>
-
-      <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
-        <View style={styles.headline}>
-          <Text variant="display" weight="bold">
-            초대 받은 매장을 확인해주세요
-          </Text>
-          <Text variant="body" weight="medium" color="foregroundDefault">
-            참여하기 전에 매장 정보를 확인해주세요.
-          </Text>
-        </View>
-
-        <Illustration />
-
-        <View style={styles.card}>
-          <StoreSummaryCard
-            storeName={storeName}
-            address={address}
-            managerName={managerName}
-            storeContact={storeContact}
-            footer={<ConfirmNotice />}
-          />
-        </View>
-      </ScrollView>
-
       <BottomActionBar>
         <Button
-          label="다음"
-          color="blue"
-          isLoading={isSubmitting}
+          label={preview.alreadyJoined ? '이 공간으로 이동' : '참여하기'}
+          isLoading={join.isPending}
           onPress={() => {
-            void confirm();
+            if (submitting.current || join.isPending) return;
+            submitting.current = true;
+            join.mutate(
+              { token },
+              {
+                onSuccess: onJoined,
+                onError: (error) => {
+                  submitting.current = false;
+                  Alert.alert(
+                    '참여하지 못했어요',
+                    isInvitationInvalid(error)
+                      ? '초대 링크가 만료되거나 교체되었어요.'
+                      : normalizeError(error).message,
+                    isInvitationInvalid(error)
+                      ? [{ text: '확인', onPress: onInvitationExpired }]
+                      : undefined,
+                  );
+                },
+              },
+            );
           }}
         />
       </BottomActionBar>
-
-      <Modal
-        isVisible={isAlreadyJoinedVisible}
-        variant="text"
-        title="이미 소속된 매장이 있어요"
-        description={'현재 다른 매장에 소속되어 있어\n새 매장에 참여할 수 없어요.'}
-        confirmLabel="확인"
-        onConfirm={() => {
-          setIsAlreadyJoinedVisible(false);
-          onAlreadyJoined();
-        }}
-      />
     </Box>
   );
 }
-
 const styles = StyleSheet.create({
   root: { flex: 1 },
-  progress: {
-    paddingHorizontal: SCREEN_PADDING_X,
-  },
-  scroll: { flex: 1 },
   content: {
+    flex: 1,
     paddingHorizontal: SCREEN_PADDING_X,
-    paddingTop: SPEC.titleTop,
-    paddingBottom: spacing.lg,
-  },
-  headline: {
-    gap: SPEC.headlineGap,
-  },
-  illustration: {
-    width: SPEC.illustrationWidth,
-    height: SPEC.illustrationHeight,
-    marginTop: SPEC.illustrationTop,
-    alignSelf: 'center',
-  },
-  card: {
-    marginTop: SPEC.cardTop,
-  },
-  notice: {
-    gap: SPEC.noticeGap,
-  },
-  noticeLabel: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: SPEC.noticeGap,
+    paddingTop: spacing.lg,
+    gap: spacing.lg,
   },
 });

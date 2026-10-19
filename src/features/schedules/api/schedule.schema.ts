@@ -10,6 +10,7 @@ const endTime = z.string().regex(/^(([01]\d|2[0-3]):[0-5]\d|24:00)$/);
 export const scheduleMemberSchema = memberSchema;
 export const scheduleSchema = z.object({
   id,
+  workspaceId: id,
   employee: scheduleMemberSchema,
   workDate: date,
   startTime,
@@ -28,39 +29,7 @@ export const dailySchedulePageSchema = z.object({
   nextCursor: z.string().nullish(),
   hasNext: z.boolean(),
 });
-export const scheduleBatchSchema = z.object({
-  requestedCount: z.number().int().positive(),
-  createdCount: z.number().int().nonnegative(),
-  duplicateCount: z.number().int().nonnegative(),
-  failedCount: z.number().int().nonnegative(),
-  results: z.array(
-    z.object({
-      workDate: date,
-      status: z.enum(['CREATED', 'DUPLICATE', 'FAILED']),
-      schedule: scheduleSchema.nullish(),
-      errorCode: z.string().nullish(),
-    }),
-  ),
-});
-export const duplicateCountsSchema = z.object({
-  requestedCount: z.number().int(),
-  duplicateCount: z.number().int(),
-  registerableCount: z.number().int(),
-});
 export type ScheduleDto = z.infer<typeof scheduleSchema>;
 export type ScheduleMemberDto = z.infer<typeof scheduleMemberSchema>;
-export type ScheduleBatchDto = z.infer<typeof scheduleBatchSchema>;
-export type ScheduleCreateRequest = {
-  employeeId: number;
-  startDate: string;
-  endDate: string;
-  startTime: string;
-  endTime: string;
-  acceptNonDuplicates: boolean;
-};
-export type ScheduleUpdateRequest = {
-  employeeId: number;
-  workDate: string;
-  startTime: string;
-  endTime: string;
-};
+export type ScheduleCreateRequest = { workDate: string; startTime: string; endTime: string };
+export type ScheduleUpdateRequest = ScheduleCreateRequest;

@@ -32,7 +32,7 @@ export function throwIfAborted(signal: AbortSignal): void {
   throw getSignalReason(signal) ?? createAbortError();
 }
 
-function combineSignals(signals: readonly AbortSignal[]): ManagedAbortSignal {
+export function combineSignals(signals: readonly AbortSignal[]): ManagedAbortSignal {
   const controller = new AbortController();
   const removeListeners: (() => void)[] = [];
   let cleanedUp = false;

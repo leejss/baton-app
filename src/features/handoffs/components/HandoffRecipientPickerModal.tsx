@@ -1,10 +1,11 @@
+import { useState } from 'react';
 import { FlashList, type ListRenderItem } from '@shopify/flash-list';
 import { Modal, StyleSheet, View } from 'react-native';
 
 import { HandoffFooterActions } from '@/features/handoffs/components/HandoffFooterActions';
 import { HandoffRecipientRow } from '@/features/handoffs/components/HandoffRecipientRow';
 import type { RecipientModel } from '@/features/handoffs/types';
-import { EmptyState } from '@/shared/ui';
+import { EmptyState, TextInput } from '@/shared/ui';
 import { ScreenHeader } from '@/shared/ui/ScreenHeader';
 import { useTheme } from '@/theme';
 
@@ -26,6 +27,12 @@ export function HandoffRecipientPickerModal({
   onSelect,
 }: HandoffRecipientPickerModalProps) {
   const theme = useTheme();
+  const [search, setSearch] = useState('');
+  const filtered = recipients.filter(({ member }) =>
+    `${member.displayName} ${member.email ?? ''}`
+      .toLowerCase()
+      .includes(search.trim().toLowerCase()),
+  );
   const renderItem: ListRenderItem<RecipientModel> = ({ item }) => (
     <HandoffRecipientRow
       item={item}
@@ -44,18 +51,25 @@ export function HandoffRecipientPickerModal({
         style={[styles.root, { backgroundColor: theme.colors.backgroundDefault }]}
       >
         <ScreenHeader title="받는 사람 선택" onBack={onClose} />
+        <TextInput
+          accessibilityLabel="담당자 이름 또는 이메일 검색"
+          placeholder="이름, 이메일로 검색해주세요."
+          value={search}
+          onChangeText={setSearch}
+          style={{ marginHorizontal: 18, marginVertical: 12 }}
+        />
         <FlashList
-          data={recipients}
+          data={filtered}
           contentInsetAdjustmentBehavior="automatic"
           ItemSeparatorComponent={separator}
           keyExtractor={keyExtractor}
-          ListEmptyComponent={<EmptyState title="선택할 수 있는 직원이 없어요" />}
+          ListEmptyComponent={<EmptyState title="선택할 수 있는 멤버가 없어요" />}
           renderItem={renderItem}
           style={styles.list}
         />
         <HandoffFooterActions
           primaryLabel="확인"
-          primaryDisabled={selectedId === null}
+          primaryDisabled={!recipients.some((item) => item.member.userId === selectedId)}
           onPrimaryPress={onConfirm}
         />
       </View>

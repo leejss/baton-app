@@ -38,6 +38,7 @@ export function useSocialSignIn({ onSignupRequired }: UseSocialSignInParams) {
         if (!isCurrent()) return;
         if (outcome.status === 'signedIn') {
           await useAuthStore.getState().signIn(outcome.session, signal);
+          useSignupStore.getState().clear();
           return;
         }
         useSignupStore.getState().startSocialSignup({

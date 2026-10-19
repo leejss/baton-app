@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Alert } from 'react-native';
 
 import { pickHandoffImages } from '@/features/handoffs/lib/handoffImages';
@@ -15,20 +15,29 @@ export function useHandoffImagePicker({
   onSelected,
 }: UseHandoffImagePickerOptions) {
   const introductionShown = useRef(false);
+  const mounted = useRef(true);
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
   const [isPickingImages, setIsPickingImages] = useState(false);
 
   const selectImages = async () => {
+    if (!mounted.current) return;
     setIsPickingImages(true);
     try {
       const selected = await pickHandoffImages(10 - attachmentCount);
-      onSelected(selected);
+      if (mounted.current) onSelected(selected);
     } catch (error) {
-      Alert.alert(
-        '사진을 추가하지 못했어요',
-        error instanceof Error ? error.message : '다른 사진으로 다시 시도해 주세요.',
-      );
+      if (mounted.current)
+        Alert.alert(
+          '사진을 추가하지 못했어요',
+          error instanceof Error ? error.message : '다른 사진으로 다시 시도해 주세요.',
+        );
     } finally {
-      setIsPickingImages(false);
+      if (mounted.current) setIsPickingImages(false);
     }
   };
 

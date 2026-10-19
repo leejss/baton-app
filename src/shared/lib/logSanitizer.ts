@@ -10,6 +10,7 @@ export function redactLogText(message: string): string {
   return message
     .replace(/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi, '[REDACTED_EMAIL]')
     .replace(/\bBearer\s+\S+/gi, 'Bearer [REDACTED]')
+    .replace(/([?&]token=)[^&#\s\"']+/gi, '$1[REDACTED]')
     .replace(
       /\b(api[_-]?key|access[_-]?token|refresh[_-]?token|password|secret)["']?\s*[:=]\s*["']?[^\s,"'}]+/gi,
       '$1=[REDACTED]',

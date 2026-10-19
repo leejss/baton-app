@@ -1,9 +1,5 @@
 import type { ProfileImage } from '@/features/auth/api/auth.schema';
 
-export type HomeRole = 'MANAGER' | 'EMPLOYEE';
-
-export type HomeProfileImageKey = ProfileImage['key'];
-
 export type HomeHandoffStatus = 'UNCONFIRMED' | 'CONFIRMED' | 'TERMINATED';
 
 export type HomeHandoffItem = {
@@ -21,11 +17,10 @@ export type HomeWeekDay = {
 };
 
 export type HomeShiftItem = {
-  canCreateHandoff: boolean;
   endTime: string;
   id: number;
   name: string;
-  profileImageKey: HomeProfileImageKey;
+  profileImage: ProfileImage;
   startTime: string;
   userId: number;
 };

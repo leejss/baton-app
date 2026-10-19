@@ -17,28 +17,28 @@ import type {
   HandoffUpdateRequestDto,
 } from '@/features/handoffs/api/handoff.schema';
 
-export async function invalidateHandoffViews(client: QueryClient, storeId: number) {
+export async function invalidateHandoffViews(client: QueryClient, workspaceId: number) {
   await Promise.all([
-    client.invalidateQueries({ queryKey: handoffQueries.store(storeId) }),
-    client.invalidateQueries({ queryKey: homeQueries.store(storeId) }),
-    client.invalidateQueries({ queryKey: notificationQueries.store(storeId) }),
+    client.invalidateQueries({ queryKey: handoffQueries.store(workspaceId) }),
+    client.invalidateQueries({ queryKey: homeQueries.store(workspaceId) }),
+    client.invalidateQueries({ queryKey: notificationQueries.store(workspaceId) }),
   ]);
 }
-export function handoffMutations(client: QueryClient, storeId: number) {
+export function handoffMutations(client: QueryClient, workspaceId: number) {
   const onError = async (error: unknown) => {
     if (isAppError(error) && [400, 403, 404, 409].includes(error.status ?? 0)) {
       await Promise.all([
-        invalidateHandoffViews(client, storeId),
+        invalidateHandoffViews(client, workspaceId),
         client.invalidateQueries({ queryKey: storeQueries.all() }),
       ]);
     }
   };
-  const onSuccess = () => invalidateHandoffViews(client, storeId);
+  const onSuccess = () => invalidateHandoffViews(client, workspaceId);
   return {
     create: () =>
       mutationOptions({
         mutationKey: ['handoffs', 'create'],
-        mutationFn: (input: HandoffCreateRequestDto) => createHandoff(storeId, input),
+        mutationFn: (input: HandoffCreateRequestDto) => createHandoff(workspaceId, input),
         onSuccess: () => {
           logger.info('인수인계 등록 완료');
           return onSuccess();
@@ -68,10 +68,10 @@ export function handoffMutations(client: QueryClient, storeId: number) {
         onSuccess: async (_data, id) => {
           logger.info('인수인계 삭제 완료');
           client.removeQueries({
-            queryKey: handoffQueries.detail(storeId, id).queryKey,
+            queryKey: handoffQueries.detail(workspaceId, id).queryKey,
             exact: true,
           });
-          await invalidateHandoffViews(client, storeId);
+          await invalidateHandoffViews(client, workspaceId);
         },
         onError: (error) => {
           logger.error('인수인계 삭제 실패', error);

@@ -2,13 +2,12 @@ import { afterEach, beforeEach, expect, it, jest } from '@jest/globals';
 import {
   fetchInvitationCode,
   issueInvitationCode,
-  searchMembers,
   transferManager,
+  updateMemberRole,
 } from '@/features/stores/api/store.api';
-import { updateDisplayName, withdraw } from '@/features/auth/api/account.api';
 import { leaveCurrentStore } from '@/features/settings/api/settings.mutations';
 import { registerAuthBridge } from '@/shared/api/client';
-
+import { TEST_CONTEXT } from '@/test/MainTestProvider';
 jest.mock('@/shared/config/api', () => ({
   API_URL: 'https://api.example.com/api/v1',
   assertApiConfigured: jest.fn(),
@@ -18,31 +17,9 @@ jest.mock('@/shared/lib/logger', () => ({
   logger: { info: jest.fn(), warn: jest.fn(), debug: jest.fn(), error: jest.fn() },
 }));
 jest.mock('expo-router', () => ({ router: { replace: jest.fn() } }));
-
-const profile = {
-  id: 1,
-  displayName: '관리자',
-  email: 'manager@example.com',
-  profileImage: { source: 'STATIC', key: 'DEFAULT_MANAGER' },
-};
-const store = {
-  id: 10,
-  storeName: '바톤',
-  branchName: '강남점',
-  address: '서울',
-  detailAddress: null,
-  storeContact: '02-1234-5678',
-  status: 'ACTIVE',
-  createdAt: '2026-09-01T00:00:00Z',
-};
-const member = {
-  userId: 2,
-  displayName: '직원',
-  email: 'worker@example.com',
-  profileImage: { source: 'STATIC', key: 'DEFAULT_EMPLOYEE' },
-  role: 'EMPLOYEE',
-  status: 'ACTIVE',
-};
+jest.mock('@/shared/lib/mmkvStorage', () => ({
+  storage: { getNumber: jest.fn(), set: jest.fn(), remove: jest.fn() },
+}));
 const ok = (data: unknown) =>
   new Response(
     JSON.stringify({ meta: { result: 'SUCCESS', errorCode: null, message: null }, data }),
@@ -56,122 +33,47 @@ beforeEach(() =>
     onSessionExpired: async () => {},
   }),
 );
-afterEach(() => {
-  jest.restoreAllMocks();
-});
-
-it('초대 코드가 없는 200/null 응답을 빈 상태로 읽는다', async () => {
+afterEach(() => jest.restoreAllMocks());
+it('초대 링크가 없으면 200/null을 빈 상태로 읽는다', async () => {
   jest.spyOn(globalThis, 'fetch').mockResolvedValue(ok(null));
-  expect(await fetchInvitationCode(10)).toBeNull();
+  expect(await fetchInvitationCode(101)).toBeNull();
 });
-it('재발급은 replaceCurrent를 보내고 앞자리 0인 코드를 보존한다', async () => {
-  const fetch = jest
-    .spyOn(globalThis, 'fetch')
-    .mockResolvedValue(ok({ code: '0123', expiresAt: '2026-09-13T00:00:00Z', status: 'ACTIVE' }));
-  expect((await issueInvitationCode(10)).code).toBe('0123');
+it('새 링크 발급은 이전 링크 교체 조건을 보낸다', async () => {
+  const fetch = jest.spyOn(globalThis, 'fetch').mockResolvedValue(
+    ok({
+      token: 'random_token',
+      url: 'baton://workspace/join?token=random_token',
+      expiresAt: '2026-10-21T00:00:00Z',
+      status: 'ACTIVE',
+    }),
+  );
+  expect((await issueInvitationCode(101)).url).toBe('baton://workspace/join?token=random_token');
   expect(fetch).toHaveBeenCalledWith(
-    'https://api.example.com/api/v1/stores/10/invitation-code',
+    'https://api.example.com/api/v1/workspaces/101/invitation',
     expect.objectContaining({ method: 'POST', body: JSON.stringify({ replaceCurrent: true }) }),
   );
 });
-it('직원 검색어는 URL 인코딩하고 응답을 검증한다', async () => {
-  const fetch = jest.spyOn(globalThis, 'fetch').mockResolvedValue(ok([member]));
-  expect(await searchMembers(10, '이름+메일')).toHaveLength(1);
-  expect(fetch).toHaveBeenCalledWith(
-    'https://api.example.com/api/v1/stores/10/members?query=%EC%9D%B4%EB%A6%84%2B%EB%A9%94%EC%9D%BC',
-    expect.anything(),
-  );
-});
-it('이름 변경은 displayName만 보내고 계정 응답을 검증한다', async () => {
-  const fetch = jest
-    .spyOn(globalThis, 'fetch')
-    .mockResolvedValue(ok({ ...profile, displayName: '새이름' }));
-  expect((await updateDisplayName('새이름')).displayName).toBe('새이름');
-  expect(fetch).toHaveBeenCalledWith(
-    'https://api.example.com/api/v1/users/me',
-    expect.objectContaining({ method: 'PATCH', body: JSON.stringify({ displayName: '새이름' }) }),
-  );
-});
-it('회원탈퇴는 삭제 영향 동의를 요청 본문에 포함한다', async () => {
+it('권한 지정·이전은 공간별 대상 사용자로 요청한다', async () => {
   const fetch = jest
     .spyOn(globalThis, 'fetch')
     .mockResolvedValue(new Response(null, { status: 204 }));
-  await withdraw();
-  expect(fetch).toHaveBeenCalledWith(
-    'https://api.example.com/api/v1/users/me',
-    expect.objectContaining({
-      method: 'DELETE',
-      body: JSON.stringify({ impactAcknowledged: true }),
-    }),
-  );
-});
-it('권한 승계는 선택한 사용자 ID로 요청한다', async () => {
-  const fetch = jest
-    .spyOn(globalThis, 'fetch')
-    .mockResolvedValue(new Response(null, { status: 204 }));
-  await transferManager(10, 2);
-  expect(fetch).toHaveBeenCalledWith(
-    'https://api.example.com/api/v1/stores/10/manager-transfer',
-    expect.objectContaining({ method: 'POST', body: JSON.stringify({ userId: 2 }) }),
-  );
-});
-it('직원은 최신 소속 확인 후 본인의 멤버십만 해제한다', async () => {
-  const fetch = jest
-    .spyOn(globalThis, 'fetch')
-    .mockResolvedValueOnce(ok({ membership: { store, role: 'EMPLOYEE', status: 'ACTIVE' } }))
-    .mockResolvedValueOnce(new Response(null, { status: 204 }));
-  await leaveCurrentStore(10, 1);
-  expect(fetch.mock.calls.map(([url]) => url)).toEqual([
-    'https://api.example.com/api/v1/stores/me',
-    'https://api.example.com/api/v1/stores/10/members/me',
-  ]);
-});
-it('다른 직원이 생겼으면 비활성화하지 않고 승계를 요구한다', async () => {
-  const fetch = jest
-    .spyOn(globalThis, 'fetch')
-    .mockResolvedValueOnce(ok({ membership: { store, role: 'MANAGER', status: 'ACTIVE' } }))
-    .mockResolvedValueOnce(ok([member]));
-  await expect(leaveCurrentStore(10, 1)).rejects.toMatchObject({
-    errorCode: 'MANAGER_TRANSFER_REQUIRED',
-  });
-  expect(fetch).toHaveBeenCalledTimes(2);
-});
-it('유일 관리자는 최신 구성원 확인 뒤 매장을 비활성화하고 소속을 종료한다', async () => {
-  const fetch = jest
-    .spyOn(globalThis, 'fetch')
-    .mockResolvedValueOnce(ok({ membership: { store, role: 'MANAGER', status: 'ACTIVE' } }))
-    .mockResolvedValueOnce(ok([]))
-    .mockResolvedValueOnce(new Response(null, { status: 204 }))
-    .mockResolvedValueOnce(new Response(null, { status: 204 }));
-  await leaveCurrentStore(10, 1);
+  await updateMemberRole(101, 2, 'ADMIN');
+  await transferManager(101, 2);
   expect(fetch.mock.calls.map(([url, init]) => [url, init?.method])).toEqual([
-    ['https://api.example.com/api/v1/stores/me', 'GET'],
-    ['https://api.example.com/api/v1/stores/10/members', 'GET'],
-    ['https://api.example.com/api/v1/stores/10/deactivate', 'POST'],
-    ['https://api.example.com/api/v1/stores/10/members/me', 'DELETE'],
+    ['https://api.example.com/api/v1/workspaces/101/members/2', 'PATCH'],
+    ['https://api.example.com/api/v1/workspaces/101/manager-transfer', 'POST'],
   ]);
 });
-it('이미 비활성화된 매장이면 소속 종료만 다시 시도한다', async () => {
+it('나가기는 서버의 원자적 처리 한 번에 맡긴다', async () => {
   const fetch = jest
     .spyOn(globalThis, 'fetch')
     .mockResolvedValueOnce(
-      ok({
-        membership: { store: { ...store, status: 'INACTIVE' }, role: 'MANAGER', status: 'ACTIVE' },
-      }),
+      ok({ workspace: TEST_CONTEXT.membership.workspace, membership: TEST_CONTEXT.membership }),
     )
     .mockResolvedValueOnce(new Response(null, { status: 204 }));
-  await leaveCurrentStore(10, 1);
-  expect(fetch.mock.calls.map(([url]) => url)).toEqual([
-    'https://api.example.com/api/v1/stores/me',
-    'https://api.example.com/api/v1/stores/10/members/me',
+  await leaveCurrentStore(101, 1);
+  expect(fetch.mock.calls.map(([url, init]) => [url, init?.method])).toEqual([
+    ['https://api.example.com/api/v1/workspaces/101', 'GET'],
+    ['https://api.example.com/api/v1/workspaces/101/members/me', 'DELETE'],
   ]);
-});
-it('이미 다른 매장으로 바뀐 경우 기존 매장을 변경하지 않는다', async () => {
-  const fetch = jest
-    .spyOn(globalThis, 'fetch')
-    .mockResolvedValue(
-      ok({ membership: { store: { ...store, id: 20 }, role: 'EMPLOYEE', status: 'ACTIVE' } }),
-    );
-  await expect(leaveCurrentStore(10, 1)).rejects.toThrow('현재 매장 소속');
-  expect(fetch).toHaveBeenCalledTimes(1);
 });

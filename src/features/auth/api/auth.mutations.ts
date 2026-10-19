@@ -2,11 +2,7 @@ import { useMutation } from '@tanstack/react-query';
 
 import { isAppError } from '@/shared/api/errors';
 import { logger } from '@/shared/lib/logger';
-import {
-  authenticateWithApple,
-  authenticateWithKakao,
-  signInWithEmail,
-} from '@/features/auth/api/auth.api';
+import { authenticateWithApple, authenticateWithKakao } from '@/features/auth/api/auth.api';
 import { signInWithApple } from '@/features/auth/lib/appleAuth';
 import { signInWithKakao } from '@/features/auth/lib/kakaoAuth';
 import { requestNativeSignIn } from '@/features/auth/lib/nativeSignIn';
@@ -40,25 +36,6 @@ export function useAppleSignIn() {
     },
     onError: (error) => {
       if (!isCanceled(error)) logger.error('Apple 로그인 실패', error);
-    },
-  });
-}
-
-export function useEmailSignIn() {
-  return useMutation({
-    networkMode: 'always',
-    retry: false,
-    mutationFn: ({
-      email,
-      password,
-      signal,
-    }: {
-      email: string;
-      password: string;
-      signal?: AbortSignal;
-    }) => signInWithEmail(email, password, signal),
-    onError: (error) => {
-      if (!isCanceled(error)) logger.error('이메일 로그인 실패', error);
     },
   });
 }

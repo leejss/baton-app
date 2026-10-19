@@ -65,6 +65,7 @@ function schedule(
 ): ScheduleDto {
   return {
     id,
+    workspaceId: 101,
     employee,
     workDate: '2026-09-15',
     startTime: `${String(hour).padStart(2, '0')}:00`,
@@ -108,16 +109,13 @@ describe('근무표 화면의 로컬 조회 경계', () => {
       schedules: [schedule(2, 9, MOCK_STORE_MEMBERS[1]), schedule(1, 9)],
     });
     await mount(<SchedulesScreen source={source} initialDate="2026-09-15" />);
-    expect(await screen.findByLabelText('이서연님에게 인수인계 작성')).toBeOnTheScreen();
+    expect(await screen.findByText('이서연')).toBeOnTheScreen();
+    expect(screen.queryByLabelText('이서연님에게 인수인계 작성')).toBeNull();
     expect(screen.getAllByText('09:00 - 10:00')).toHaveLength(2);
     expect(screen.getByText('총 2명')).toBeOnTheScreen();
     expect(screen.queryByLabelText('전체 근무 일정 더 보기')).not.toBeOnTheScreen();
     expect(screen.getByLabelText('9월 15일 화, 근무 2건')).toBeOnTheScreen();
-    await fireEvent.press(screen.getByLabelText('이서연님에게 인수인계 작성'));
-    expect(mockPush).toHaveBeenCalledWith({
-      pathname: '/handoffs/new',
-      params: { recipientId: '2', workDate: '2026-09-15' },
-    });
+    expect(mockPush).not.toHaveBeenCalled();
   });
 
   it('일정이 정확히 세 개면 모두 표시하고 더보기를 숨긴다', async () => {
@@ -185,13 +183,15 @@ describe('근무표 화면의 로컬 조회 경계', () => {
     let resolvePage: (page: unknown) => void = () => {
       throw new Error('요청이 시작되지 않았습니다.');
     };
-    const daily = jest.spyOn(source, 'daily').mockImplementation((storeId, date, cursor, signal) =>
-      cursor === undefined
-        ? originalDaily(storeId, date, cursor, signal)
-        : new Promise((resolve) => {
-            resolvePage = resolve;
-          }),
-    );
+    const daily = jest
+      .spyOn(source, 'daily')
+      .mockImplementation((workspaceId, date, cursor, signal) =>
+        cursor === undefined
+          ? originalDaily(workspaceId, date, cursor, signal)
+          : new Promise((resolve) => {
+              resolvePage = resolve;
+            }),
+      );
     await mount(<SchedulesScreen source={source} initialDate="2026-09-15" />);
     await fireEvent.press(await screen.findByLabelText('전체 근무 일정 더 보기'));
     await fireEvent.press(screen.getByLabelText('전체 근무 일정 더 보기'));
@@ -269,17 +269,17 @@ describe('근무표 화면의 로컬 조회 경계', () => {
     expect(screen.getByText('2026년 10월')).toBeOnTheScreen();
     expect((await screen.findAllByText('근무표를 불러오지 못했습니다.')).length).toBeGreaterThan(0);
   });
-  it('직원에게 편집 진입을 숨기고 빈 날짜의 달력은 유지한다', async () => {
+  it('일반 멤버도 편집 진입과 빈 날짜 달력을 사용할 수 있다', async () => {
     const source = createMockScheduleDataSource({
       now,
-      role: 'EMPLOYEE',
+      role: 'MEMBER',
       schedules: [],
     });
     await mount(<SchedulesScreen source={source} initialDate="2026-09-15" />);
     expect(
       await screen.findByText(/해당 날짜에 등록된\s+근무 일정이 없습니다\./),
     ).toBeOnTheScreen();
-    expect(screen.queryByLabelText('근무편집')).not.toBeOnTheScreen();
+    expect(screen.getByLabelText('근무편집')).toBeOnTheScreen();
     expect(screen.getByLabelText('9월 15일 화, 근무 0건').props.accessibilityState.selected).toBe(
       true,
     );

@@ -73,3 +73,17 @@ it('이미 확인된 항목은 확인 API를 다시 호출하지 않는다', asy
   expect(confirm).not.toHaveBeenCalled();
   client.clear();
 });
+
+it('다른 공간의 상세 응답은 선택 공간 캐시에 저장하지 않는다', async () => {
+  jest
+    .spyOn(api, 'fetchHandoff')
+    .mockResolvedValue({ ...INITIAL_MOCK_HANDOFFS[0], workspaceId: 202 });
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  const query = handoffQueries.detail(101, 101);
+  await expect(client.fetchQuery(query)).rejects.toMatchObject({
+    status: 403,
+    errorCode: 'FORBIDDEN',
+  });
+  expect(client.getQueryData(query.queryKey)).toBeUndefined();
+  client.clear();
+});

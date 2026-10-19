@@ -14,7 +14,6 @@ type CalendarDayProps = {
   muted?: boolean;
   count: number;
   rowHeight: number;
-  selectionVariant?: 'subtle' | 'strong';
   onSelect: (date: string) => void;
 };
 
@@ -27,11 +26,10 @@ export function CalendarDay({
   muted,
   count,
   rowHeight,
-  selectionVariant = 'strong',
   onSelect,
 }: CalendarDayProps) {
   const { colors } = useTheme();
-  const hasStrongSelection = selected && selectionVariant === 'strong';
+  const hasStrongSelection = selected;
   return (
     <Pressable
       accessibilityRole="button"

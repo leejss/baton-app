@@ -12,7 +12,6 @@ export default function HandoffsRoute() {
   return (
     <HandoffListScreen
       scope={scope}
-      onCreate={() => router.push(ROUTES.handoffs.new.index)}
       onEdit={(handoffId) => router.push(ROUTES.handoffs.edit(handoffId))}
       onOpen={(handoffId) => router.push(ROUTES.handoffs.detail(handoffId))}
       onScopeChange={(nextScope) => router.setParams({ scope: nextScope })}

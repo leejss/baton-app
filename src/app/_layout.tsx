@@ -1,3 +1,4 @@
+import { InvitationResume } from '@/features/stores/components/InvitationResume';
 import { SessionQueryProvider } from '@/shared/providers/SessionQueryProvider';
 import { DefaultTheme, Stack, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
@@ -47,6 +48,7 @@ export default function RootLayout() {
             {/* 어느 화면에 있든 위에 떠야 해서 라우트 트리 바깥에 둔다. */}
             <ForcedLogoutModal />
             <PushNotifications />
+            <InvitationResume />
           </ThemeProvider>
         </SessionQueryProvider>
         {/*

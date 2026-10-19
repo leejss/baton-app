@@ -15,14 +15,14 @@ export function MemberRow({ member, isSelected, onSelect }: MemberRowProps) {
           {member.displayName}
         </Text>
         <Text variant="caption" color="foregroundDisabled" style={styles.email}>
-          {member.email}
+          {member.email ?? '이메일 제공 안 됨'}
         </Text>
       </View>
     );
   return (
     <Pressable
       accessibilityRole="radio"
-      accessibilityLabel={`${member.displayName}, ${member.email}`}
+      accessibilityLabel={`${member.displayName}, ${member.email ?? '이메일 제공 안 됨'}`}
       accessibilityState={{ checked: isSelected }}
       onPress={() => onSelect(member.userId)}
       style={[
@@ -46,7 +46,7 @@ export function MemberRow({ member, isSelected, onSelect }: MemberRowProps) {
           {member.displayName}
         </Text>
         <Text variant="bodySmall" color="foregroundDisabled">
-          {member.email}
+          {member.email ?? '이메일 제공 안 됨'}
         </Text>
       </View>
     </Pressable>

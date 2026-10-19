@@ -3,29 +3,34 @@ import {
   monthlyScheduleSchema,
   dailySchedulePageSchema,
   scheduleSchema,
-  scheduleBatchSchema,
   type ScheduleCreateRequest,
   type ScheduleUpdateRequest,
 } from '@/features/schedules/api/schedule.schema';
-export const fetchMonth = (storeId: number, month: string, signal?: AbortSignal) =>
-  get(`/stores/${storeId}/schedules?${new URLSearchParams({ month })}`, monthlyScheduleSchema, {
-    signal,
-  });
-export const fetchSchedule = (storeId: number, id: number, signal?: AbortSignal) =>
-  get(`/stores/${storeId}/schedules/${id}`, scheduleSchema, { signal });
+export const fetchMonth = (workspaceId: number, month: string, signal?: AbortSignal) =>
+  get(
+    `/workspaces/${workspaceId}/schedules?${new URLSearchParams({ month })}`,
+    monthlyScheduleSchema,
+    {
+      signal,
+    },
+  );
+export const fetchSchedule = (workspaceId: number, id: number, signal?: AbortSignal) =>
+  get(`/workspaces/${workspaceId}/schedules/${id}`, scheduleSchema, { signal });
 export function fetchDailySchedules(
-  storeId: number,
+  workspaceId: number,
   date: string,
   cursor?: string,
   signal?: AbortSignal,
 ) {
   const params = new URLSearchParams({ date, size: '3' });
   if (cursor !== undefined) params.set('cursor', cursor);
-  return get(`/stores/${storeId}/daily-schedules?${params}`, dailySchedulePageSchema, { signal });
+  return get(`/workspaces/${workspaceId}/daily-schedules?${params}`, dailySchedulePageSchema, {
+    signal,
+  });
 }
-export const createSchedules = (storeId: number, input: ScheduleCreateRequest) =>
-  post(`/stores/${storeId}/schedules`, input, scheduleBatchSchema);
-export const updateSchedule = (storeId: number, id: number, input: ScheduleUpdateRequest) =>
-  patch(`/stores/${storeId}/schedules/${id}`, input, scheduleSchema);
-export const removeSchedule = (storeId: number, id: number) =>
-  del(`/stores/${storeId}/schedules/${id}`);
+export const createSchedule = (workspaceId: number, input: ScheduleCreateRequest) =>
+  post(`/workspaces/${workspaceId}/schedules`, input, scheduleSchema);
+export const updateSchedule = (workspaceId: number, id: number, input: ScheduleUpdateRequest) =>
+  patch(`/workspaces/${workspaceId}/schedules/${id}`, input, scheduleSchema);
+export const removeSchedule = (workspaceId: number, id: number) =>
+  del(`/workspaces/${workspaceId}/schedules/${id}`);

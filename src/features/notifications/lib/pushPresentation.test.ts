@@ -28,7 +28,7 @@ jest.mock('@/shared/lib/mmkvStorage', () => {
   };
 });
 
-const payload = { notificationId: '42', type: 'HANDOVER_RECEIVED' };
+const payload = { workspaceId: '101', notificationId: '42', type: 'HANDOVER_RECEIVED' };
 const granted: Notifications.NotificationPermissionsStatus = {
   granted: true,
   canAskAgain: true,

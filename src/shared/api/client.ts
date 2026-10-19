@@ -3,7 +3,7 @@ import { API_URL, assertApiConfigured } from '@/shared/config/api';
 import { z, type ZodType } from 'zod';
 
 import { logRequestStart } from '@/shared/api/devNetworkLog';
-import { withAbortTimeout } from '@/shared/api/abort';
+import { combineSignals, throwIfAborted, withAbortTimeout } from '@/shared/api/abort';
 import {
   AppError,
   normalizeError,
@@ -67,6 +67,11 @@ const tokenPairSchema = z.object({
 });
 
 let authBridge: AuthBridge | null = null;
+let workspaceRequests = new AbortController();
+export function abortWorkspaceRequests() {
+  workspaceRequests.abort();
+  workspaceRequests = new AbortController();
+}
 
 export function registerAuthBridge(bridge: AuthBridge): void {
   authBridge = bridge;
@@ -112,6 +117,11 @@ function readEnvelope(http: HttpDiagnostics): z.infer<typeof envelopeSchema> | n
   }
 }
 
+function safeDiagnostics(http: HttpDiagnostics): HttpDiagnostics {
+  return /^\/workspaces\/(?:join(?:\/|$)|:id\/invitation(?:\/|$))/.test(http.route)
+    ? { ...http, ...(http.response !== undefined ? { response: '[REDACTED_INVITATION]' } : {}) }
+    : http;
+}
 function toServerError({ response, http, readError }: HttpResult, cause?: unknown) {
   const envelope = readEnvelope(http);
   return new AppError('server', envelope?.meta.message ?? '요청을 처리하지 못했어요.', {
@@ -119,7 +129,7 @@ function toServerError({ response, http, readError }: HttpResult, cause?: unknow
     errorCode: envelope?.meta.errorCode ?? null,
     status: response.status,
     retryAfterSeconds: readRetryAfter(response),
-    http,
+    http: safeDiagnostics(http),
     cause: cause ?? readError,
   });
 }
@@ -246,23 +256,35 @@ async function request(
   body: unknown,
   options: RequestOptions,
 ): Promise<HttpResult> {
-  assertApiConfigured();
+  const scoped =
+    (path.startsWith('/workspaces') && !(method === 'GET' && path === '/workspaces')) ||
+    /^\/(?:handovers|notifications|files)\//.test(path);
+  const combined = scoped
+    ? combineSignals([workspaceRequests.signal, ...(options.signal ? [options.signal] : [])])
+    : null;
+  if (combined) options = { ...options, signal: combined.signal };
+  try {
+    assertApiConfigured();
+    if (options.signal) throwIfAborted(options.signal);
+    let result = await fetchOnce(method, path, body, options);
+    let refreshFailure: AppError | undefined;
 
-  let result = await fetchOnce(method, path, body, options);
-  let refreshFailure: AppError | undefined;
+    // 만료된 Access Token은 한 번만 갱신해서 재시도한다. 실패하면 그대로 401을 올린다.
+    if (result.response.status === 401 && options.auth !== false) {
+      const refresh = await refreshTokensOnce();
+      refreshFailure = refresh.failure;
+      if (refresh.refreshed) result = await fetchOnce(method, path, body, options);
+    }
 
-  // 만료된 Access Token은 한 번만 갱신해서 재시도한다. 실패하면 그대로 401을 올린다.
-  if (result.response.status === 401 && options.auth !== false) {
-    const refresh = await refreshTokensOnce();
-    refreshFailure = refresh.failure;
-    if (refresh.refreshed) result = await fetchOnce(method, path, body, options);
+    if (!result.response.ok) {
+      throw toServerError(result, refreshFailure);
+    }
+
+    if (options.signal) throwIfAborted(options.signal);
+    return result;
+  } finally {
+    combined?.cleanup();
   }
-
-  if (!result.response.ok) {
-    throw toServerError(result, refreshFailure);
-  }
-
-  return result;
 }
 
 /** 본문을 스키마로 검증해서 돌려준다. 서버 응답을 그대로 믿지 않는다. */
@@ -281,7 +303,7 @@ async function requestJson<T>(
   if (envelope === null) {
     throw new AppError('schema', '서버 응답 형식이 예상과 달라요.', {
       status: response.status,
-      http,
+      http: safeDiagnostics(http),
     });
   }
   if (envelope.meta.result === 'FAIL') {
@@ -293,7 +315,7 @@ async function requestJson<T>(
     throw new AppError('schema', '서버 응답 형식이 예상과 달라요.', {
       status: response.status,
       cause: parsed.error,
-      http,
+      http: safeDiagnostics(http),
     });
   }
 
@@ -346,4 +368,13 @@ export async function delWithBody(
   options: RequestOptions = {},
 ): Promise<void> {
   await request('DELETE', path, body, options);
+}
+
+/** 응답 본문 없는 PATCH. */
+export async function patchVoid(
+  path: string,
+  body: unknown,
+  options: RequestOptions = {},
+): Promise<void> {
+  await request('PATCH', path, body, options);
 }

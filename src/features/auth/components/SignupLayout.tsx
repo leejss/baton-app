@@ -10,11 +10,10 @@ import { AuthHeader } from '@/features/auth/components/AuthHeader';
 import { AuthTitle } from '@/features/auth/components/AuthTitle';
 
 /**
- * 회원가입 6개 화면이 공유하는 뼈대. 세로 리듬은 Figma "회원가입" 섹션
+ * 닉네임·약관·가입 완료 화면이 공유하는 레이아웃. 세로 리듬은 Figma "회원가입" 섹션
  * (`943:111452`, 393×852) 실측값이다.
  *
- * 비밀번호 재설정(`PasswordResetLayout`)과 거의 같지만 헤더 바로 아래 진행 표시가 붙고,
- * 하단 바 위에 토스트 자리가 있다.
+ * 헤더 바로 아래 진행 표시가 붙고 하단 바 위에 안내 자리가 있다.
  */
 const SPEC = {
   /** 진행 표시 하단(112) → 제목 상단(132). */

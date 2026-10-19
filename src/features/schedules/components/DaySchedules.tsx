@@ -4,10 +4,8 @@ import { useMainContext } from '@/features/stores/hooks/useMainContext';
 import { FlashList, type ListRenderItemInfo } from '@shopify/flash-list';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { Image } from 'expo-image';
-import { useRouter } from 'expo-router';
 import { StyleSheet, View, useWindowDimensions } from 'react-native';
 
-import { ROUTES } from '@/shared/lib/routes';
 import { scheduleQueries } from '@/features/schedules/api/schedule.queries';
 import { ScheduleMessage } from '@/features/schedules/components/ScheduleMessage';
 import { ScheduleWorkerRow } from '@/features/schedules/components/ScheduleWorkerRow';
@@ -34,9 +32,8 @@ export function DaySchedules({
   onSelect,
 }: DaySchedulesProps) {
   const context = useMainContext();
-  const query = useInfiniteQuery(scheduleQueries.daily(context.storeId, date));
+  const query = useInfiniteQuery(scheduleQueries.daily(context.workspaceId, date));
   const { colors } = useTheme();
-  const router = useRouter();
   const { fontScale } = useWindowDimensions();
   const retry = () => {
     void query.refetch();
@@ -53,20 +50,14 @@ export function DaySchedules({
         {null}
       </QueryBoundary>
     );
-  if (isManaging && !context.canManage)
-    return <ScheduleMessage message="관리자만 근무 일정을 편집할 수 있습니다." />;
   const items = query.data.pages.flatMap((page) => page.items);
   const workerCount = query.data.pages[0]?.totalEmployeeCount ?? 0;
-  const handleHandoff = (id: number) =>
-    router.push(ROUTES.handoffs.createForRecipient(String(id), date));
   const renderItem = ({ item }: ListRenderItemInfo<ScheduleItem>) => (
     <ScheduleWorkerRow
       item={item}
       selected={item.id === selectedId}
-      canHandoff={item.member.isActive && item.member.id !== context.userId}
       isManaging={isManaging}
-      canEdit={canEditSchedule(item, context.canManage ?? false, now)}
-      onHandoff={handleHandoff}
+      canEdit={canEditSchedule(item, context.userId, now)}
       onSelect={onSelect}
     />
   );

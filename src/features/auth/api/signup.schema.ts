@@ -1,16 +1,6 @@
 import { z } from 'zod';
 
 /**
- * 회원가입 스키마. 출처는 wiki `openapi.yaml`(ADR-026 확정본)이다.
- *
- *   POST /auth/signup                     SignUpRequest        → 201 AuthSessionResponse
- *   POST /auth/social/{provider}/signup   SocialSignUpRequest  → 201 AuthSessionResponse
- *
- * 응답은 둘 다 로그인과 같은 `AuthSessionResponse`라 `auth.schema`의 `sessionSchema`를 그대로 쓴다.
- * 여기에는 요청 쪽 형태와 약관 코드만 둔다.
- */
-
-/**
  * 서버가 관리하는 약관 코드. 앞의 둘은 필수, 마케팅은 선택이다.
  * 가입 요청에는 세 코드를 **중복 없이 모두** 실어야 한다(선택 약관은 `agreed: false`로).
  */
@@ -41,21 +31,9 @@ export const TERMS: readonly { code: TermsCode; label: string; isRequired: boole
 
 export type SocialProvider = 'kakao' | 'apple';
 
-export type SignUpParams = {
-  email: string;
-  password: string;
-  displayName: string;
-  /** `SIGN_UP` 목적으로 발급받은 유효·미사용 이메일 인증 token. */
-  emailVerificationToken: string;
-  agreements: AgreementDecision[];
-};
-
 export type SocialSignUpParams = {
   provider: SocialProvider;
-  /** 소셜 인증이 발급한 10분 유효·단회 사용 가입 token. */
   socialSignupToken: string;
-  email: string;
   displayName: string;
-  emailVerificationToken: string;
   agreements: AgreementDecision[];
 };

@@ -26,14 +26,12 @@ import { Button, Text } from '@/shared/ui';
 import { SCREEN_PADDING_X, spacing, useTheme } from '@/theme';
 
 type HandoffContentScreenProps = {
-  workDate?: string;
   onBack: () => void;
   onRecipientPress: () => void;
   onSent: (handoffId: string) => void;
 };
 
 export function HandoffContentScreen({
-  workDate,
   onBack,
   onRecipientPress,
   onSent,
@@ -84,18 +82,13 @@ export function HandoffContentScreen({
     attachmentCount: attachments.length,
     onSelected: uploads.add,
   });
-  const recipientsQuery = useQuery(
-    handoffQueries.recipients(context.storeId, context.userId, workDate),
-  );
-  // 추천값은 화면 기본 선택으로만 사용하고, 사용자가 고른 값만 작성 상태에 저장한다.
+  const recipientsQuery = useQuery(handoffQueries.recipients(context.workspaceId, context.userId));
   const effectiveRecipient =
     (recipient
       ? recipientsQuery.data?.find((item) => item.member.userId === recipient.member.userId)
-      : recipientsQuery.data?.filter((item) => item.isRecommended).length === 1
-        ? recipientsQuery.data.find((item) => item.isRecommended)
-        : null) ?? null;
+      : null) ?? null;
 
-  const createMutation = useMutation(handoffMutations(queryClient, context.storeId).create());
+  const createMutation = useMutation(handoffMutations(queryClient, context.workspaceId).create());
 
   const handleTitleChange = (value: string) => {
     titleController.field.onChange(value);
@@ -184,7 +177,6 @@ export function HandoffContentScreen({
             </Text>
             <HandoffRecipientCard
               recipient={effectiveRecipient?.member ?? null}
-              isRecommended={effectiveRecipient?.isRecommended}
               onPress={() => {
                 if (!createMutation.isPending) onRecipientPress();
               }}

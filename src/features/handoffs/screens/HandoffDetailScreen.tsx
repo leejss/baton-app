@@ -42,7 +42,7 @@ export function HandoffDetailScreen({
   const context = useMainContext();
   const theme = useTheme();
   const actionSheetRef = useRef<HandoffActionSheetMethods>(null);
-  const detailQuery = useQuery(handoffQueries.detail(context.storeId, handoffId));
+  const detailQuery = useQuery(handoffQueries.detail(context.workspaceId, handoffId));
   const data = detailQuery.data;
   const accessError =
     isAppError(detailQuery.error) && [403, 404].includes(detailQuery.error.status ?? 0)
@@ -51,8 +51,8 @@ export function HandoffDetailScreen({
   const detail = data && !accessError ? toHandoffDetailModel(data, context.userId) : null;
   const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
 
-  const deleteMutation = useMutation(handoffMutations(queryClient, context.storeId).remove());
-  const confirmMutation = useMutation(handoffMutations(queryClient, context.storeId).confirm());
+  const deleteMutation = useMutation(handoffMutations(queryClient, context.workspaceId).remove());
+  const confirmMutation = useMutation(handoffMutations(queryClient, context.workspaceId).confirm());
   const [confirmationComplete, setConfirmationComplete] = useState(false);
 
   const handleEdit = () => {

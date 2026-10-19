@@ -1,88 +1,21 @@
-import { logger } from '@/shared/lib/logger';
 import { useMutation } from '@tanstack/react-query';
-
-import { hasServerErrorCode } from '@/shared/api/errors';
-
-import { requestVerificationCode, verifyCode } from '@/features/auth/api/passwordReset.api';
-import { signUpWithEmail, signUpWithSocial } from '@/features/auth/api/signup.api';
-import type { SignUpParams, SocialSignUpParams } from '@/features/auth/api/signup.schema';
-
-/** 이미 활성 계정에 등록된 이메일인지. 시안 "동일한 이메일이 이미 있는 경우" 모달의 분기 조건. */
-export function isEmailTaken(error: unknown): boolean {
-  return hasServerErrorCode(error, 'AUTH_ACCOUNT_ALREADY_EXISTS');
-}
-
-/**
- * 쿨다운 때문에 재발송이 거절된 경우(`429`).
- *
- * **실패가 아니다.** 재발송이 일어나지 않았다는 뜻이고, 직전에 보낸 코드는 그대로 살아 있다
- * (`requirements.md`: 재발송해야 이전 코드가 무효화된다). 화면은 "이미 보냈다"고 안내하고
- * 다음 단계를 열어줘야 한다.
- */
-export function isResendTooSoon(error: unknown): boolean {
-  return hasServerErrorCode(error, 'EMAIL_VERIFICATION_RESEND_TOO_SOON');
-}
-
-/**
- * 소셜 가입 token이 더 이상 유효하지 않은 경우(`409 SOCIAL_SIGNUP_TOKEN_INVALID`).
- *
- * token은 10분·단회 사용이고, 소셜 인증을 다시 하면 이전 token이 **대체**된다.
- * 즉 만료·소비·대체 어느 쪽이든 화면이 할 일은 같다 — 소셜 로그인을 다시 시키는 것이다.
- * 서버는 만료 가입 대기 재인증에 `200 SIGNUP_REQUIRED`와 새 token으로 응답하므로
- * (ADR-030) 다시 로그인하면 가입을 이어갈 수 있다.
- */
-export function isSocialSignupTokenInvalid(error: unknown): boolean {
-  return hasServerErrorCode(error, 'SOCIAL_SIGNUP_TOKEN_INVALID');
-}
-
-/**
- * 가입용 인증코드 발송·재발송.
- * 계약상 이메일 중복은 이 요청의 `409 AUTH_ACCOUNT_ALREADY_EXISTS`로만 알 수 있다.
- */
-export function useRequestSignupCode() {
-  return useMutation({
-    networkMode: 'always',
-    retry: false,
-    onError: (error) => {
-      if (isEmailTaken(error)) logger.warn('회원가입 이메일 중복', error);
-      else logger.error('회원가입 인증 코드 발송 실패', error);
-    },
-    mutationFn: ({ email, signal }: { email: string; signal?: AbortSignal }) =>
-      requestVerificationCode(email, { purpose: 'SIGN_UP', signal }),
-  });
-}
-
-export function useVerifySignupCode() {
-  return useMutation({
-    networkMode: 'always',
-    retry: false,
-    onError: (error) => {
-      logger.error('회원가입 인증 코드 확인 실패', error);
-    },
-    mutationFn: ({ email, code, signal }: { email: string; code: string; signal?: AbortSignal }) =>
-      verifyCode(email, code, { purpose: 'SIGN_UP', signal }),
-  });
-}
-
-/**
- * 계정 생성. 세션을 **스토어에 넣지 않고 돌려준다** — 완료 화면("회원가입이 완료 됐어요")을
- * 먼저 보여준 뒤 "시작하기"에서 로그인 상태로 전환해야 해서다. 여기서 바로 `signIn`하면
- * `(auth)/_layout`의 가드가 완료 화면을 건너뛰고 앱 안쪽으로 보낸다.
- */
+import { hasServerErrorCode, isAppError } from '@/shared/api/errors';
+import { logger } from '@/shared/lib/logger';
+import { signUpWithSocial } from '@/features/auth/api/signup.api';
+import type { SocialSignUpParams } from '@/features/auth/api/signup.schema';
+export const isSocialSignupTokenInvalid = (error: unknown): boolean =>
+  hasServerErrorCode(error, 'SOCIAL_SIGNUP_TOKEN_INVALID');
+/** 완료 화면에서 시작하기 전까지 로그인 세션은 가입 상태에 둔다. */
 export function useSignUp() {
   return useMutation({
     networkMode: 'always',
     retry: false,
+    mutationFn: ({ signal, ...params }: SocialSignUpParams & { signal?: AbortSignal }) =>
+      signUpWithSocial(params, signal),
     onError: (error) => {
-      logger.error('회원가입 실패', error);
+      if (!(isAppError(error) && error.code === 'canceled'))
+        logger.error('소셜 회원가입 실패', error);
     },
-    mutationFn: ({
-      signal,
-      ...params
-    }: (SignUpParams | SocialSignUpParams) & { signal?: AbortSignal }) =>
-      'socialSignupToken' in params
-        ? signUpWithSocial(params, signal)
-        : signUpWithEmail(params, signal),
-    onSuccess: () => logger.info('회원가입 완료'),
+    onSuccess: () => logger.info('소셜 회원가입 완료'),
   });
 }

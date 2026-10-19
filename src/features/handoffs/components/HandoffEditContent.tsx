@@ -44,8 +44,8 @@ export function HandoffEditContent({ ref, handoffId, onBack, onSaved }: HandoffE
   const theme = useTheme();
   const [detailQuery, recipientsQuery] = useSuspenseQueries({
     queries: [
-      handoffQueries.detail(context.storeId, handoffId),
-      handoffQueries.recipients(context.storeId, context.userId),
+      handoffQueries.detail(context.workspaceId, handoffId),
+      handoffQueries.recipients(context.workspaceId, context.userId),
     ],
   });
   const handoff = detailQuery.data;
@@ -87,7 +87,7 @@ export function HandoffEditContent({ ref, handoffId, onBack, onSaved }: HandoffE
   });
 
   const updateMutation = useMutation(
-    handoffMutations(queryClient, context.storeId).update(handoffId),
+    handoffMutations(queryClient, context.workspaceId).update(handoffId),
   );
 
   const handleBack = useUnsavedHandoffGuard({
@@ -192,13 +192,7 @@ export function HandoffEditContent({ ref, handoffId, onBack, onSaved }: HandoffE
         </View>
         <View style={styles.section}>
           <Text weight="semibold">받는 사람</Text>
-          <HandoffRecipientCard
-            recipient={recipient}
-            isRecommended={recipients.some(
-              (item) => item.isRecommended && item.member.userId === recipient.userId,
-            )}
-            onPress={handleOpenRecipientPicker}
-          />
+          <HandoffRecipientCard recipient={recipient} onPress={handleOpenRecipientPicker} />
         </View>
       </KeyboardAwareScrollView>
       <HandoffFooterActions

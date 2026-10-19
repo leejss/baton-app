@@ -1,25 +1,20 @@
-import { useState } from 'react';
 import { StyleSheet, View, useWindowDimensions } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import { useSharedValue } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
 
 import { CalendarDay } from '@/features/schedules/components/CalendarDay';
 import { calendarDates } from '@/features/schedules/lib/scheduleDate';
-import type { DateRange } from '@/features/schedules/types';
 import { Text } from '@/shared/ui';
 
 type ScheduleCalendarProps = {
   month: string;
   today: string;
   selectedDate?: string;
-  range?: DateRange;
-  mode?: 'single' | 'range' | 'readonly';
+  mode?: 'single' | 'readonly';
   counts?: Readonly<Record<string, number>>;
   minDate?: string;
   compact?: boolean;
   onSelect: (date: string) => void;
-  onRange?: (range: DateRange) => void;
   onMoveMonth?: (direction: number) => void;
 };
 
@@ -28,25 +23,18 @@ export function ScheduleCalendar({
   month,
   today,
   selectedDate,
-  range,
   mode = 'single',
   counts = {},
   minDate,
   compact = false,
   onSelect,
-  onRange,
   onMoveMonth,
 }: ScheduleCalendarProps) {
-  const [width, setWidth] = useState(0);
   const { fontScale } = useWindowDimensions();
   const minimumDateRowHeight = Math.max(60, Math.ceil(fontScale * 28) + 24);
   const allDates = calendarDates(month);
-  const selectedIndex = allDates.indexOf(range?.start || selectedDate || today);
-  // 여러 주에 걸친 범위는 축약해서 숨기지 않는다.
-  const canCompact =
-    compact &&
-    selectedIndex >= 0 &&
-    (!range || Math.floor(allDates.indexOf(range.end) / 7) === Math.floor(selectedIndex / 7));
+  const selectedIndex = allDates.indexOf(selectedDate || today);
+  const canCompact = compact && selectedIndex >= 0;
   const dates = canCompact
     ? allDates.slice(Math.floor(selectedIndex / 7) * 7, Math.floor(selectedIndex / 7) * 7 + 7)
     : allDates;
@@ -57,44 +45,6 @@ export function ScheduleCalendar({
     if (index === weekCount - 1) return Math.max(46, minimumDateRowHeight - 14);
     return minimumDateRowHeight;
   });
-  const anchor = useSharedValue(-1);
-  const last = useSharedValue(-1);
-  const getDateIndexAt = (x: number, y: number) => {
-    'worklet';
-    if (x < 0 || x >= width || y < 0) return -1;
-
-    let rowTop = 0;
-    for (let rowIndex = 0; rowIndex < rowHeights.length; rowIndex += 1) {
-      const rowHeight = rowHeights[rowIndex];
-      if (y < rowTop + rowHeight) return rowIndex * 7 + Math.floor(x / (width / 7));
-      rowTop += rowHeight;
-    }
-    return -1;
-  };
-  const selectRange = (first: number, end: number) => {
-    const a = dates[first];
-    const b = dates[end];
-    if (!a || !b || !a.startsWith(month) || !b.startsWith(month)) return;
-    const start = a < b ? a : b;
-    if (minDate && start < minDate) return;
-    onRange?.({ start, end: a < b ? b : a });
-  };
-  const drag = Gesture.Pan()
-    .enabled(mode === 'range' && width > 0)
-    .activateAfterLongPress(220)
-    .onStart((event) => {
-      anchor.value = getDateIndexAt(event.x, event.y);
-      last.value = anchor.value;
-      if (anchor.value >= 0) scheduleOnRN(selectRange, anchor.value, anchor.value);
-    })
-    .onUpdate((event) => {
-      const index = getDateIndexAt(event.x, event.y);
-      if (index < 0) return;
-      if (index !== last.value) {
-        last.value = index;
-        scheduleOnRN(selectRange, anchor.value, index);
-      }
-    });
   const swipe = Gesture.Pan()
     .enabled(onMoveMonth !== undefined)
     .activeOffsetX([-30, 30])
@@ -118,12 +68,8 @@ export function ScheduleCalendar({
           </View>
         ))}
       </View>
-      <GestureDetector gesture={Gesture.Race(drag, swipe)}>
-        <View
-          collapsable={false}
-          onLayout={(event) => setWidth(event.nativeEvent.layout.width)}
-          style={styles.grid}
-        >
+      <GestureDetector gesture={swipe}>
+        <View collapsable={false} style={styles.grid}>
           {Array.from({ length: weekCount }, (_, rowIndex) => {
             const week = dates.slice(rowIndex * 7, rowIndex * 7 + 7);
             return (
@@ -136,10 +82,7 @@ export function ScheduleCalendar({
                     key={date}
                     date={date}
                     today={date === today}
-                    selected={
-                      range ? date >= range.start && date <= range.end : date === selectedDate
-                    }
-                    selectionVariant="strong"
+                    selected={date === selectedDate}
                     outside={!date.startsWith(month)}
                     disabled={
                       mode === 'readonly' ||

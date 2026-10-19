@@ -4,7 +4,7 @@ import { create } from 'zustand';
 
 import { isAppError } from '@/shared/api/errors';
 
-type Scope = 'login' | 'signup' | 'passwordReset';
+type Scope = 'login' | 'signup';
 type Operation = { kind: string; controller: AbortController };
 type Operations = Record<Scope, Operation | null>;
 
@@ -12,7 +12,6 @@ type Operations = Record<Scope, Operation | null>;
 const useOperations = create<Operations>(() => ({
   login: null,
   signup: null,
-  passwordReset: null,
 }));
 
 export type AuthOperationContext = {

@@ -55,7 +55,7 @@ it('직접 logger 호출의 메시지와 진단을 보존하며 전역·Boundary
   const client = createQueryClient();
   const mutation = client.getMutationCache().build(client, {
     gcTime: Infinity,
-    mutationFn: (input: typeof body) => post('/stores/123/schedules', input, schema),
+    mutationFn: (input: typeof body) => post('/workspaces/123/schedules', input, schema),
     onError: (error) => logger.error('근무 등록 실패', error),
   });
   await mutation.execute(body).catch((error: unknown) => {
@@ -68,7 +68,7 @@ it('직접 logger 호출의 메시지와 진단을 보존하며 전역·Boundary
   expect(attributes).toMatchObject({
     user_id: '17',
     user_email: 'member@example.com',
-    route: '/stores/:id/schedules',
+    route: '/workspaces/:id/schedules',
     response,
     request: JSON.stringify({ employeeId: 21, password: '[REDACTED]', email: '[REDACTED]' }),
   });

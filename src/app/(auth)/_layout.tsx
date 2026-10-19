@@ -16,11 +16,7 @@ export default function AuthLayout() {
   }
 
   if (status === 'signedIn') {
-    /**
-     * TODO(STORE-01): 매장 소속 여부로 갈라야 한다. 근거와 판단 기준은 `src/app/index.tsx` 참고.
-     *   membership 있음 → /home
-     *   membership 없음 → /(store) 참여·생성 선택
-     */
+    // 홈의 공간 gate가 참여 목록과 사용자별 현재 공간을 확인한다.
     return <Redirect href={ROUTES.home} />;
   }
 

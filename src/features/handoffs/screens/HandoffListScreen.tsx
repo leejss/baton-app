@@ -14,13 +14,12 @@ import {
 import { HandoffScopeTabs } from '@/features/handoffs/components/HandoffScopeTabs';
 import { HandoffListContent } from '@/features/handoffs/components/HandoffListContent';
 import type { HandoffScope } from '@/features/handoffs/types';
-import { Pressable, QueryBoundary, Text } from '@/shared/ui';
+import { QueryBoundary } from '@/shared/ui';
 import { MainHeader } from '@/features/tabs/components/MainHeader';
 import { SCREEN_PADDING_X, spacing, useTheme } from '@/theme';
 
 type HandoffListScreenProps = {
   scope: HandoffScope;
-  onCreate: () => void;
   onEdit: (handoffId: string) => void;
   onOpen: (handoffId: string) => void;
   onScopeChange: (scope: HandoffScope) => void;
@@ -28,7 +27,6 @@ type HandoffListScreenProps = {
 
 export function HandoffListScreen({
   scope,
-  onCreate,
   onEdit,
   onOpen,
   onScopeChange,
@@ -40,12 +38,12 @@ export function HandoffListScreen({
   const [managedId, setManagedId] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
-  const deleteMutation = useMutation(handoffMutations(queryClient, context.storeId).remove());
+  const deleteMutation = useMutation(handoffMutations(queryClient, context.workspaceId).remove());
 
   const handleManagePress = (handoffId: string) => {
     void queryClient
       .fetchQuery({
-        ...handoffQueries.detail(context.storeId, handoffId),
+        ...handoffQueries.detail(context.workspaceId, handoffId),
         staleTime: 0,
       })
       .then((item) => {
@@ -85,16 +83,6 @@ export function HandoffListScreen({
 
       <View style={styles.toolbar}>
         <HandoffScopeTabs value={scope} onChange={onScopeChange} />
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="인수인계 글쓰기"
-          onPress={onCreate}
-          style={styles.writeButton}
-        >
-          <Text variant="body" weight="medium" color="foregroundDefault">
-            글쓰기
-          </Text>
-        </Pressable>
       </View>
 
       <View style={styles.listRegion}>
@@ -130,11 +118,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: spacing.sm,
-  },
-  writeButton: {
-    minWidth: 54,
-    minHeight: 44,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
 });

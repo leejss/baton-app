@@ -28,7 +28,7 @@ describe('HandoffListScreen', () => {
   it('발신에서 전체로 돌아오면 전체 쿼리의 항목을 표시한다', async () => {
     const sent = INITIAL_MOCK_HANDOFFS[0];
     const received = INITIAL_MOCK_HANDOFFS[1];
-    jest.spyOn(api, 'fetchHandoffs').mockImplementation(async (_storeId, scope) => ({
+    jest.spyOn(api, 'fetchHandoffs').mockImplementation(async (_workspaceId, scope) => ({
       items: scope === 'SENT' ? [sent] : [sent, received],
       nextCursor: null,
       hasNext: false,
@@ -45,7 +45,6 @@ describe('HandoffListScreen', () => {
       return (
         <HandoffListScreen
           scope={scope}
-          onCreate={jest.fn()}
           onEdit={jest.fn()}
           onOpen={jest.fn()}
           onScopeChange={setScope}
@@ -85,7 +84,6 @@ describe('HandoffListScreen', () => {
           <MainContextProvider value={TEST_CONTEXT}>
             <HandoffListScreen
               scope="all"
-              onCreate={jest.fn()}
               onEdit={jest.fn()}
               onOpen={jest.fn()}
               onScopeChange={jest.fn()}
@@ -95,9 +93,9 @@ describe('HandoffListScreen', () => {
       </SafeAreaProvider>,
     );
 
-    expect(await screen.findByLabelText('카페 바톤 강남점, 관리자')).toBeOnTheScreen();
+    expect(await screen.findByLabelText('카페 바톤, 관리자')).toBeOnTheScreen();
     expect(screen.getByLabelText('전체 인수인계')).toBeOnTheScreen();
-    expect(screen.getByLabelText('인수인계 글쓰기')).toBeOnTheScreen();
+    expect(screen.queryByLabelText('인수인계 글쓰기')).not.toBeOnTheScreen();
     expect(screen.queryByText('마감 정산 확인 부탁드려요')).not.toBeOnTheScreen();
   });
 
@@ -120,7 +118,6 @@ describe('HandoffListScreen', () => {
           <MainContextProvider value={TEST_CONTEXT}>
             <HandoffListScreen
               scope="sent"
-              onCreate={jest.fn()}
               onEdit={jest.fn()}
               onOpen={jest.fn()}
               onScopeChange={jest.fn()}

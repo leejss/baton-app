@@ -14,7 +14,6 @@ const NOTIFICATION_ILLUST_ICONS = {
   announcement: 'announcement',
   handoffReceived: 'handoffReceived',
   handoffConfirmed: 'handoffConfirmed',
-  schedule: 'workSchedule',
 } as const satisfies Record<Notification['kind'], IllustIconName>;
 
 // Figma 943:103882의 치수. 전역 스케일을 변경하지 않고 이 카드에만 한정한다.

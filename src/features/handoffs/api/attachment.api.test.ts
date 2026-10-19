@@ -1,7 +1,7 @@
 import { afterEach, expect, it, jest } from '@jest/globals';
 import { fetch } from 'expo/fetch';
 import { post, del } from '@/shared/api/client';
-import { uploadAttachment } from '@/features/handoffs/api/attachment.api';
+import { completeAttachment, uploadAttachment } from '@/features/handoffs/api/attachment.api';
 import type { LocalAttachment } from '@/features/handoffs/types';
 import { AppError } from '@/shared/api/errors';
 jest.mock('expo/fetch', () => ({ fetch: jest.fn() }));
@@ -123,4 +123,37 @@ it('AbortSignal.throwIfAborted가 없는 런타임에서도 새 사진을 업로
   await expect(
     uploadAttachment({ ...file, attachmentId: undefined }, () => {}, signal),
   ).resolves.toBeUndefined();
+});
+
+it('프로필 사진은 PROFILE 목적으로 발급하고 동일 목적의 완료 응답을 확인한다', async () => {
+  jest
+    .mocked(post)
+    .mockResolvedValueOnce({
+      attachmentId: 501,
+      uploadUrl: 'https://storage.example/upload',
+      requiredHeaders: { 'Content-Type': 'image/jpeg', 'If-None-Match': '*' },
+    })
+    .mockResolvedValueOnce({ ...verified, purpose: 'PROFILE' });
+  jest
+    .mocked(fetch)
+    .mockResolvedValue({ ok: true, status: 200 } as Awaited<ReturnType<typeof fetch>>);
+  const signal = new AbortController().signal;
+  await uploadAttachment({ ...file, attachmentId: undefined }, () => {}, signal, 'PROFILE');
+  expect(post).toHaveBeenNthCalledWith(
+    1,
+    '/files/presign',
+    { purpose: 'PROFILE', contentType: 'image/jpeg', sizeBytes: 100, extension: 'jpg' },
+    expect.anything(),
+    { signal },
+  );
+  expect(post).toHaveBeenNthCalledWith(2, '/files/501/complete', undefined, expect.anything(), {
+    signal,
+  });
+});
+
+it('프로필 사진 완료 응답이 다른 목적이면 연결에 사용하지 않는다', async () => {
+  jest.mocked(post).mockResolvedValueOnce(verified);
+  await expect(completeAttachment(501, undefined, 'PROFILE')).rejects.toMatchObject({
+    code: 'schema',
+  });
 });

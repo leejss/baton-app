@@ -2,12 +2,12 @@ import { queryOptions } from '@tanstack/react-query';
 import { fetchHome } from '@/features/home/api/home.api';
 export const homeQueries = {
   all: () => ['home'] as const,
-  store: (storeId: number) => ['home', storeId] as const,
-  summaryKey: (storeId: number, date: string) =>
-    [...homeQueries.store(storeId), 'summary', date] as const,
-  summary: (storeId: number, date: string) =>
+  store: (workspaceId: number) => ['home', workspaceId] as const,
+  summaryKey: (workspaceId: number, date: string) =>
+    [...homeQueries.store(workspaceId), 'summary', date] as const,
+  summary: (workspaceId: number, date: string) =>
     queryOptions({
-      queryKey: homeQueries.summaryKey(storeId, date),
-      queryFn: ({ signal }) => fetchHome(storeId, date, signal),
+      queryKey: homeQueries.summaryKey(workspaceId, date),
+      queryFn: ({ signal }) => fetchHome(workspaceId, date, signal),
     }),
 };

@@ -7,7 +7,6 @@ import { getMockContext } from 'expo-router/testing-library';
 import { Alert, Linking, Text } from 'react-native';
 
 import AuthLayout from '@/app/(auth)/_layout';
-import LoginRoute from '@/app/(auth)/login';
 import StartRoute from '@/app/(auth)/start';
 import MainLayout from '@/app/(main)/_layout';
 import StoreOnboardingLayout from '@/app/(store-onboarding)/_layout';
@@ -17,7 +16,6 @@ import type { Session } from '@/features/auth/api/auth.schema';
 import { useAuthStore } from '@/features/auth/store/authStore';
 import { useSignupStore } from '@/features/auth/store/signupStore';
 import * as queryClient from '@/shared/api/queryClient';
-import { logger } from '@/shared/lib/logger';
 import { ROUTES } from '@/shared/lib/routes';
 import { secureStorage } from '@/shared/lib/secureStorage';
 import { SessionQueryProvider } from '@/shared/providers/SessionQueryProvider';
@@ -47,6 +45,16 @@ jest.mock('@/shared/config/api', () => ({
   API_URL: 'https://api.example.com/api/v1',
   assertApiConfigured: jest.fn(),
 }));
+jest.mock('@/shared/lib/mmkvStorage', () => {
+  const values = new Map();
+  return {
+    storage: {
+      getNumber: (key: string) => values.get(key),
+      set: (key: string, value: number) => values.set(key, value),
+      remove: (key: string) => values.delete(key),
+    },
+  };
+});
 jest.mock('@/shared/lib/deviceId', () => ({
   getDeviceId: jest.fn<() => Promise<string>>().mockResolvedValue('test-device'),
 }));
@@ -72,10 +80,6 @@ async function emitUrl(url: string) {
 const KAKAO_CALLBACK = 'kakao0123456789abcdef0123456789abcdef://oauth?code=test-code';
 const session: Session = {
   user: TEST_CONTEXT.profile,
-  membership: {
-    ...TEST_CONTEXT.membership,
-    store: { ...TEST_CONTEXT.membership.store, createdAt: '2026-09-01T00:00:00Z' },
-  },
   tokens: {
     accessToken: 'baton-access-token',
     refreshToken: 'baton-refresh-token',
@@ -108,7 +112,6 @@ const context = getMockContext({
   '+not-found': () => <Text>페이지를 찾을 수 없어요</Text>,
   '(auth)/_layout': AuthLayout,
   '(auth)/start': StartRoute,
-  '(auth)/login': LoginRoute,
   '(auth)/signup/name': () => <Text>가입 이름 입력</Text>,
   '(main)/_layout': MainLayout,
   '(main)/(tabs)/home': () => <Text>홈 화면</Text>,
@@ -167,7 +170,8 @@ afterEach(async () => {
   jest.restoreAllMocks();
 });
 
-describe.each([ROUTES.auth.start, ROUTES.auth.login])('%s에서 소셜 로그인', (entryPath) => {
+describe('소셜 로그인 시작 화면', () => {
+  const entryPath = ROUTES.auth.start;
   describe.each(['kakao', 'apple'] as const)('%s', (provider) => {
     async function pressLogin() {
       await render(<ExpoRoot context={context} location={entryPath} />);
@@ -181,8 +185,8 @@ describe.each([ROUTES.auth.start, ROUTES.auth.login])('%s에서 소셜 로그인
       return jest.spyOn(globalThis, 'fetch').mockImplementation(async (url) => {
         if (String(url).endsWith(`/auth/social/${provider}`)) return successfulResponse(outcome);
         if (String(url).endsWith('/users/me')) return successfulResponse(session.user);
-        if (String(url).endsWith('/stores/me'))
-          return successfulResponse({ membership: hasStore ? session.membership : null });
+        if (String(url).endsWith('/workspaces'))
+          return successfulResponse({ memberships: hasStore ? [TEST_CONTEXT.membership] : [] });
         throw new Error(`예상하지 않은 요청: ${url}`);
       });
     }
@@ -222,7 +226,6 @@ describe.each([ROUTES.auth.start, ROUTES.auth.login])('%s에서 소셜 로그인
         expect(screen.getByText(`현재 경로: ${ROUTES.signup.name}`)).toBeOnTheScreen(),
       );
       expect(useSignupStore.getState()).toMatchObject({
-        mode: 'social',
         provider,
         socialSignupToken: signupRequired.socialSignupToken,
       });
@@ -239,7 +242,13 @@ describe.each([ROUTES.auth.start, ROUTES.auth.login])('%s에서 소셜 로그인
       const fetchMock = jest.spyOn(globalThis, 'fetch');
       await pressLogin();
 
-      await waitFor(() => expect(logger.error).toHaveBeenCalled());
+      await waitFor(() =>
+        expect(
+          screen.getByRole('button', {
+            name: provider === 'kakao' ? '카카오로 시작하기' : 'Apple로 시작하기',
+          }),
+        ).toBeEnabled(),
+      );
       expect(screen.getByText(`현재 경로: ${entryPath}`)).toBeOnTheScreen();
       expect(fetchMock).not.toHaveBeenCalled();
       expect(Alert.alert).not.toHaveBeenCalled();
@@ -272,8 +281,8 @@ describe.each([ROUTES.auth.start, ROUTES.auth.login])('%s에서 소셜 로그인
             status === 'LOGGED_IN' ? { status, ...session } : signupRequired,
           );
         if (String(url).endsWith('/users/me')) return successfulResponse(session.user);
-        if (String(url).endsWith('/stores/me'))
-          return successfulResponse({ membership: session.membership });
+        if (String(url).endsWith('/workspaces'))
+          return successfulResponse({ memberships: [TEST_CONTEXT.membership] });
         throw new Error(`예상하지 않은 요청: ${url}`);
       });
       await render(<ExpoRoot context={context} location={entryPath} />);
@@ -301,10 +310,10 @@ describe.each([ROUTES.auth.start, ROUTES.auth.login])('%s에서 소셜 로그인
 it('일반 앱 딥링크는 정상적으로 화면을 이동한다', async () => {
   await render(<ExpoRoot context={context} location={ROUTES.auth.start} />);
   await act(async () => {
-    await emitUrl('baton-dev://login');
+    await emitUrl('baton-dev://start');
   });
   await waitFor(() =>
-    expect(screen.getByText(`현재 경로: ${ROUTES.auth.login}`)).toBeOnTheScreen(),
+    expect(screen.getByText(`현재 경로: ${ROUTES.auth.start}`)).toBeOnTheScreen(),
   );
 });
 
@@ -315,8 +324,8 @@ it.each(['signedOut', 'signedIn'] as const)(
       useAuthStore.setState({ status, session });
       jest.spyOn(globalThis, 'fetch').mockImplementation(async (url) => {
         if (String(url).endsWith('/users/me')) return successfulResponse(session.user);
-        if (String(url).endsWith('/stores/me'))
-          return successfulResponse({ membership: session.membership });
+        if (String(url).endsWith('/workspaces'))
+          return successfulResponse({ memberships: [TEST_CONTEXT.membership] });
         throw new Error(`예상하지 않은 요청: ${url}`);
       });
     }

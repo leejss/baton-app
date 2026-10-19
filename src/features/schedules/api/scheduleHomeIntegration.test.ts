@@ -2,7 +2,7 @@ import { expect, it } from '@jest/globals';
 import { createTestClient } from '@/test/MainTestProvider';
 import { invalidateScheduleViews } from '@/features/schedules/api/schedule.mutations';
 import { scheduleQueries } from '@/features/schedules/api/schedule.queries';
-it('일정 변경은 해당 매장의 월간·날짜별·홈·추천을 갱신하고 다른 매장 캐시는 보존한다', async () => {
+it('일정 변경은 해당 매장의 월간·날짜별·홈을 갱신하고 다른 매장 캐시는 보존한다', async () => {
   const client = createTestClient();
   for (const key of [
     ['home', 101],
@@ -17,7 +17,7 @@ it('일정 변경은 해당 매장의 월간·날짜별·홈·추천을 갱신�
     client.setQueryData(key, []);
   await invalidateScheduleViews(client, 101);
   expect(client.getQueryState(['home', 101])?.isInvalidated).toBe(true);
-  expect(client.getQueryState(['handoffs', 101, 'recipients'])?.isInvalidated).toBe(true);
+  expect(client.getQueryState(['handoffs', 101, 'recipients'])?.isInvalidated).toBe(false);
   expect(client.getQueryState(['home', 202])?.isInvalidated).toBe(false);
   expect(client.getQueryState(scheduleQueries.month(101, '2026-09').queryKey)?.isInvalidated).toBe(
     true,

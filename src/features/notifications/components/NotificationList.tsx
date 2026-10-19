@@ -26,7 +26,7 @@ export function NotificationList() {
   const context = useMainContext();
   const insets = useSafeAreaInsets();
   const scope = {
-    storeId: context.membership.store.id,
+    workspaceId: context.membership.workspace.id,
     userId: context.profile.id,
   };
   const { data, refetch, isRefetchError } = useSuspenseQuery(notificationQueries.list(scope));

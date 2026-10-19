@@ -29,3 +29,17 @@ describe.each([true, false])('외부 URL 처리 (initial=%s)', (initial) => {
     expect(redirectSystemPath({ path, initial })).toBe(path);
   });
 });
+
+it.each([true, false])(
+  '워크스페이스 초대 링크는 공개 참여 라우트로 변환한다 initial=%s',
+  (initial) => {
+    expect(
+      redirectSystemPath({ path: 'baton://workspace/join?token=random_token-123', initial }),
+    ).toBe('/workspace/join?token=random_token-123');
+  },
+);
+it('잘못된 초대 링크는 토큰 없이 안내 화면으로 보낸다', () => {
+  expect(redirectSystemPath({ path: 'baton://workspace/join', initial: true })).toBe(
+    '/workspace/join',
+  );
+});

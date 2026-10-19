@@ -1,39 +1,19 @@
-/** 화면이 사용하는 값. API 응답 타입에 의존하지 않는다. */
+import type { ProfileImage } from '@/features/auth/api/auth.schema';
 export type ScheduleMember = {
   id: number;
   name: string;
-  email: string;
-  role: 'MANAGER' | 'EMPLOYEE';
+  email: string | null;
+  profileImage: ProfileImage;
+  role: 'ADMIN' | 'MEMBER';
   isActive: boolean;
 };
-
 export type ScheduleItem = {
   id: number;
+  workspaceId: number;
   member: ScheduleMember;
   date: string;
   startTime: string;
   endTime: string;
 };
-
-export type ScheduleContext = {
-  storeId: number;
-  storeName: string;
-  userId: number;
-  canManage: boolean;
-};
-
-export type ScheduleFormValues = {
-  employeeId: number | null;
-  startDate: string;
-  endDate: string;
-  startTime: string;
-  endTime: string;
-};
-
-export type DateRange = { start: string; end: string };
-export type ScheduleSaveResult = {
-  created: string[];
-  duplicates: string[];
-  failed: string[];
-  failures: { date: string; errorCode: string; retryable: boolean }[];
-};
+export type ScheduleContext = { workspaceId: number; storeName: string; userId: number };
+export type ScheduleFormValues = { workDate: string; startTime: string; endTime: string };

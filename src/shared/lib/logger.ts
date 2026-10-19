@@ -102,7 +102,7 @@ function writeConsole(
   console[level](message, attributes);
 }
 
-type LogUser = { id: number | string; email: string } | null;
+type LogUser = { id: number | string; email: string | null } | null;
 let readUser: () => LogUser = () => null;
 
 /** 인증 모듈이 조회 함수를 등록한다. 로그를 쓸 때만 세션을 읽는다. */

@@ -5,7 +5,6 @@ import { formatTimeRangeDuration } from '@/shared/lib/formatters';
 import { hasStarted } from '@/shared/lib/time';
 import {
   calendarDates,
-  contiguousRanges,
   monthDates,
   monthLimits,
   normalizeSelectedDate,
@@ -48,13 +47,5 @@ describe('일정 날짜 계산', () => {
     expect(normalizeSelectedDate('2026-09-06', today)).toBe('2026-09-06');
     expect(normalizeRegistrationDate('2027-02-28', '2026-11-30')).toBe('2027-02-28');
     expect(normalizeRegistrationDate('2027-03-01', '2026-11-30')).toBeUndefined();
-  });
-  it('띄엄띄엄 실패한 날짜만 범위로 묶어 성공 날짜의 재전송을 막는다', () => {
-    expect(
-      contiguousRanges(['2026-09-10', '2026-09-08', '2026-09-09', '2026-09-13', '2026-09-08']),
-    ).toEqual([
-      { start: '2026-09-08', end: '2026-09-10' },
-      { start: '2026-09-13', end: '2026-09-13' },
-    ]);
   });
 });

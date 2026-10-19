@@ -16,7 +16,7 @@ describe('handoff draft store', () => {
     expect(recipient).toBeDefined();
     if (recipient === undefined) return;
 
-    const recipientModel = { member: recipient, isRecommended: true };
+    const recipientModel = { member: recipient };
     const actions = useHandoffDraftStore.getState();
     actions.setType('STORE_STATUS');
     actions.setContent('제빙기 확인', '오픈 전에 상태를 확인해 주세요.');

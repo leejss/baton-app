@@ -11,13 +11,11 @@ const KINDS: Record<NotificationDto['type'], NotificationKind> = {
   UPDATE_ANNOUNCEMENT: 'announcement',
   HANDOVER_RECEIVED: 'handoffReceived',
   HANDOVER_CONFIRMED: 'handoffConfirmed',
-  SCHEDULE_CHANGED: 'schedule',
 };
 const HEADINGS: Record<NotificationKind, string> = {
   announcement: '서비스 공지',
   handoffReceived: '인수인계 수신',
   handoffConfirmed: '인수인계 확인',
-  schedule: '근무 일정 알림',
 };
 export function toNotification(dto: NotificationDto): Notification {
   const kind = KINDS[dto.type];
@@ -25,11 +23,10 @@ export function toNotification(dto: NotificationDto): Notification {
   let target: NotificationTarget = { kind: 'none' };
   if ((kind === 'handoffReceived' || kind === 'handoffConfirmed') && dto.handoverId != null) {
     target = { kind: 'handoff', id: String(dto.handoverId) };
-  } else if (kind === 'schedule' && dto.scheduleId != null) {
-    target = { kind: 'schedule', id: dto.scheduleId };
   }
   return {
     id: String(dto.id),
+    workspaceId: dto.workspaceId,
     kind,
     heading: HEADINGS[kind],
     message: dto.body?.trim() || dto.title,

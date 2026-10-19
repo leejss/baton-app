@@ -103,7 +103,7 @@ it('refresh 장애는 한 번 보고하고 기존 세션 만료와 원 요청 40
         status: String(url).endsWith('/refresh') ? 503 : 401,
       }),
   );
-  const results = await Promise.allSettled([get('/items', schema), get('/stores', schema)]);
+  const results = await Promise.allSettled([get('/items', schema), get('/workspaces', schema)]);
   for (const result of results) {
     expect(result.status).toBe('rejected');
     if (result.status === 'rejected') {

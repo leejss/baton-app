@@ -31,14 +31,14 @@ export function MainHeader({
   const context = useMainContext();
   const notifications = useQuery({
     ...notificationQueries.list({
-      storeId: context.storeId,
+      workspaceId: context.workspaceId,
       userId: context.userId,
     }),
     enabled: showNotification,
   });
   const membership = context.membership;
-  const storeLabel = membership && `${membership.store.storeName} ${membership.store.branchName}`;
-  const roleLabel = membership?.role === 'MANAGER' ? '관리자' : '직원';
+  const storeLabel = membership && membership.workspace.name;
+  const roleLabel = membership?.role === 'ADMIN' ? '관리자' : '멤버';
   const count = notifications.data?.unreadCount ?? 0;
   const badgeText = notifications.data?.badgeText ?? '';
   const headerBackgroundColor =
@@ -81,8 +81,10 @@ export function MainHeader({
         )}
         <View style={styles.trailing}>
           {membership ? (
-            <View
-              accessibilityLabel={`${storeLabel}, ${roleLabel}`}
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => router.push(ROUTES.workspaces)}
+              accessibilityLabel={`${storeLabel}, ${roleLabel}, 워크스페이스 전환`}
               style={[
                 styles.storeTag,
                 {
@@ -104,7 +106,7 @@ export function MainHeader({
                 {' / '}
                 {roleLabel}
               </Text>
-            </View>
+            </Pressable>
           ) : null}
           {showNotification && notifications.isError && (
             <Pressable

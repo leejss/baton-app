@@ -1,190 +1,117 @@
-import { logger } from '@/shared/lib/logger';
-import { updateSchedule } from '@/features/schedules/api/schedule.api';
+import { useEffect, useRef, useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigation, useRouter } from 'expo-router';
 import { usePreventRemove } from 'expo-router/react-navigation';
-import { useRef, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { Keyboard } from 'react-native';
-
-import { ROUTES } from '@/shared/lib/routes';
+import { createSchedule, updateSchedule } from '@/features/schedules/api/schedule.api';
 import {
-  getDuplicateCounts,
-  refreshScheduleConflict,
   invalidateScheduleViews,
-  saveScheduleDates,
+  refreshScheduleConflict,
 } from '@/features/schedules/api/schedule.mutations';
-import type {
-  ScheduleContext,
-  ScheduleFormValues,
-  ScheduleItem,
-  ScheduleSaveResult,
-} from '@/features/schedules/types';
-import { scheduleFormSchema } from '@/features/schedules/lib/schedulePolicy';
-import { rangeDates } from '@/shared/lib/date';
+import { canEditSchedule, scheduleFormSchema } from '@/features/schedules/lib/schedulePolicy';
+import type { ScheduleContext, ScheduleFormValues, ScheduleItem } from '@/features/schedules/types';
 import { hasStarted } from '@/shared/lib/time';
-
-type EditorOptions = {
+import { ROUTES } from '@/shared/lib/routes';
+import { logger } from '@/shared/lib/logger';
+export function useScheduleEditor({
+  context,
+  initialDate,
+  item,
+}: {
   context: ScheduleContext;
   initialDate?: string;
   item?: ScheduleItem;
-};
-const isField = (field: PropertyKey | undefined): field is keyof ScheduleFormValues =>
-  typeof field === 'string' &&
-  ['employeeId', 'startDate', 'endDate', 'startTime', 'endTime'].includes(field);
-
-export function useScheduleEditor({ context, initialDate, item }: EditorOptions) {
+}) {
   const form = useForm<ScheduleFormValues>({
     defaultValues: {
-      employeeId: item?.member.id ?? null,
-      startDate: item?.date ?? initialDate ?? '',
-      endDate: item?.date ?? initialDate ?? '',
+      workDate: item?.date ?? initialDate ?? '',
       startTime: item?.startTime ?? '',
       endTime: item?.endTime ?? '',
     },
   });
   const values = useWatch({ control: form.control });
-  const [step, setStep] = useState(item ? 1 : 0);
-  const [saveResult, setSaveResult] = useState<ScheduleSaveResult>();
-  const [showResult, setShowResult] = useState(false);
+  const [step, setStep] = useState(0);
+  const [complete, setComplete] = useState(false);
   const [leave, setLeave] = useState<() => void>();
+  const saving = useRef(false);
+  const mounted = useRef(true);
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
   const client = useQueryClient();
   const router = useRouter();
   const navigation = useNavigation();
-  const saving = useRef(false);
   const mutation = useMutation({
-    mutationKey: ['schedules', item ? 'update' : 'create'],
-    mutationFn: async (acceptDuplicates: boolean) => {
+    mutationKey: ['schedules', context.workspaceId, item ? 'update' : 'create'],
+    mutationFn: () => {
       const input = scheduleFormSchema.parse(form.getValues());
-      if (item) {
-        await updateSchedule(context.storeId, item.id, {
-          employeeId: input.employeeId,
-          workDate: input.startDate,
-          startTime: input.startTime,
-          endTime: input.endTime,
-        });
-        return {
-          created: [input.startDate],
-          duplicates: [],
-          failed: [],
-          failures: [],
-        };
-      }
-      return saveScheduleDates(
-        context.storeId,
-        input,
-        acceptDuplicates,
-        saveResult?.failed.length
-          ? saveResult.failures
-              .filter((failure) => failure.retryable)
-              .map((failure) => failure.date)
-          : undefined,
-      );
+      return item
+        ? updateSchedule(context.workspaceId, item.id, input)
+        : createSchedule(context.workspaceId, input);
     },
     onError: (error) => {
-      logger.error(item ? '근무 수정 실패' : '근무 등록 실패', error);
-      return refreshScheduleConflict(client, context.storeId, error);
+      logger.error('근무 저장 실패', error);
+      return refreshScheduleConflict(client, context.workspaceId, error);
+    },
+    onSuccess: async () => {
+      if (mounted.current) setComplete(true);
+      await invalidateScheduleViews(client, context.workspaceId);
     },
     onSettled: () => {
       saving.current = false;
     },
-    onSuccess: async (result) => {
-      if (item) {
-        logger.info('근무 수정 완료');
-      } else if (result.created.length > 0) {
-        logger.info(
-          saveResult?.failed.length
-            ? '근무 재등록 결과'
-            : result.failed.length > 0 || result.duplicates.length > 0
-              ? '근무 일부 등록 완료'
-              : '근무 등록 완료',
-          {
-            created_count: result.created.length,
-            failed_count: result.failed.length,
-            duplicate_count: result.duplicates.length,
-          },
-        );
-      }
-      setSaveResult((previous) => ({
-        created: [...new Set([...(previous?.created ?? []), ...result.created])],
-        duplicates: [...new Set([...(previous?.duplicates ?? []), ...result.duplicates])],
-        failed: [
-          ...(previous?.failures
-            .filter((failure) => !failure.retryable)
-            .map((failure) => failure.date) ?? []),
-          ...result.failed,
-        ],
-        failures: [
-          ...(previous?.failures.filter((failure) => !failure.retryable) ?? []),
-          ...result.failures,
-        ],
-      }));
-      setShowResult(true);
-      await invalidateScheduleViews(client, context.storeId);
-    },
   });
-  const complete = saveResult !== undefined && saveResult.failed.length === 0;
-  usePreventRemove(
-    mutation.isPending || (!complete && (form.formState.isDirty || step > 0)),
-    ({ data }) => {
-      if (!mutation.isPending) setLeave(() => () => navigation.dispatch(data.action));
-    },
-  );
+  usePreventRemove(mutation.isPending || (!complete && form.formState.isDirty), ({ data }) => {
+    if (!mutation.isPending) setLeave(() => () => navigation.dispatch(data.action));
+  });
   const validate = () => {
     form.clearErrors();
-    const input = form.getValues();
-    const parsed = scheduleFormSchema.safeParse(input);
+    const parsed = scheduleFormSchema.safeParse(form.getValues());
     if (!parsed.success) {
-      for (const issue of parsed.error.issues)
-        if (isField(issue.path[0])) form.setError(issue.path[0], { message: issue.message });
+      for (const issue of parsed.error.issues) {
+        const field = issue.path[0];
+        if (field === 'workDate' || field === 'startTime' || field === 'endTime')
+          form.setError(field, { message: issue.message });
+      }
       return false;
     }
-    // 등록은 시작 시각이 지난 날짜만 서버에서 실패 처리하고 나머지를 저장한다.
     if (
-      item &&
-      (hasStarted(item.date, item.startTime, new Date()) ||
-        hasStarted(input.startDate, input.startTime, new Date()))
+      (item && !canEditSchedule(item, context.userId, new Date())) ||
+      hasStarted(parsed.data.workDate, parsed.data.startTime, new Date())
     ) {
-      form.setError('root', {
-        message: '이미 시작된 근무는 수정할 수 없습니다. 날짜와 시간을 확인해주세요.',
-      });
+      form.setError('root', { message: '본인의 시작 전 근무만 저장할 수 있어요.' });
       return false;
     }
     return true;
   };
-  const handleSave = (acceptDuplicates = Boolean(saveResult?.failed.length)) => {
-    if (saving.current || mutation.isPending) return;
-    if (saveResult && !saveResult.failures.some((failure) => failure.retryable)) return;
-    if (!validate()) return;
-    Keyboard.dismiss();
+  const handleSave = () => {
+    if (saving.current || mutation.isPending || complete || !validate()) return;
     saving.current = true;
-    mutation.mutate(acceptDuplicates);
+    Keyboard.dismiss();
+    mutation.mutate();
   };
   const handleNext = () => {
-    if (mutation.isPending) return;
-    if (step === 3) {
-      handleSave();
-      return;
-    }
-    if (step === 0 && !form.getValues('employeeId')) return;
-    if (
-      step === 1 &&
-      rangeDates(form.getValues('startDate'), form.getValues('endDate')).length === 0
-    )
-      return;
-    if (step >= 2 && !validate()) return;
-    Keyboard.dismiss();
-    setStep(step + 1);
+    if (mutation.isPending || complete) return;
+    if (step === 0) {
+      if (!form.getValues('workDate')) return;
+      setStep(1);
+    } else if (step === 1) {
+      if (validate()) {
+        Keyboard.dismiss();
+        setStep(2);
+      }
+    } else handleSave();
   };
-  const handleFinish = () => router.dismissTo(ROUTES.schedules.list(form.getValues('startDate')));
   const clearFailedAttempt = () => {
-    if (!saveResult?.created.length) setSaveResult(undefined);
     form.clearErrors();
     mutation.reset();
   };
-  const setRange = (start: string, end: string) => {
-    form.setValue('startDate', start, { shouldDirty: true });
-    form.setValue('endDate', item ? start : end, { shouldDirty: true });
+  const setDate = (workDate: string) => {
+    form.setValue('workDate', workDate, { shouldDirty: true });
     clearFailedAttempt();
   };
   return {
@@ -193,17 +120,13 @@ export function useScheduleEditor({ context, initialDate, item }: EditorOptions)
     step,
     setStep,
     mutation,
-    saveResult,
-    showResult,
-    setShowResult,
     complete,
     leave,
     setLeave,
-    setRange,
+    setDate,
     clearFailedAttempt,
     handleNext,
     handleSave,
-    handleFinish,
-    duplicates: getDuplicateCounts(mutation.error),
+    handleFinish: () => router.dismissTo(ROUTES.schedules.list(form.getValues('workDate'))),
   };
 }

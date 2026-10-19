@@ -8,7 +8,6 @@ import { SCREEN_PADDING_X } from '@/theme';
 
 import { useSocialSignIn } from '@/features/auth/hooks/useSocialSignIn';
 import { AuthHeader } from '@/features/auth/components/AuthHeader';
-import { OrDivider } from '@/features/auth/components/OrDivider';
 import { StartButton } from '@/features/auth/components/StartButton';
 
 /**
@@ -36,10 +35,10 @@ const SPEC = {
   illustrationHeight: 386,
   /** 카카오·Apple 버튼 사이. */
   socialGap: 10,
-  /** 소셜 묶음 ↔ 구분선 ↔ 이메일 버튼 사이. */
+  /** 소셜 로그인 묶음의 간격. */
   actionGap: 18,
   /**
-   * 이메일 버튼 하단(763) → 화면 하단(852)이 89인데, 그중 34는 홈 인디케이터 몫이다.
+   * 로그인 버튼 하단 → 화면 하단(852)이 89인데, 그중 34는 홈 인디케이터 몫이다.
    * 나머지 55만 우리가 그리고 인디케이터 영역은 safe-area inset에 맡긴다.
    */
   bottomInset: 55,
@@ -49,7 +48,6 @@ export type StartScreenProps = {
   /** 테스트에서 카카오 SDK를 타지 않고 눌림만 확인할 때 주입한다. */
   onStartWithKakao?: () => void;
   onStartWithApple?: () => void;
-  onStartWithEmail?: () => void;
   /**
    * 소셜 인증은 됐지만 연결된 Baton 계정이 없을 때(계약 §12-1 `SIGNUP_REQUIRED`).
    * 가입 정보는 이미 `signupStore`에 채워진 뒤이므로 라우트는 가입 첫 화면으로만 보내면 된다.
@@ -65,7 +63,6 @@ function notWired(action: string) {
 export function StartScreen({
   onStartWithKakao,
   onStartWithApple,
-  onStartWithEmail = notWired('email'),
   onSocialSignupRequired = notWired('socialSignup'),
 }: StartScreenProps) {
   const insets = useSafeAreaInsets();
@@ -130,13 +127,6 @@ export function StartScreen({
                 />
               ) : null}
             </View>
-            <OrDivider label="또는" />
-            <StartButton
-              provider="email"
-              label="이메일로 시작하기"
-              onPress={onStartWithEmail}
-              disabled={social.isPending}
-            />
           </View>
         </View>
       </View>

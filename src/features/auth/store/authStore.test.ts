@@ -59,7 +59,7 @@ it('동시 요청과 토큰 갱신이 401이면 대기를 끝내고 로컬 세�
 
   const results = await Promise.allSettled([
     get('/users/me', z.unknown()),
-    get('/stores/me', z.unknown()),
+    get('/workspaces', z.unknown()),
   ]);
 
   expect(results).toEqual([
@@ -74,7 +74,7 @@ it('동시 요청과 토큰 갱신이 401이면 대기를 끝내고 로컬 세�
   expect(secureStorage.remove).toHaveBeenCalledWith('auth.session');
   expect(fetchMock.mock.calls.map(([url]) => url)).toEqual([
     'https://api.example.com/api/v1/users/me',
-    'https://api.example.com/api/v1/stores/me',
+    'https://api.example.com/api/v1/workspaces',
     'https://api.example.com/api/v1/auth/token/refresh',
   ]);
 }, 1000);

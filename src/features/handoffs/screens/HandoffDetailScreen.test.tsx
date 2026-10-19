@@ -24,6 +24,43 @@ afterEach(async () => {
 });
 
 describe('HandoffDetailScreen', () => {
+  it('보낸 사람과 담당자가 아닌 멤버는 상세를 열고 확인·관리 동작은 받지 않는다', async () => {
+    const handoff = INITIAL_MOCK_HANDOFFS[0];
+    const confirm = jest.spyOn(api, 'confirmHandoff');
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false, staleTime: Infinity, gcTime: Infinity } },
+    });
+    clients.push(queryClient);
+    queryClient.setQueryData(handoffQueries.detail(101, handoff.id).queryKey, handoff);
+    await render(
+      <SafeAreaProvider initialMetrics={INITIAL_METRICS}>
+        <QueryClientProvider client={queryClient}>
+          <MainContextProvider
+            value={{
+              ...TEST_CONTEXT,
+              userId: 999,
+              canManage: false,
+              profile: { ...TEST_CONTEXT.profile, id: 999 },
+              membership: { ...TEST_CONTEXT.membership, role: 'MEMBER' },
+            }}
+          >
+            <HandoffDetailScreen
+              handoffId={String(handoff.id)}
+              onBack={jest.fn()}
+              onDeleted={jest.fn()}
+              onEdit={jest.fn()}
+              onHome={jest.fn()}
+            />
+          </MainContextProvider>
+        </QueryClientProvider>
+      </SafeAreaProvider>,
+    );
+    expect(screen.getByText(handoff.title)).toBeOnTheScreen();
+    expect(screen.getByText(handoff.body)).toBeOnTheScreen();
+    expect(screen.queryByLabelText('확인 하기')).not.toBeOnTheScreen();
+    expect(screen.queryByLabelText('인수인계 수정 및 삭제 메뉴')).not.toBeOnTheScreen();
+    expect(confirm).not.toHaveBeenCalled();
+  });
   it('작성자가 보낸 인수인계와 확인 상태를 상세 화면에 표시한다', async () => {
     const handoff = INITIAL_MOCK_HANDOFFS[0];
     if (handoff === undefined) throw new Error('상세 화면 테스트 데이터가 없습니다.');

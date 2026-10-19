@@ -67,7 +67,7 @@ it('4xx Mutation 실패는 전역에서 warn으로 기록한다', async () => {
   const mutation = client.getMutationCache().build(client, {
     gcTime: Infinity,
     mutationFn: async () => {
-      throw new AppError('server', '이미 가입', { status: 409, errorCode: 'STORE_ALREADY_JOINED' });
+      throw new AppError('server', '이미 가입', { status: 409, errorCode: 'CONFLICT' });
     },
   });
   await expect(mutation.execute(undefined)).rejects.toThrow();

@@ -20,9 +20,10 @@ import { useAuthStore } from '@/features/auth/store/authStore';
 export function ForcedLogoutModal() {
   const signOutReason = useAuthStore((state) => state.signOutReason);
 
-  /** 사유는 남겨둔다. 로그인 화면이 이걸 보고 스낵바(시안 01-2)를 띄운다. */
+  /** 안내를 닫고 소셜 로그인 시작 화면으로 돌아간다. */
   const goToSignIn = () => {
-    router.replace(ROUTES.auth.login);
+    useAuthStore.getState().clearSignOutReason();
+    router.replace(ROUTES.auth.start);
   };
 
   return (

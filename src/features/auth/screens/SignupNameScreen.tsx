@@ -8,17 +8,24 @@ import { Button, TextField } from '@/shared/ui';
 
 import { SignupLayout } from '@/features/auth/components/SignupLayout';
 import { signupNameFormSchema, type SignupNameForm } from '@/features/auth/lib/validation';
-import { getStepProgress, useSignupStore } from '@/features/auth/store/signupStore';
+import { useCountdown } from '@/shared/hooks/useCountdown';
+import {
+  getStepProgress,
+  hasSocialSignupTokenExpired,
+  useSignupStore,
+} from '@/features/auth/store/signupStore';
 
 /** Figma "01-1·01-2 회원가입 - 이름" — `943:111462`, `943:111474`. */
 export type SignupNameScreenProps = {
   onBack: () => void;
   onNext: () => void;
+  onSocialSignupExpired: () => void;
 };
 
-export function SignupNameScreen({ onBack, onNext }: SignupNameScreenProps) {
+export function SignupNameScreen({ onBack, onNext, onSocialSignupExpired }: SignupNameScreenProps) {
   const operation = useAuthOperation('signup');
-  const mode = useSignupStore((state) => state.mode);
+  const expiresAt = useSignupStore((state) => state.socialSignupExpiresAt);
+  const expiry = useCountdown(expiresAt);
   const displayName = useSignupStore((state) => state.displayName);
   const setDisplayName = useSignupStore((state) => state.setDisplayName);
 
@@ -37,6 +44,10 @@ export function SignupNameScreen({ onBack, onNext }: SignupNameScreenProps) {
     operation.run(
       'name',
       async ({ isCurrent, complete }) => {
+        if (hasSocialSignupTokenExpired(useSignupStore.getState().socialSignupExpiresAt)) {
+          complete(onSocialSignupExpired);
+          return;
+        }
         await handleSubmit((values) => {
           if (!isCurrent()) return;
           setDisplayName(values.displayName.trim());
@@ -49,13 +60,16 @@ export function SignupNameScreen({ onBack, onNext }: SignupNameScreenProps) {
   return (
     <SignupLayout
       onBack={onBack}
-      progress={getStepProgress(mode, 'name')}
+      progress={getStepProgress('name')}
       title="이름을 입력해주세요"
+      description={
+        expiry.isExpired ? '가입 시간이 지났어요. 소셜 인증을 다시 해주세요.' : undefined
+      }
       action={
         <Button
           variant="accent"
-          label="다음"
-          disabled={!formState.isValid || operation.isPending}
+          label={expiry.isExpired ? '소셜 인증 다시 하기' : '다음'}
+          disabled={operation.isPending || (!expiry.isExpired && !formState.isValid)}
           onPress={submit}
         />
       }

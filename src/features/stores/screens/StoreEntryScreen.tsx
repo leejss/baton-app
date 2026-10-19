@@ -16,7 +16,7 @@ export type StoreEntryScreenProps = {
   onBack: () => void;
   /** 초대 코드로 참여하기(STORE-02). */
   onJoin: () => void;
-  /** 새 매장 만들기(STORE-05). */
+  /** 워크스페이스 만들기(STORE-05). */
   onCreate: () => void;
 };
 
@@ -44,7 +44,7 @@ export function StoreEntryScreen({ onBack, onJoin, onCreate }: StoreEntryScreenP
             어떻게 시작하시겠어요?
           </Text>
           <Text variant="body" weight="medium" color="foregroundDefault">
-            매장을 만들거나, 초대 받은 매장에 참여해주세요.
+            워크스페이스를 만들거나 초대 링크로 참여해주세요.
           </Text>
         </View>
 
@@ -53,15 +53,15 @@ export function StoreEntryScreen({ onBack, onJoin, onCreate }: StoreEntryScreenP
           <StoreStartBanner
             tone="soft"
             illustration={<StoreManagerIllustration size={SPEC.illustrationSize} />}
-            title="새 매장 만들기"
-            description={'매장을 만들고\n관리자로 시작해요'}
+            title="워크스페이스 만들기"
+            description={'공간을 만들고\n동료를 초대해요'}
             onPress={onCreate}
           />
           <StoreStartBanner
             tone="solid"
             illustration={<StoreWorkerIllustration size={SPEC.illustrationSize} />}
-            title="매장에 참여하기"
-            description={'초대 받은 매장에\n직원으로 참여해요'}
+            title="초대 링크로 참여"
+            description={'초대받은 공간에\n멤버로 참여해요'}
             onPress={onJoin}
           />
         </View>

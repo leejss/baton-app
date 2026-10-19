@@ -48,8 +48,6 @@ export type HandoffDetailModel = {
 
 export type RecipientModel = {
   member: MemberDto;
-  isRecommended: boolean;
-  nextShiftLabel?: string;
 };
 
 export type LocalAttachment = {

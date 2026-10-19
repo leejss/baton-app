@@ -11,6 +11,7 @@ type Options = {
   onRemove: (id: string) => void;
 };
 export function useAttachmentUploads({ attachments, onAdd, onUpdate, onRemove }: Options) {
+  const mounted = useRef(true);
   const tasks = useRef(
     new Map<string, { controller: AbortController; file: LocalAttachment; removed: boolean }>(),
   );
@@ -28,7 +29,8 @@ export function useAttachmentUploads({ attachments, onAdd, onUpdate, onRemove }:
           file,
           (patch) => {
             task.file = { ...task.file, ...patch };
-            if (!task.removed) onUpdate(file.localId, patch);
+            if (mounted.current && !task.removed && !task.controller.signal.aborted)
+              onUpdate(file.localId, patch);
           },
           task.controller.signal,
         );
@@ -42,9 +44,14 @@ export function useAttachmentUploads({ attachments, onAdd, onUpdate, onRemove }:
     },
   });
   useEffect(() => {
+    mounted.current = true;
     const pending = tasks.current;
     return () => {
-      for (const task of pending.values()) task.controller.abort();
+      mounted.current = false;
+      for (const task of pending.values()) {
+        task.removed = true;
+        task.controller.abort();
+      }
     };
   }, []);
   const retry = (id: string) => {
@@ -52,6 +59,7 @@ export function useAttachmentUploads({ attachments, onAdd, onUpdate, onRemove }:
     if (file && !tasks.current.has(id)) upload.mutate(file);
   };
   const add = (files: LocalAttachment[]) => {
+    if (!mounted.current) return;
     onAdd(files);
     for (const file of files) upload.mutate(file);
   };

@@ -26,12 +26,13 @@ afterEach(async () => {
   mockPush.mockReset();
 });
 
-it('홈에서 날짜를 바꾼 뒤 인수인계를 누르면 선택한 근무 날짜를 전달한다', async () => {
-  jest.spyOn(homeApi, 'fetchHome').mockImplementation(async (_storeId, date) => ({
+it('홈의 근무자는 조회만 가능하고 별도 인수인계 작성 진입을 제공하지 않는다', async () => {
+  jest.spyOn(homeApi, 'fetchHome').mockImplementation(async (_workspaceId, date) => ({
     date,
     schedulePreview: [
       {
         id: 177,
+        workspaceId: 101,
         employee: MOCK_MEMBERS[1],
         workDate: date,
         startTime: '15:00',
@@ -48,11 +49,9 @@ it('홈에서 날짜를 바꾼 뒤 인수인계를 누르면 선택한 근무 �
     </MainTestProvider>,
   );
   await fireEvent.press(await screen.findByRole('button', { name: '9월 27일 일요일' }));
-  await fireEvent.press(await screen.findByLabelText('이서연님에게 인수인계 작성'));
-  expect(mockPush).toHaveBeenCalledWith({
-    pathname: '/handoffs/new',
-    params: { recipientId: '2', workDate: '2026-09-27' },
-  });
+  expect(await screen.findByText('이서연')).toBeOnTheScreen();
+  expect(screen.queryByLabelText('이서연님에게 인수인계 작성')).toBeNull();
+  expect(mockPush).not.toHaveBeenCalled();
 });
 it('빈 인수인계와 빈 근무일을 정상 상태로 표시한다', async () => {
   jest.spyOn(homeApi, 'fetchHome').mockResolvedValue({

@@ -27,6 +27,8 @@ import {
 import { getDeviceId } from '@/shared/lib/deviceId';
 import { logger } from '@/shared/lib/logger';
 import { storage } from '@/shared/lib/mmkvStorage';
+import { storeQueries } from '@/features/stores/api/store.queries';
+import { selectWorkspace } from '@/features/stores/store/workspaceSelectionStore';
 import { ROUTES } from '@/shared/lib/routes';
 
 export function usePushNotifications() {
@@ -103,12 +105,33 @@ export function usePushNotifications() {
     function open(response: Notifications.NotificationResponse | null) {
       if (!isCurrent() || !response) return;
       const data = response.notification.request.content.data;
-      if (data?.localPush !== true || data.userId !== userId || !parsePushPayload(data)) return;
+      const payload = parsePushPayload(data);
+      if (data?.localPush !== true || data.userId !== userId || !payload) return;
       const id = response.notification.request.identifier;
       if (opened === id) return;
       opened = id;
       void Notifications.clearLastNotificationResponseAsync().catch(report);
-      router.push(ROUTES.notifications);
+      void (async () => {
+        const { memberships } = await queryClient.fetchQuery({
+          ...storeQueries.me(),
+          staleTime: 0,
+        });
+        if (!isCurrent()) return;
+        const workspaceId = Number(payload.workspaceId);
+        if (
+          !memberships.some(
+            (item) =>
+              item.workspace.id === workspaceId &&
+              item.status === 'ACTIVE' &&
+              item.workspace.status === 'ACTIVE',
+          )
+        ) {
+          router.push(ROUTES.workspaces);
+          return;
+        }
+        await selectWorkspace(queryClient, currentUserId, workspaceId);
+        if (isCurrent()) router.push(ROUTES.notifications);
+      })().catch(report);
     }
     const responses = Notifications.addNotificationResponseReceivedListener(open);
     void Notifications.getLastNotificationResponseAsync().then(open).catch(report);

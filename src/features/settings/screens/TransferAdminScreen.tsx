@@ -20,19 +20,16 @@ import { radius, spacing, useTheme } from '@/theme';
 export function TransferAdminScreen({ purpose }: { purpose: 'manage' | 'leave' | 'withdraw' }) {
   const router = useRouter();
   const { colors } = useTheme();
-  const { storeId, userId, canManage } = useMainContext();
+  const { workspaceId, userId, canManage } = useMainContext();
   const [stage, setStage] = useState<'select' | 'confirm' | 'complete'>('select');
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const members = useQuery({
-    ...storeQueries.members(storeId),
+    ...storeQueries.members(workspaceId),
     enabled: canManage || stage === 'complete',
   });
-  const transfer = useTransferManager(storeId, () => setStage('complete'));
+  const transfer = useTransferManager(workspaceId, () => setStage('complete'));
   const candidates =
-    members.data?.filter(
-      (member) =>
-        member.userId !== userId && member.status === 'ACTIVE' && member.role === 'EMPLOYEE',
-    ) ?? [];
+    members.data?.filter((member) => member.userId !== userId && member.status === 'ACTIVE') ?? [];
   const selected = members.data?.find((member) => member.userId === selectedId);
   const onFinish = () =>
     router.replace(
@@ -149,7 +146,7 @@ export function TransferAdminScreen({ purpose }: { purpose: 'manage' | 'leave' |
                     <View style={styles.primary}>
                       <Text weight="semibold">{selected.displayName} 님</Text>
                       <Text variant="caption" color="foregroundDisabled">
-                        {selected.email}
+                        {selected.email ?? '이메일 제공 안 됨'}
                       </Text>
                     </View>
                   </View>

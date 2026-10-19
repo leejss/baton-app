@@ -10,6 +10,8 @@ export const ROUTES = {
   my: '/my' satisfies Href,
   notifications: '/notifications' satisfies Href,
   store: '/store' satisfies Href,
+  workspaces: '/workspaces' satisfies Href,
+  workspaceInvitation: '/workspace/join' satisfies Href,
   settings: {
     profile: '/settings/profile',
     invitations: '/settings/invitations',
@@ -24,38 +26,25 @@ export const ROUTES = {
 
   auth: {
     start: '/start',
-    login: '/login',
   } as const satisfies Record<string, Href>,
 
   signup: {
     name: '/signup/name',
-    email: '/signup/email',
-    code: '/signup/code',
-    password: '/signup/password',
     terms: '/signup/terms',
     complete: '/signup/complete',
   } as const satisfies Record<string, Href>,
 
-  /** 매장 온보딩(STORE-02~04). 참여 플로우는 코드 입력 → 매장 확인 → 완료다. */
+  /** 워크스페이스 참여: 링크 입력 → 공간 확인 → 완료. */
   storeJoin: {
     index: '/store/join',
     confirm: '/store/join/confirm',
     complete: '/store/join/complete',
   } as const satisfies Record<string, Href>,
 
-  /** 매장 생성(STORE-05~07). 생성 완료 화면이 최초 초대 코드를 보여준다. */
+  /** 워크스페이스 생성: 이름 입력 → 완료. 초대 링크는 설정에서 발급한다. */
   storeCreate: {
     index: '/store/create',
-    location: '/store/create/location',
-    contact: '/store/create/contact',
     complete: '/store/create/complete',
-  } as const satisfies Record<string, Href>,
-
-  resetPassword: {
-    index: '/reset-password',
-    code: '/reset-password/code',
-    newPassword: '/reset-password/new-password',
-    done: '/reset-password/done',
   } as const satisfies Record<string, Href>,
 
   handoffs: {
@@ -64,13 +53,9 @@ export const ROUTES = {
       ({ pathname: HANDOFFS_PATH, params: { scope } }) satisfies Href,
     new: {
       index: NEW_HANDOFF_PATH,
-      content: (workDate?: string) =>
-        ({ pathname: '/handoffs/new/content', params: { workDate } }) satisfies Href,
-      recipient: (workDate?: string) =>
-        ({ pathname: '/handoffs/new/recipient', params: { workDate } }) satisfies Href,
+      content: () => '/handoffs/new/content' as const satisfies Href,
+      recipient: () => '/handoffs/new/recipient' as const satisfies Href,
     },
-    createForRecipient: (recipientId: string, workDate: string) =>
-      ({ pathname: NEW_HANDOFF_PATH, params: { recipientId, workDate } }) satisfies Href,
     detail: (handoffId: string) =>
       ({ pathname: '/handoffs/[handoffId]', params: { handoffId } }) satisfies Href,
     edit: (handoffId: string) =>

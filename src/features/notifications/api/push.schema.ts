@@ -9,15 +9,11 @@ export const pushTokenSchema = z.object({
 });
 
 export const pushPayloadSchema = z.object({
+  workspaceId: z.string().regex(/^[1-9]\d*$/),
   notificationId: z
     .union([z.string().regex(/^[1-9]\d*$/), z.number().int().positive()])
     .transform(String),
-  type: z.enum([
-    'UPDATE_ANNOUNCEMENT',
-    'HANDOVER_RECEIVED',
-    'HANDOVER_CONFIRMED',
-    'SCHEDULE_CHANGED',
-  ]),
+  type: z.enum(['UPDATE_ANNOUNCEMENT', 'HANDOVER_RECEIVED', 'HANDOVER_CONFIRMED']),
 });
 
 export type PushPayload = z.infer<typeof pushPayloadSchema>;

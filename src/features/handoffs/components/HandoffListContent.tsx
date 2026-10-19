@@ -20,7 +20,7 @@ type HandoffListContentProps = {
 export function HandoffListContent({ scope, onManagePress, onOpen }: HandoffListContentProps) {
   const context = useMainContext();
   const query = useSuspenseInfiniteQuery(
-    handoffQueries.list(context.storeId, context.userId, scope),
+    handoffQueries.list(context.workspaceId, context.userId, scope),
   );
 
   const items = query.data.pages

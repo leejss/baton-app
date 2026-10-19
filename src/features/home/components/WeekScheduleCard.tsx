@@ -15,31 +15,26 @@ import { ArrowRightS } from '@/shared/ui/icons';
 import { shadows, spacing, useTheme } from '@/theme';
 
 type WeekScheduleCardProps = {
-  currentUserId: number;
   initialDate: string;
-  onCreateHandoff: (userId: number, workDate: string) => void;
   onDetailsPress: (date: string) => void;
-  storeId: number;
+  workspaceId: number;
 };
 
 export function WeekScheduleCard({
-  currentUserId,
   initialDate,
-  onCreateHandoff,
   onDetailsPress,
-  storeId,
+  workspaceId,
 }: WeekScheduleCardProps) {
   const theme = useTheme();
   const [selectedDate, setSelectedDate] = useState(initialDate);
-  const summaryQuery = useQuery(homeQueries.summary(storeId, selectedDate));
+  const summaryQuery = useQuery(homeQueries.summary(workspaceId, selectedDate));
   const model =
     summaryQuery.data === undefined
       ? undefined
-      : mapHomeScheduleModel(currentUserId, summaryQuery.data, selectedDate);
+      : mapHomeScheduleModel(summaryQuery.data, selectedDate);
   const title = formatKoreanDate(selectedDate);
   const weekDays = getHomeWeekDays(selectedDate);
   const handleDetailsPress = () => onDetailsPress(selectedDate);
-  const handleCreateHandoff = (userId: number) => onCreateHandoff(userId, selectedDate);
   const handleQueryRetry = () => void summaryQuery.refetch();
 
   return (
@@ -84,7 +79,7 @@ export function WeekScheduleCard({
             ) : (
               <View style={styles.shifts}>
                 {model.items.map((item) => (
-                  <HomeShiftRow key={item.id} item={item} onCreateHandoff={handleCreateHandoff} />
+                  <HomeShiftRow key={item.id} item={item} />
                 ))}
               </View>
             ))}

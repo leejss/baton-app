@@ -20,7 +20,6 @@ jest.mock('react-native-keyboard-controller', () =>
 const handoff = INITIAL_MOCK_HANDOFFS[0];
 const recipients = MOCK_MEMBERS.filter((member) => member.userId !== 1).map((member) => ({
   member,
-  isRecommended: false,
 }));
 const clients: ReturnType<typeof createTestClient>[] = [];
 const cases = [
@@ -160,7 +159,7 @@ describe('인수인계 로컬 쿼리 경계', () => {
     const recipient = recipients[0];
     await fireEvent.press(
       await screen.findByRole('radio', {
-        name: `${recipient.member.displayName}, 근무 시간 미정`,
+        name: `${recipient.member.displayName}, ${recipient.member.email ?? '이메일 제공 안 됨'}`,
       }),
     );
     await fireEvent.press(screen.getByRole('button', { name: '확인' }));

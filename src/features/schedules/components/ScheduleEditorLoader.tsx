@@ -17,10 +17,8 @@ type ScheduleEditorLoaderProps = {
 
 export function ScheduleEditorLoader({ id, initialDate }: ScheduleEditorLoaderProps) {
   const context = useMainContext();
-  const detail = useQuery(scheduleQueries.detail(context.storeId ?? 0, id ?? 0));
+  const detail = useQuery(scheduleQueries.detail(context.workspaceId ?? 0, id ?? 0));
   const router = useRouter();
-  if (!context.canManage)
-    return <ScheduleMessage message="관리자만 근무 일정을 변경할 수 있습니다." />;
   if (id !== undefined) {
     if (id <= 0 || (!detail.data && isAppError(detail.error) && detail.error.status === 404))
       return (
@@ -40,8 +38,8 @@ export function ScheduleEditorLoader({ id, initialDate }: ScheduleEditorLoaderPr
         />
       );
     if (!detail.data) return <ScheduleMessage message="수정할 근무를 불러오는 중입니다." />;
-    if (!canEditSchedule(detail.data, true, new Date()))
-      return <ScheduleMessage message="이미 시작된 근무는 수정할 수 없습니다." />;
+    if (!canEditSchedule(detail.data, context.userId, new Date()))
+      return <ScheduleMessage message="본인의 시작 전 근무만 수정할 수 있어요." />;
   }
   return (
     <ScheduleEditorForm

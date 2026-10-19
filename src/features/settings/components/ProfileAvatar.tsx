@@ -16,7 +16,7 @@ export function ProfileAvatar({ profileImage, size = 36 }: ProfileAvatarProps) {
       ]}
     >
       <Image
-        source={getProfileImageSource(profileImage.key)}
+        source={getProfileImageSource(profileImage)}
         contentFit="cover"
         accessible={false}
         style={styles.image}

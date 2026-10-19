@@ -11,7 +11,7 @@ type HandoffAvatarProps = {
 export function HandoffAvatar({ profileImage, style }: HandoffAvatarProps) {
   return (
     <Image
-      source={getProfileImageSource(profileImage.key)}
+      source={getProfileImageSource(profileImage)}
       contentFit="cover"
       accessible={false}
       style={[styles.root, style]}

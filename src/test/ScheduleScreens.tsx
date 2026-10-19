@@ -5,14 +5,11 @@ import { SchedulesScreen as ActualSchedules } from '@/features/schedules/screens
 import { ScheduleEditorScreen as ActualEditor } from '@/features/schedules/screens/ScheduleEditorScreen';
 import { ScheduleActions as ActualActions } from '@/features/schedules/components/ScheduleActions';
 import * as api from '@/features/schedules/api/schedule.api';
-import * as stores from '@/features/stores/api/store.api';
 import * as notifications from '@/features/notifications/api/notification.api';
 import {
   scheduleSchema,
   monthlyScheduleSchema,
   dailySchedulePageSchema,
-  scheduleBatchSchema,
-  scheduleMemberSchema,
 } from '@/features/schedules/api/schedule.schema';
 import { MainContextProvider } from '@/features/stores/hooks/useMainContext';
 import { TEST_CONTEXT } from '@/test/MainTestProvider';
@@ -32,25 +29,20 @@ function adapt<T extends object>(Screen: ComponentType<T>) {
         );
       jest
         .spyOn(api, 'fetchSchedule')
-        .mockImplementation(async (storeId, id, signal) =>
-          scheduleSchema.parse(await source.detail(storeId, id, signal)),
+        .mockImplementation(async (workspaceId, id, signal) =>
+          scheduleSchema.parse(await source.detail(workspaceId, id, signal)),
         );
       jest
-        .spyOn(api, 'createSchedules')
+        .spyOn(api, 'createSchedule')
         .mockImplementation(async (id, input) =>
-          scheduleBatchSchema.parse(await source.create(id, input)),
+          scheduleSchema.parse(await source.create(id, input)),
         );
       jest
         .spyOn(api, 'updateSchedule')
-        .mockImplementation(async (storeId, id, input) =>
-          scheduleSchema.parse(await source.update(storeId, id, input)),
+        .mockImplementation(async (workspaceId, id, input) =>
+          scheduleSchema.parse(await source.update(workspaceId, id, input)),
         );
       jest.spyOn(api, 'removeSchedule').mockImplementation(source.remove);
-      jest
-        .spyOn(stores, 'fetchMembers')
-        .mockImplementation(async (id, signal) =>
-          scheduleMemberSchema.array().parse(await source.members(id, signal)),
-        );
       jest
         .spyOn(notifications, 'fetchNotifications')
         .mockResolvedValue({ items: [], unreadCount: 0, badgeText: '' });
@@ -67,9 +59,10 @@ function adapt<T extends object>(Screen: ComponentType<T>) {
         value={{
           ...TEST_CONTEXT,
           ...value,
+          canManage: source.role === 'ADMIN',
           membership: {
             ...TEST_CONTEXT.membership,
-            role: value.canManage ? 'MANAGER' : 'EMPLOYEE',
+            role: source.role,
           },
           profile: { ...TEST_CONTEXT.profile, id: value.userId },
         }}

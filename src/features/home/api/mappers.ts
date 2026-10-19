@@ -17,7 +17,6 @@ export function mapHomeHandoffSectionModel(summary: HomeSummary): HomeHandoffSec
 }
 
 export function mapHomeScheduleModel(
-  currentUserId: number,
   summary: HomeSummary,
   selectedDate: string = summary.date,
 ): HomeScheduleModel {
@@ -30,11 +29,9 @@ export function mapHomeScheduleModel(
       id: schedule.id,
       userId: schedule.employee.userId,
       name: schedule.employee.displayName,
-      profileImageKey: schedule.employee.profileImage.key,
+      profileImage: schedule.employee.profileImage,
       startTime: schedule.startTime,
       endTime: schedule.endTime,
-      canCreateHandoff:
-        schedule.employee.userId !== currentUserId && schedule.employee.status === 'ACTIVE',
     })),
   };
 }

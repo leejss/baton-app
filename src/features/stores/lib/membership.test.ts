@@ -1,43 +1,25 @@
 import { describe, expect, it } from '@jest/globals';
-
-import type { Membership } from '@/features/stores/api/store.schema';
-import { hasPendingMembershipEnd } from '@/features/stores/lib/membership';
-
-const store: Membership['store'] = {
-  id: 10,
-  storeName: '바톤',
-  branchName: '강남점',
-  address: '서울',
-  detailAddress: null,
-  storeContact: '02-1234-5678',
-  status: 'ACTIVE',
-  createdAt: '2026-09-01T00:00:00Z',
+import { hasTransferCandidates } from '@/features/settings/lib/departure';
+import { MOCK_STORE_MEMBERS } from '@/test/fixtures/members';
+const self = {
+  ...MOCK_STORE_MEMBERS[0],
+  userId: 1,
+  role: 'ADMIN' as const,
+  status: 'ACTIVE' as const,
 };
-
-describe('hasPendingMembershipEnd', () => {
-  it('비활성 매장에 활성 소속이 남아 있으면 종료가 필요하다', () => {
-    expect(
-      hasPendingMembershipEnd({
-        store: { ...store, status: 'INACTIVE' },
-        role: 'MANAGER',
-        status: 'ACTIVE',
-      }),
-    ).toBe(true);
-  });
-
-  it('활성 매장 소속이거나 이미 종료된 소속이면 건드리지 않는다', () => {
-    expect(hasPendingMembershipEnd({ store, role: 'MANAGER', status: 'ACTIVE' })).toBe(false);
-    expect(
-      hasPendingMembershipEnd({
-        store: { ...store, status: 'INACTIVE' },
-        role: 'MANAGER',
-        status: 'LEFT',
-      }),
-    ).toBe(false);
-  });
-
-  it('소속이 없으면 종료할 것이 없다', () => {
-    expect(hasPendingMembershipEnd(null)).toBe(false);
-    expect(hasPendingMembershipEnd(undefined)).toBe(false);
-  });
+const member = {
+  ...MOCK_STORE_MEMBERS[1],
+  userId: 2,
+  role: 'MEMBER' as const,
+  status: 'ACTIVE' as const,
+};
+describe('마지막 관리자 나가기', () => {
+  it('다른 멤버가 남으면 권한 이전이 필요하다', () =>
+    expect(hasTransferCandidates([self, member], 1)).toBe(true));
+  it('공동 관리자가 남으면 바로 나갈 수 있다', () =>
+    expect(hasTransferCandidates([self, { ...member, role: 'ADMIN' }], 1)).toBe(false));
+  it('혼자 남은 관리자는 바로 나갈 수 있다', () =>
+    expect(hasTransferCandidates([self], 1)).toBe(false));
+  it('일반 멤버에게는 권한 이전을 요구하지 않는다', () =>
+    expect(hasTransferCandidates([self, member], 2)).toBe(false));
 });

@@ -28,7 +28,7 @@ beforeEach(() => {
 });
 
 it('컴포넌트 없이 로드한 백그라운드 작업이 iOS data-only 수신을 표시 처리로 전달한다', async () => {
-  const data = { notificationId: '42', type: 'HANDOVER_RECEIVED' };
+  const data = { workspaceId: '101', notificationId: '42', type: 'HANDOVER_RECEIVED' };
   const result = await task({
     data: { data, notification: null, aps: { 'content-available': 1 } },
     error: null,

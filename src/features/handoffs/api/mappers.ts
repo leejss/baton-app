@@ -6,7 +6,7 @@ import type {
   HandoffScopeDto,
   HandoffStatusDto,
   HandoffTypeDto,
-  RecipientRecommendationDto,
+  MemberDto,
 } from '@/features/handoffs/api/handoff.schema';
 import type {
   HandoffCardModel,
@@ -16,33 +16,7 @@ import type {
   RecipientModel,
   LocalAttachment,
 } from '@/features/handoffs/types';
-import { SEOUL_TIME_ZONE } from '@/shared/lib/date';
 import { formatRelativeSeoulDate } from '@/shared/lib/formatters';
-
-const SHIFT_START_FORMATTER = new Intl.DateTimeFormat('ko-KR', {
-  timeZone: SEOUL_TIME_ZONE,
-  weekday: 'long',
-  hour: '2-digit',
-  minute: '2-digit',
-  hourCycle: 'h23',
-});
-
-const SHIFT_END_FORMATTER = new Intl.DateTimeFormat('ko-KR', {
-  timeZone: SEOUL_TIME_ZONE,
-  hour: '2-digit',
-  minute: '2-digit',
-  hourCycle: 'h23',
-});
-
-function formatRecipientShift(startAt: string, endAt?: string | null): string {
-  const parts = SHIFT_START_FORMATTER.formatToParts(new Date(startAt));
-  const weekday = parts.find(({ type }) => type === 'weekday')?.value;
-  const hour = parts.find(({ type }) => type === 'hour')?.value;
-  const minute = parts.find(({ type }) => type === 'minute')?.value;
-  // ADR-036 배포 전 응답과 근무 시각이 없는 후보도 수용한다.
-  const endTime = endAt ? SHIFT_END_FORMATTER.format(new Date(endAt)) : '미정';
-  return `${weekday} ${hour}:${minute} - ${endTime}`;
-}
 
 const TYPE_LABELS: Record<HandoffTypeDto, string> = {
   WORK_TASK: '업무 처리',
@@ -83,7 +57,6 @@ export function toHandoffCardModel(
   scope: HandoffScope = 'all',
 ): HandoffCardModel {
   const isSender = item.sender.userId === viewerId;
-  const isRecipient = item.recipient.user.userId === viewerId;
 
   return {
     id: String(item.id),
@@ -97,7 +70,7 @@ export function toHandoffCardModel(
     senderName: item.sender.displayName,
     recipientName: item.recipient.user.displayName,
     canManage: scope !== 'received' && isSender && item.status === 'UNCONFIRMED',
-    canOpenDetail: isSender || isRecipient,
+    canOpenDetail: true,
   };
 }
 
@@ -126,24 +99,11 @@ export function toHandoffDetailModel(
   };
 }
 
-export function toRecipientModels(
-  dto: RecipientRecommendationDto,
-  viewerId: number,
-): RecipientModel[] {
-  return dto.candidates
+export function toRecipientModels(members: MemberDto[], viewerId: number): RecipientModel[] {
+  return members
     .filter((member) => member.status === 'ACTIVE' && member.userId !== viewerId)
-    .map(({ startAt, endAt, ...member }) => {
-      return {
-        member,
-        isRecommended: dto.recommended?.userId === member.userId,
-        nextShiftLabel: startAt ? formatRecipientShift(startAt, endAt) : undefined,
-      };
-    })
-    .sort(
-      (a, b) =>
-        Number(b.isRecommended) - Number(a.isRecommended) ||
-        a.member.displayName.localeCompare(b.member.displayName, 'ko'),
-    );
+    .map((member) => ({ member }))
+    .sort((a, b) => a.member.displayName.localeCompare(b.member.displayName, 'ko'));
 }
 
 export function toCreateRequest(draft: HandoffDraft): HandoffCreateRequestDto {

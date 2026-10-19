@@ -22,8 +22,6 @@ export function HomeScreen({ initialDate = getTodayInSeoul() }: HomeScreenProps)
   const handleHandoffDetailsPress = () => router.navigate(ROUTES.handoffs.list('all'));
   const handleScheduleDetailsPress = (selectedDate: string) =>
     router.navigate(ROUTES.schedules.list(selectedDate));
-  const handleCreateHandoff = (recipientId: number, workDate: string) =>
-    router.push(ROUTES.handoffs.createForRecipient(String(recipientId), workDate));
 
   return (
     <View style={[styles.root, { backgroundColor: colors.surfaceBlueDefault }]}>
@@ -40,14 +38,12 @@ export function HomeScreen({ initialDate = getTodayInSeoul() }: HomeScreenProps)
           <View style={styles.cards}>
             <HandoffCard
               date={initialDate}
-              storeId={context.membership.store.id}
+              workspaceId={context.membership.workspace.id}
               onDetailsPress={handleHandoffDetailsPress}
             />
             <WeekScheduleCard
-              currentUserId={context.profile.id}
               initialDate={initialDate}
-              storeId={context.membership.store.id}
-              onCreateHandoff={handleCreateHandoff}
+              workspaceId={context.membership.workspace.id}
               onDetailsPress={handleScheduleDetailsPress}
             />
           </View>

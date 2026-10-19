@@ -1,3 +1,4 @@
+import { ProfilePhotoControls } from '@/features/settings/components/ProfilePhotoControls';
 import { logger } from '@/shared/lib/logger';
 import { useMutation } from '@tanstack/react-query';
 import { Image } from 'expo-image';
@@ -39,38 +40,40 @@ export function MyPageScreen() {
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.avatar}>
           <Image
-            source={getProfileImageSource(profile.profileImage.key)}
+            source={getProfileImageSource(profile.profileImage)}
             contentFit="cover"
             accessible={false}
             style={[styles.profile, { borderColor: colors.borderSubtle }]}
           />
         </View>
+        <ProfilePhotoControls />
         <SettingsSection>
           <SettingsRow label="이름" value={profile.displayName} onPress={() => setDialog('name')} />
-          <SettingsRow label="이메일" value={profile.email} />
+          <SettingsRow label="이메일" value={profile.email ?? '제공되지 않음'} />
         </SettingsSection>
-        {canManage && (
-          <SettingsSection title="직원 관리" spacing="spacious">
+        <SettingsSection title="워크스페이스" spacing="spacious">
+          <SettingsRow
+            label="워크스페이스 전환·추가"
+            onPress={() => router.push(ROUTES.workspaces)}
+          />
+          <SettingsRow
+            label="멤버 목록·관리"
+            onPress={() => router.push(ROUTES.settings.employees)}
+          />
+          {canManage && (
             <SettingsRow
-              label="직원 초대"
-              description="직원을 초대하고 초대 코드를 관리합니다."
+              label="링크로 멤버 초대"
               onPress={() => router.push(ROUTES.settings.invitations)}
             />
+          )}
+          {canManage && (
             <SettingsRow
-              label="직원 관리"
-              description="초대된 직원의 상태를 확인하고 관리합니다."
-              onPress={() => router.push(ROUTES.settings.employees)}
-            />
-            <SettingsRow
-              label="관리자 권한 승계"
-              description="관리자 승인 및 구성원 존재 확인을 관리합니다."
+              label="관리 권한 이전"
               onPress={() => router.push(ROUTES.settings.transfer())}
             />
-          </SettingsSection>
-        )}
-        <SettingsSection title="매장" spacing="compact">
+          )}
           <SettingsRow
-            label="매장 나가기"
+            label="워크스페이스 나가기"
             onPress={() => router.push(ROUTES.settings.leaveStore)}
           />
         </SettingsSection>

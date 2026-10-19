@@ -10,7 +10,7 @@ import { QueryRefreshNotice } from '@/shared/ui/QueryRefreshNotice';
 type MonthlyCalendarProps = Omit<ComponentProps<typeof ScheduleCalendar>, 'counts'>;
 export function MonthlyCalendar(props: MonthlyCalendarProps) {
   const context = useMainContext();
-  const query = useQuery(scheduleQueries.month(context.storeId, props.month));
+  const query = useQuery(scheduleQueries.month(context.workspaceId, props.month));
   const counts: Record<string, number> = {};
   for (const item of query.data ?? []) counts[item.date] = item.scheduleCount;
 

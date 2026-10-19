@@ -11,7 +11,7 @@ export default function CreateStoreRoute() {
     <StoreOnboardingEntryGate onBack={() => goBackOr(ROUTES.store)}>
       <StoreCreateNameScreen
         onBack={() => goBackOr(ROUTES.store)}
-        onNext={() => router.push(ROUTES.storeCreate.location)}
+        onNext={() => router.push(ROUTES.storeCreate.complete)}
       />
     </StoreOnboardingEntryGate>
   );

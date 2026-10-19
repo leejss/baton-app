@@ -29,39 +29,39 @@ export function ScheduleActions({ id, now, onClose }: ScheduleActionsProps) {
   const [deleted, setDeleted] = useState(false);
   const context = useMainContext();
   const query = useQuery({
-    ...scheduleQueries.detail(context.storeId ?? 0, id),
+    ...scheduleQueries.detail(context.workspaceId ?? 0, id),
     enabled: Boolean(context) && !deleted,
   });
   const router = useRouter();
   const client = useQueryClient();
   const mutation = useMutation({
     mutationKey: ['schedules', 'delete'],
-    mutationFn: () => removeSchedule(context.storeId ?? 0, id),
+    mutationFn: () => removeSchedule(context.workspaceId ?? 0, id),
     onError: async (error) => {
       logger.error('근무 삭제 실패', error);
       if (isAppError(error) && [403, 404, 409].includes(error.status ?? 0)) {
         setConfirming(false);
-        await invalidateScheduleViews(client, context.storeId);
+        await invalidateScheduleViews(client, context.workspaceId);
       }
     },
     onSuccess: async () => {
       logger.info('근무 삭제 완료');
       setDeleted(true);
       client.removeQueries({
-        queryKey: scheduleQueries.detail(context.storeId, id).queryKey,
+        queryKey: scheduleQueries.detail(context.workspaceId, id).queryKey,
         exact: true,
       });
-      await invalidateScheduleViews(client, context.storeId);
+      await invalidateScheduleViews(client, context.workspaceId);
     },
   });
   const item = query.data;
-  const canEdit = item && canEditSchedule(item, context.canManage ?? false, now);
+  const canEdit = item && canEditSchedule(item, context.userId, now);
   const missing =
     (isAppError(query.error) && query.error.status === 404) ||
     (isAppError(mutation.error) && mutation.error.status === 404);
   const handleClose = () => {
     if (!mutation.isPending) {
-      void invalidateScheduleViews(client, context.storeId);
+      void invalidateScheduleViews(client, context.workspaceId);
       onClose();
     }
   };

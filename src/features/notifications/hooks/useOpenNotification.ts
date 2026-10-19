@@ -4,11 +4,12 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigation, useRouter } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { selectWorkspace } from '@/features/stores/store/workspaceSelectionStore';
+import { storeQueries } from '@/features/stores/api/store.queries';
 import { ROUTES } from '@/shared/lib/routes';
 import { toNotification } from '@/features/notifications/api/mappers';
 import { notificationQueries } from '@/features/notifications/api/notification.queries';
 import type { Notification, NotificationScope } from '@/features/notifications/types';
-import { scheduleQueries } from '@/features/schedules/api/schedule.queries';
 import { isAppError, normalizeError } from '@/shared/api/errors';
 
 const MESSAGE_AUTO_DISMISS_MS = 2000;
@@ -18,6 +19,13 @@ export function useOpenNotification(scope: NotificationScope) {
   const navigation = useNavigation();
   const queryClient = useQueryClient();
   const opening = useRef(false);
+  const mounted = useRef(true);
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
   const [openingId, setOpeningId] = useState<string>();
   const [message, setMessage] = useState<string>();
   const clearMessage = useCallback(() => setMessage(undefined), []);
@@ -67,24 +75,35 @@ export function useOpenNotification(scope: NotificationScope) {
         if (notification.target.kind === 'none')
           setMessage('읽음 처리에 실패했어요. 알림을 다시 선택해주세요.');
       }
-      if (!navigation.isFocused()) return;
-      if (target.kind === 'handoff') {
-        router.push(ROUTES.handoffs.detail(target.id));
-      } else if (target.kind === 'schedule') {
-        // 수정 화면이 아닌 해당 날짜의 근무표로 이동한다. 직원도 조회할 수 있다.
-        const schedule = await queryClient.fetchQuery({
-          ...scheduleQueries.detail(scope.storeId, target.id),
+      if (!mounted.current || !navigation.isFocused()) return;
+      if (notification.workspaceId !== scope.workspaceId) {
+        const { memberships } = await queryClient.fetchQuery({
+          ...storeQueries.me(),
           staleTime: 0,
         });
-        if (!navigation.isFocused()) return;
-        router.push(ROUTES.schedules.list(schedule.date));
+        if (
+          !memberships.some(
+            (item) =>
+              item.workspace.id === notification.workspaceId &&
+              item.status === 'ACTIVE' &&
+              item.workspace.status === 'ACTIVE',
+          )
+        )
+          throw new Error('참여 중인 워크스페이스의 알림만 열 수 있어요.');
+        await selectWorkspace(queryClient, scope.userId, notification.workspaceId);
+        router.replace(ROUTES.notifications);
+        return;
+      }
+      if (target.kind === 'handoff') {
+        router.push(ROUTES.handoffs.detail(target.id));
       }
     } catch (error) {
+      if (!mounted.current) return;
       if (isAppError(error) && (error.status === 403 || error.status === 404)) await refreshInbox();
       setMessage(normalizeError(error).message);
     } finally {
       opening.current = false;
-      setOpeningId(undefined);
+      if (mounted.current) setOpeningId(undefined);
     }
   }
 
