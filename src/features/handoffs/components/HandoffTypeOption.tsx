@@ -77,7 +77,6 @@ const styles = StyleSheet.create({
     gap: 10,
     borderRadius: 16,
     borderCurve: 'continuous',
-    // TODO(design-system): Figma 732:21458의 15px 세로 여백·10px 간격·16px radius를 토큰화한다.
   },
   pressed: { opacity: 0.72 },
   copy: { flex: 1, gap: 2 },

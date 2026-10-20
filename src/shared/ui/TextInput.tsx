@@ -1,19 +1,11 @@
-import { forwardRef } from 'react';
-import {
-  StyleSheet,
-  TextInput as RNTextInput,
-  type TextInputProps as RNTextInputProps,
-} from 'react-native';
+import type { Ref } from 'react';
+import { TextInput as RNTextInput, type TextInputProps as RNTextInputProps } from 'react-native';
 
 import { useTheme } from '@/theme';
 
-export type TextInputProps = RNTextInputProps;
+type TextInputProps = RNTextInputProps & { ref?: Ref<RNTextInput> };
 
-/** 앱 타이포그래피와 색상을 기본값으로 적용하는 입력 컴포넌트. */
-export const TextInput = forwardRef<RNTextInput, TextInputProps>(function TextInput(
-  { placeholderTextColor, style, ...rest },
-  ref,
-) {
+export function TextInput({ ref, placeholderTextColor, style, ...rest }: TextInputProps) {
   const theme = useTheme();
 
   return (
@@ -22,18 +14,11 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(function TextIn
       placeholderTextColor={placeholderTextColor ?? theme.colors.foregroundDisabled}
       style={[
         theme.typography.body.regular,
-        styles.input,
-        { color: theme.colors.foregroundStrong },
+        // 네이티브 입력의 줄 높이를 유지한다.
+        { lineHeight: undefined, color: theme.colors.foregroundStrong },
         style,
       ]}
       {...rest}
     />
   );
-});
-
-const styles = StyleSheet.create({
-  input: {
-    // 기본 줄 높이는 네이티브에 맡긴다. 필요한 줄 간격은 호출부의 style로 지정한다.
-    lineHeight: undefined,
-  },
-});
+}

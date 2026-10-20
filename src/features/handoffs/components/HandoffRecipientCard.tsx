@@ -1,7 +1,7 @@
 import { Image } from 'expo-image';
 import { StyleSheet, View } from 'react-native';
 
-import type { MemberDto } from '@/features/handoffs/api/handoff.schema';
+import type { MemberDto } from '@/features/stores/api/store.schema';
 import { Pressable, Text } from '@/shared/ui';
 import { ArrowRightS } from '@/shared/ui/icons';
 import { getProfileImageSource } from '@/shared/ui/profileImageAssets';
@@ -68,7 +68,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: radius.md,
     borderCurve: 'continuous',
-    // TODO(design-system): Figma 291:8370의 요소 간 10px 간격을 spacing 토큰과 동기화한다.
   },
   pressed: { opacity: 0.72 },
   avatarFrame: {

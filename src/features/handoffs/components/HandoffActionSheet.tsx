@@ -25,7 +25,6 @@ export function HandoffActionSheet({ ref, onDismiss, onDelete, onEdit }: Handoff
   useImperativeHandle(
     ref,
     () => ({
-      // 네이티브 시트의 나머지 명령은 기능 호출부에 노출하지 않는다.
       present: () => {
         pendingActionRef.current = null;
         setVisible(true);
@@ -104,7 +103,6 @@ export function HandoffActionSheet({ ref, onDismiss, onDelete, onEdit }: Handoff
 }
 
 const styles = StyleSheet.create({
-  // TODO(design-system): 바텀시트의 56px 행 높이를 컴포넌트 토큰으로 동기화한다.
   actions: { gap: spacing.sm },
   menu: {
     borderRadius: radius.md,

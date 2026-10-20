@@ -3,17 +3,8 @@ import { AppState } from 'react-native';
 
 import { formatDuration } from '@/shared/lib/formatters';
 
-/**
- * 만료 시각까지 남은 시간을 1초마다 갱신한다.
- *
- * 남은 시간을 감산으로 세지 않고 **매번 `deadline - now`로 다시 계산한다.**
- * 로컬 카운터만 쓰면 앱이 백그라운드에 있는 동안 타이머가 멈춰서, 복귀했을 때
- * 실제보다 남은 시간이 많게 나온다. 서버가 준 만료 시각을 유일한 기준으로 삼는다.
- */
-export type Countdown = {
-  /** 남은 밀리초. 만료됐거나 `deadline`이 없으면 0. */
+type Countdown = {
   remainingMs: number;
-  /** `mm:ss`. 만료됐거나 `deadline`이 없으면 `00:00`. */
   formatted: string;
   isExpired: boolean;
 };
@@ -24,21 +15,13 @@ function remainingFor(deadline: number | null): number {
   return deadline === null ? 0 : Math.max(0, deadline - Date.now());
 }
 
-/**
- * @param deadline 만료 시각(epoch ms). `null`이면 타이머를 돌리지 않는다.
- */
 export function useCountdown(deadline: number | null): Countdown {
-  /**
-   * 남은 시간과 그걸 계산한 기준 deadline을 함께 들고 있는다.
-   * 둘을 한 덩어리로 두면 deadline이 바뀐 순간을 렌더 중에 알아채고 바로 맞출 수 있다.
-   */
   const [snapshot, setSnapshot] = useState(() => ({
     deadline,
     remainingMs: remainingFor(deadline),
   }));
 
-  // deadline이 바뀌면 다음 tick(1초)을 기다리지 않고 즉시 맞춘다.
-  // 렌더 중 setState는 "props가 바뀔 때 state 조정"으로 React가 허용하는 패턴이다.
+  // 만료 시각이 바뀌면 다음 tick을 기다리지 않고 맞춘다.
   if (snapshot.deadline !== deadline) {
     setSnapshot({ deadline, remainingMs: remainingFor(deadline) });
   }

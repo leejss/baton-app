@@ -59,7 +59,6 @@ export function HandoffRow({ isPending, item, onConfirm }: HandoffRowProps) {
 }
 
 const styles = StyleSheet.create({
-  // TODO(design-system): Figma node 732:17472의 10/14px 여백과 compact 36px 버튼은 공용 Button 규격에 없다.
   root: {
     minHeight: 56,
     paddingLeft: 14,

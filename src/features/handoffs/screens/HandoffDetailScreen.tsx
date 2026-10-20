@@ -219,7 +219,6 @@ const styles = StyleSheet.create({
     paddingTop: 21,
     paddingBottom: 32,
     gap: 20,
-    // TODO(design-system): Figma 732:22068의 21/20px 상세 레이아웃 간격을 토큰화한다.
   },
   article: { gap: 25 },
   headingSection: { gap: 20 },

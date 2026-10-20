@@ -157,7 +157,6 @@ const styles = StyleSheet.create({
   stack: {
     width: '100%',
   },
-  // Figma raw color이며 local variable에 바인딩되지 않은 홈 화면 전용 장식 예외다.
   decoration: {
     position: 'absolute',
     top: 10,
@@ -189,7 +188,6 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   count: {
-    // TODO(design-system): Figma node 732:17470은 Bold지만 현재 번들에는 Semibold까지만 있다.
     fontVariant: ['tabular-nums'],
   },
   list: {
@@ -221,7 +219,6 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
   },
   detailsText: {
-    // Figma raw color이며 local variable에 바인딩되지 않은 화면 전용 예외다.
     color: '#5C5E63',
   },
   pressed: { opacity: 0.65 },

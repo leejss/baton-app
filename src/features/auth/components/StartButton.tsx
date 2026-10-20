@@ -4,25 +4,16 @@ import { ActivityIndicator, Pressable, StyleSheet } from 'react-native';
 import { buttonMetrics, Text } from '@/shared/ui';
 import { socialBrand, useTheme } from '@/theme';
 
-/**
- * 시작 화면의 로그인 수단 버튼. 시안 `Action Button_square`를 그대로 따르되,
- * 카카오는 카카오의 고정 브랜드 색을 쓰므로 테마를 타지 않는다.
- */
 type StartButtonProvider = 'kakao' | 'apple';
 
-export type StartButtonProps = {
+type StartButtonProps = {
   provider: StartButtonProvider;
   label: string;
   onPress: () => void;
-  /** 진행 중에는 라벨 자리에 인디케이터를 띄우고 중복 탭을 막는다. */
   isLoading?: boolean;
   disabled?: boolean;
 };
 
-/**
- * 외부 서비스 로고는 각 사가 정한 색·형태를 그대로 써야 해서 PNG로 둔다.
- * 우리 아이콘셋(글리프)에 없고, 테마에 따라 색이 바뀌어서도 안 된다.
- */
 const BRAND_ICONS = {
   kakao: require('@/assets/images/icon-kakao.png'),
   apple: require('@/assets/images/icon-apple.png'),

@@ -3,20 +3,14 @@ import { StyleSheet } from 'react-native';
 import type { ProfileImage } from '@/features/auth/api/auth.schema';
 import { radius, useTheme } from '@/theme';
 import { getProfileImageSource } from '@/shared/ui/profileImageAssets';
-export function EmployeeAvatar({
-  profileImage,
-  size = 24,
-}: {
-  profileImage: ProfileImage;
-  size?: 24 | 34;
-}) {
+export function EmployeeAvatar({ profileImage }: { profileImage: ProfileImage }) {
   const { colors } = useTheme();
   return (
     <Image
       source={getProfileImageSource(profileImage)}
       contentFit="cover"
       accessible={false}
-      style={[styles.image, { width: size, height: size, borderColor: colors.borderSubtle }]}
+      style={[styles.image, { width: 24, height: 24, borderColor: colors.borderSubtle }]}
     />
   );
 }

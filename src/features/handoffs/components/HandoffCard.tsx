@@ -29,8 +29,6 @@ export function HandoffCard({
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={`${item.typeLabel}, ${item.title}, ${item.statusLabel}`}
-      accessibilityState={{ disabled: !item.canOpenDetail }}
-      disabled={!item.canOpenDetail}
       onPress={handlePress}
       style={({ pressed }) => [
         styles.root,
@@ -88,7 +86,6 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     borderCurve: 'continuous',
     overflow: 'hidden',
-    // TODO(design-system): Figma 732:17886의 우측 14px·세로 13px·radius 16을 토큰과 동기화한다.
   },
   receivedRoot: {
     minHeight: 90,

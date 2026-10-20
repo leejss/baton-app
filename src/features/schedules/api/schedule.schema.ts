@@ -7,11 +7,10 @@ const id = z.number().int().positive();
 const date = z.string().refine(isCalendarDate);
 const startTime = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/);
 const endTime = z.string().regex(/^(([01]\d|2[0-3]):[0-5]\d|24:00)$/);
-export const scheduleMemberSchema = memberSchema;
 export const scheduleSchema = z.object({
   id,
   workspaceId: id,
-  employee: scheduleMemberSchema,
+  employee: memberSchema,
   workDate: date,
   startTime,
   endTime,
@@ -30,6 +29,5 @@ export const dailySchedulePageSchema = z.object({
   hasNext: z.boolean(),
 });
 export type ScheduleDto = z.infer<typeof scheduleSchema>;
-export type ScheduleMemberDto = z.infer<typeof scheduleMemberSchema>;
 export type ScheduleCreateRequest = { workDate: string; startTime: string; endTime: string };
 export type ScheduleUpdateRequest = ScheduleCreateRequest;

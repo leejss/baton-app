@@ -7,7 +7,7 @@ import { StyleSheet, View } from 'react-native';
 import { handoffQueries } from '@/features/handoffs/api/handoff.queries';
 import { HandoffFooterActions } from '@/features/handoffs/components/HandoffFooterActions';
 import { HandoffRecipientRow } from '@/features/handoffs/components/HandoffRecipientRow';
-import type { RecipientModel } from '@/features/handoffs/types';
+import type { MemberDto } from '@/features/stores/api/store.schema';
 import { useHandoffDraftStore } from '@/features/handoffs/store/handoffDraftStore';
 import { EmptyState, TextInput } from '@/shared/ui';
 import { SCREEN_PADDING_X, spacing, useTheme } from '@/theme';
@@ -22,25 +22,24 @@ export function HandoffRecipientSelectContent({ onConfirm }: HandoffRecipientSel
   const { data } = useSuspenseQuery(handoffQueries.recipients(context.workspaceId, context.userId));
   const recipient = useHandoffDraftStore((state) => state.recipient);
   const setRecipient = useHandoffDraftStore((state) => state.setRecipient);
-  const [selectedId, setSelectedId] = useState<number | null>(recipient?.member.userId ?? null);
+  const [selectedId, setSelectedId] = useState<number | null>(recipient?.userId ?? null);
   const [search, setSearch] = useState('');
-  const filtered = data.filter(({ member }) =>
-    `${member.displayName} ${member.email ?? ''}`
-      .toLowerCase()
-      .includes(search.trim().toLowerCase()),
+  const searchTerm = search.trim().toLowerCase();
+  const filtered = data.filter((member) =>
+    `${member.displayName} ${member.email ?? ''}`.toLowerCase().includes(searchTerm),
   );
 
-  const handleSelect = (item: RecipientModel) => setSelectedId(item.member.userId);
+  const handleSelect = (item: MemberDto) => setSelectedId(item.userId);
   const handleConfirm = () => {
-    const selected = data.find(({ member }) => member.userId === selectedId);
+    const selected = data.find((member) => member.userId === selectedId);
     if (selected === undefined) return;
     setRecipient(selected);
     onConfirm();
   };
-  const renderItem: ListRenderItem<RecipientModel> = ({ item }) => (
+  const renderItem: ListRenderItem<MemberDto> = ({ item }) => (
     <HandoffRecipientRow
       item={item}
-      selected={item.member.userId === selectedId}
+      selected={item.userId === selectedId}
       onSelect={handleSelect}
     />
   );
@@ -70,15 +69,15 @@ export function HandoffRecipientSelectContent({ onConfirm }: HandoffRecipientSel
       />
       <HandoffFooterActions
         primaryLabel="확인"
-        primaryDisabled={!data.some((item) => item.member.userId === selectedId)}
+        primaryDisabled={!data.some((item) => item.userId === selectedId)}
         onPrimaryPress={handleConfirm}
       />
     </View>
   );
 }
 
-function keyExtractor(item: RecipientModel) {
-  return String(item.member.userId);
+function keyExtractor(item: MemberDto) {
+  return String(item.userId);
 }
 
 const styles = StyleSheet.create({

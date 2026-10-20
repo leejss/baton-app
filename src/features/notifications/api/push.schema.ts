@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const pushPlatformSchema = z.enum(['IOS', 'ANDROID']);
+const pushPlatformSchema = z.enum(['IOS', 'ANDROID']);
 export const pushTokenSchema = z.object({
   id: z.number().int().positive(),
   deviceId: z.string(),

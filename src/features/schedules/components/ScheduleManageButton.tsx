@@ -84,6 +84,5 @@ const styles = StyleSheet.create({
     borderRadius: radius.lg,
   },
   description: { flex: 1, gap: spacing.xs },
-  // TODO(design-system): Figma 1097:38083의 선택 표시 20px를 sync한다.
   radio: { width: 20, height: 20, borderWidth: 1, borderRadius: radius.full },
 });

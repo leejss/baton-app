@@ -4,21 +4,13 @@ import { Checkbox, Text } from '@/shared/ui';
 import { ArrowRightS } from '@/shared/ui/icons';
 import { radius, useTheme } from '@/theme';
 
-/**
- * 약관 동의 행. 시안 `List_checklist`(`943:111553`)와 배경형 `List_checklist/Default/bg`
- * (`943:111549`, 전체 동의) 두 모양을 `variant`로 가른다.
- *
- * 행 전체가 체크 토글이고, 오른쪽 화살표만 약관 본문 열기다.
- */
-export type TermsCheckItemProps = {
+type TermsCheckItemProps = {
   variant: 'all' | 'item';
-  /** "[필수]"·"[선택]" 같은 접두. 생략하면 라벨만 그린다. */
   prefix?: string;
   label: string;
   isChecked: boolean;
   disabled?: boolean;
   onToggle: () => void;
-  /** 주면 오른쪽에 화살표가 생기고 약관 본문을 연다. 전체 동의 행에는 없다. */
   onOpen?: () => void;
 };
 
@@ -31,13 +23,10 @@ const SPEC = {
   item: {
     padding: 14,
     checkboxSize: 28,
-    /** 화살표 슬롯. 24 아이콘이 28 슬롯 가운데 놓인다. */
     arrowSlot: 28,
     arrowSize: 24,
   },
-  /** 체크박스 ↔ 라벨. */
   gap: 5,
-  /** 접두 ↔ 라벨. */
   labelGap: 4,
 } as const;
 
@@ -129,7 +118,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     padding: SPEC.item.padding,
   },
-  /** 체크박스와 라벨을 한 덩어리로 눌리게 한다. 남는 폭까지 전부 터치 영역이다. */
   toggleArea: {
     flex: 1,
     flexDirection: 'row',

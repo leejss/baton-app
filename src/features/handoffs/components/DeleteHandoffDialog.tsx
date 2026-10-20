@@ -74,7 +74,6 @@ export function DeleteHandoffDialog({
 }
 
 const styles = StyleSheet.create({
-  // TODO(design-system): Figma 삭제 다이얼로그의 300px 폭·48px 버튼 높이를 토큰화한다.
   overlay: {
     flex: 1,
     alignItems: 'center',

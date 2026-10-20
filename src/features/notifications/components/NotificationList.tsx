@@ -15,25 +15,17 @@ import { SCREEN_PADDING_X, spacing } from '@/theme';
 
 const keyExtractor = (notification: Notification) => notification.id;
 
-const FEEDBACK = {
-  /** Figma node 1254:26619 Notification Layout의 내부 상하 패딩. */
-  paddingVertical: 14,
-  /** 홈 인디케이터와 알림 사이의 시안 여백. */
-  bottomGap: 4,
-} as const;
-
 export function NotificationList() {
   const context = useMainContext();
   const insets = useSafeAreaInsets();
   const scope = {
-    workspaceId: context.membership.workspace.id,
-    userId: context.profile.id,
+    workspaceId: context.workspaceId,
+    userId: context.userId,
   };
   const { data, refetch, isRefetchError } = useSuspenseQuery(notificationQueries.list(scope));
   const [isRefreshing, setIsRefreshing] = useState(false);
   const { open, openingId, message } = useOpenNotification(scope);
 
-  // useFocusEffect는 콜백 참조가 달라지면 다시 실행하므로 안정된 참조가 필요하다.
   useFocusEffect(
     useCallback(() => {
       void refetch();
@@ -76,10 +68,7 @@ export function NotificationList() {
         }
       />
       {(message || isRefetchError) && (
-        <View
-          pointerEvents="box-none"
-          style={[styles.feedback, { bottom: insets.bottom + FEEDBACK.bottomGap }]}
-        >
+        <View pointerEvents="box-none" style={[styles.feedback, { bottom: insets.bottom + 4 }]}>
           <Snackbar
             title={message ?? '알림을 새로 불러오지 못했어요.'}
             actionLabel={message ? undefined : '다시 시도'}
@@ -109,6 +98,6 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     paddingHorizontal: SCREEN_PADDING_X,
-    paddingVertical: FEEDBACK.paddingVertical,
+    paddingVertical: 14,
   },
 });

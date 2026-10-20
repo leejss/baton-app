@@ -49,7 +49,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  // TODO(design-system): Figma node 1095:31300의 6/12px 내부 여백은 현재 spacing 체계에 없다.
   visual: {
     minWidth: 40,
     minHeight: 40,

@@ -4,17 +4,10 @@ import { Text } from '@/shared/ui/Text';
 import { AlertCircleFill, CheckSquare } from '@/shared/ui/icons';
 import { radius, useTheme } from '@/theme';
 
-/**
- * 화면 하단에 뜨는 알림. 시안 `Snackbar`(357×82)를 따른다.
- *
- * ⚠️ 시안에 나온 배색은 danger 하나뿐이라 톤도 하나만 구현했다.
- * 다른 톤(성공·안내)이 필요하면 디자인 시스템의 Snackbar 컴포넌트 세트를 먼저 확인할 것.
- */
-export type SnackbarProps = {
+type SnackbarProps = {
   title: string;
   description?: string;
   tone?: 'warning' | 'success';
-  /** 오른쪽 텍스트 버튼. 생략하면 버튼 없이 메시지만 보여준다. */
   actionLabel?: string;
   onAction?: () => void;
 };
@@ -22,9 +15,7 @@ export type SnackbarProps = {
 const SPEC = {
   paddingVertical: 12,
   paddingHorizontal: 16,
-  /** 아이콘 ↔ 메시지 ↔ 액션 사이. */
   gap: 8,
-  /** 제목 ↔ 설명. */
   messageGap: 4,
   iconSize: 24,
 } as const;
@@ -94,7 +85,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: SPEC.gap,
   },
-  /** 메시지가 길어지면 이 블록만 늘어나고 아이콘·액션은 제자리를 지킨다. */
   message: { flex: 1, gap: SPEC.messageGap },
   title: { opacity: 0.88 },
 });

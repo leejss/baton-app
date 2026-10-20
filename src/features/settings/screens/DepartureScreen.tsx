@@ -37,7 +37,7 @@ export function DepartureScreen({ kind }: { kind: 'leave' | 'withdraw' }) {
       : workspaceId;
   const isBlocked =
     (canManage && members.data && hasTransferCandidates(members.data, userId)) ||
-    (mutation.error && normalizeError(mutation.error).errorCode === 'MANAGER_TRANSFER_REQUIRED');
+    failure?.errorCode === 'MANAGER_TRANSFER_REQUIRED';
   const onBack = () => goBackOr(ROUTES.my);
   if (isBlocked)
     return (
@@ -71,11 +71,7 @@ export function DepartureScreen({ kind }: { kind: 'leave' | 'withdraw' }) {
       title={copy.title}
       description={copy.description}
       onBack={onBack}
-      feedback={
-        mutation.error && (
-          <SettingsMessage tone="error" message={normalizeError(mutation.error).message} />
-        )
-      }
+      feedback={failure && <SettingsMessage tone="error" message={failure.message} />}
     >
       <QueryBoundary query={canManage ? members : undefined}>
         <DepartureConsent

@@ -7,6 +7,8 @@ import { ErrorBoundary } from '@/shared/ui/ErrorBoundary';
 import { ErrorState } from '@/shared/ui/ErrorState';
 import { useTheme } from '@/theme';
 
+const getOnlineSnapshot = () => onlineManager.isOnline();
+
 type QueryBoundaryProps = {
   children: ReactNode;
   query?: {
@@ -66,10 +68,7 @@ export function QueryBoundary({
 
 function PendingFallback() {
   const theme = useTheme();
-  const online = useSyncExternalStore(
-    onlineManager.subscribe.bind(onlineManager),
-    onlineManager.isOnline.bind(onlineManager),
-  );
+  const online = useSyncExternalStore(onlineManager.subscribe, getOnlineSnapshot);
 
   return (
     <View style={styles.container}>

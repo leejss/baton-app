@@ -14,7 +14,7 @@ const extension = {
   'image/webp': 'webp',
 } as const;
 export const deleteAttachment = (id: number) => del(`/files/${id}`);
-export async function completeAttachment(
+async function completeAttachment(
   id: number,
   signal?: AbortSignal,
   purpose: 'HANDOVER' | 'PROFILE' = 'HANDOVER',
@@ -72,35 +72,33 @@ export async function uploadAttachment(
     const body = new File(file.uri);
     const uploadSignal = withAbortTimeout(signal, 60_000);
     try {
-      try {
-        const response = await fetch(ticket.uploadUrl, {
-          method: 'PUT',
-          headers,
-          body,
-          signal: uploadSignal.signal,
-        }).catch((error: unknown) => {
-          const normalized = normalizeFetchError(error, uploadSignal.signal);
-          throw new AppError(normalized.code, normalized.message, {
-            cause: normalized,
-            http: { method: 'PUT', route: 's3.upload', durationMs: Date.now() - startedAt },
-          });
+      const response = await fetch(ticket.uploadUrl, {
+        method: 'PUT',
+        headers,
+        body,
+        signal: uploadSignal.signal,
+      }).catch((error: unknown) => {
+        const normalized = normalizeFetchError(error, uploadSignal.signal);
+        throw new AppError(normalized.code, normalized.message, {
+          cause: normalized,
+          http: { method: 'PUT', route: 's3.upload', durationMs: Date.now() - startedAt },
         });
-        if (!response.ok) {
-          const { http, readError } = await readHttpResponse(
-            response,
-            { method: 'PUT', route: 's3.upload' },
-            startedAt,
-            uploadSignal.signal,
-          );
-          throw new AppError('server', '사진을 업로드하지 못했습니다.', {
-            status: response.status,
-            http,
-            cause: readError,
-          });
-        }
-      } catch (error) {
-        putError = normalizeError(error);
+      });
+      if (!response.ok) {
+        const { http, readError } = await readHttpResponse(
+          response,
+          { method: 'PUT', route: 's3.upload' },
+          startedAt,
+          uploadSignal.signal,
+        );
+        throw new AppError('server', '사진을 업로드하지 못했습니다.', {
+          status: response.status,
+          http,
+          cause: readError,
+        });
       }
+    } catch (error) {
+      putError = normalizeError(error);
     } finally {
       uploadSignal.cleanup();
     }

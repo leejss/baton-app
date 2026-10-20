@@ -17,7 +17,7 @@ import {
 } from '@/shared/ui/icons';
 import { useTheme, type ThemeColorName } from '@/theme';
 
-export const APP_TAB_NAMES = ['home', 'schedules', 'handoffs', 'my'] as const;
+const APP_TAB_NAMES = ['home', 'schedules', 'handoffs', 'my'] as const;
 
 export type AppTabName = (typeof APP_TAB_NAMES)[number];
 

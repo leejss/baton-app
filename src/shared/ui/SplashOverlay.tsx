@@ -23,7 +23,7 @@ const fadeOutKeyframe = new Keyframe({
  * 네이티브 스플래시를 감추고 JS 스플래시로 자연스럽게 이어붙인다.
  * 첫 레이아웃이 끝난 뒤에 감추므로 흰 화면 깜빡임이 없다.
  */
-export type SplashOverlayProps = {
+type SplashOverlayProps = {
   /**
    * 앱이 첫 화면을 그릴 준비가 됐는지. 세션 복원처럼 화면 분기를 좌우하는 작업이
    * 끝나기 전에 사라지면 로그인 화면이 한 번 깜빡였다가 바뀐다.

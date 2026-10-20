@@ -4,18 +4,18 @@ import { Modal, StyleSheet, View } from 'react-native';
 
 import { HandoffFooterActions } from '@/features/handoffs/components/HandoffFooterActions';
 import { HandoffRecipientRow } from '@/features/handoffs/components/HandoffRecipientRow';
-import type { RecipientModel } from '@/features/handoffs/types';
+import type { MemberDto } from '@/features/stores/api/store.schema';
 import { EmptyState, TextInput } from '@/shared/ui';
 import { ScreenHeader } from '@/shared/ui/ScreenHeader';
 import { useTheme } from '@/theme';
 
 type HandoffRecipientPickerModalProps = {
-  recipients: RecipientModel[];
+  recipients: MemberDto[];
   selectedId: number | null;
   visible: boolean;
   onClose: () => void;
   onConfirm: () => void;
-  onSelect: (item: RecipientModel) => void;
+  onSelect: (item: MemberDto) => void;
 };
 
 export function HandoffRecipientPickerModal({
@@ -28,17 +28,12 @@ export function HandoffRecipientPickerModal({
 }: HandoffRecipientPickerModalProps) {
   const theme = useTheme();
   const [search, setSearch] = useState('');
-  const filtered = recipients.filter(({ member }) =>
-    `${member.displayName} ${member.email ?? ''}`
-      .toLowerCase()
-      .includes(search.trim().toLowerCase()),
+  const searchTerm = search.trim().toLowerCase();
+  const filtered = recipients.filter((member) =>
+    `${member.displayName} ${member.email ?? ''}`.toLowerCase().includes(searchTerm),
   );
-  const renderItem: ListRenderItem<RecipientModel> = ({ item }) => (
-    <HandoffRecipientRow
-      item={item}
-      selected={item.member.userId === selectedId}
-      onSelect={onSelect}
-    />
+  const renderItem: ListRenderItem<MemberDto> = ({ item }) => (
+    <HandoffRecipientRow item={item} selected={item.userId === selectedId} onSelect={onSelect} />
   );
   const separator = () => (
     <View style={[styles.separator, { backgroundColor: theme.colors.borderDefault }]} />
@@ -69,7 +64,7 @@ export function HandoffRecipientPickerModal({
         />
         <HandoffFooterActions
           primaryLabel="확인"
-          primaryDisabled={!recipients.some((item) => item.member.userId === selectedId)}
+          primaryDisabled={!recipients.some((item) => item.userId === selectedId)}
           onPrimaryPress={onConfirm}
         />
       </View>
@@ -77,13 +72,12 @@ export function HandoffRecipientPickerModal({
   );
 }
 
-function keyExtractor(item: RecipientModel) {
-  return String(item.member.userId);
+function keyExtractor(item: MemberDto) {
+  return String(item.userId);
 }
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
   list: { flex: 1 },
   separator: { height: StyleSheet.hairlineWidth, marginHorizontal: 18 },
-  // TODO(design-system): 수신자 목록 구분선의 18px 좌우 여백을 레이아웃 토큰으로 동기화한다.
 });

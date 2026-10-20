@@ -10,7 +10,7 @@ import { AppState } from 'react-native';
 import { isAppError } from '@/shared/api/errors';
 import { reportError } from '@/shared/lib/reportError';
 
-export function shouldRetryQuery(failureCount: number, error: unknown): boolean {
+function shouldRetryQuery(failureCount: number, error: unknown): boolean {
   return (
     failureCount < 2 &&
     isAppError(error) &&

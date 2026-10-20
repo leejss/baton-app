@@ -78,7 +78,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: spacing.xs,
-    // TODO(design-system): Figma 사진 버튼의 70px 크기와 약 13px radius를 토큰화한다.
   },
   counter: { fontVariant: ['tabular-nums'] },
   counterRow: { flexDirection: 'row' },

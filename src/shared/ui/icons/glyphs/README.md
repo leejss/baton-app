@@ -3,7 +3,7 @@
 Figma `최종 디자인 시스템` / `Logo / Icon` 섹션(1095:23868)에서 추출했다.
 Figma 심볼 하나 = 파일 하나 = export 하나. path 데이터 말고는 아무것도 넣지 않는다.
 
-각 파일 상단 주석에 원본 Figma 노드 ID가 박혀 있다. 아이콘이 바뀌면 그 ID로 다시 뽑는다.
+현재 앱에서 사용하는 아이콘만 둔다. 아이콘을 추가하거나 변경할 때는 위 Figma 섹션에서 필요한 원본을 다시 추출한다.
 
 ## 추출 방법
 
@@ -50,7 +50,7 @@ export function ArrowRightS(props: IconProps) {
 3. **variant는 접미사로 붙인다.** `style=fill`/`style=line` → `AlertCircleFill`/`AlertCircleLine`.
 4. **색은 `useIcon`이 준 `color`만 쓴다.** `fill="#1F2937"`, `fill="currentColor"`,
    `palette.*` 직접 참조 전부 금지. Figma SVG에 박혀 오는 `#1F2937`은 캔버스 표시용일 뿐이다.
-   호출부가 `color` prop으로 시맨틱 컬러를 고른다. `glyphs.test.tsx`가 이걸 강제한다.
+   호출부가 `color` prop으로 시맨틱 컬러를 고른다.
 5. **`width`/`height`/`viewBox`를 직접 쓰지 않는다.** `svgProps`가 전부 채운다.
    24 격자가 아닌 글리프만 `useIcon(props, '0 0 20 20')`처럼 두 번째 인자로 넘긴다.
 6. **Figma export를 그대로 붙여넣지 않는다.** 이름뿐인 래퍼 `<g>`, `preserveAspectRatio`,

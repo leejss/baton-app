@@ -126,7 +126,6 @@ export function useScheduleEditor({
     setDate,
     clearFailedAttempt,
     handleNext,
-    handleSave,
     handleFinish: () => router.dismissTo(ROUTES.schedules.list(form.getValues('workDate'))),
   };
 }

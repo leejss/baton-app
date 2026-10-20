@@ -40,8 +40,3 @@ export async function getDeviceId(): Promise<string> {
   storage.set(DEVICE_ID_KEY, deviceId);
   return deviceId;
 }
-
-/** 테스트 전용. 저장된 식별자를 지운다. */
-export function resetDeviceId(): void {
-  storage.remove(DEVICE_ID_KEY);
-}

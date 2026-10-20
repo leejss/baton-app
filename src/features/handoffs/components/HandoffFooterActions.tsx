@@ -78,14 +78,12 @@ const styles = StyleSheet.create({
   actions: {
     flexDirection: 'row',
     gap: 10,
-    // TODO(design-system): Figma 732:21495의 버튼 사이 10px 간격을 spacing 토큰과 동기화한다.
   },
   button: {
     height: 48,
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
-    // TODO(design-system): Action Button의 8px radius는 현재 radius 스케일에 없어 원시값을 사용한다.
   },
   secondary: { width: 89 },
   primary: { flex: 1 },

@@ -1,31 +1,21 @@
-import type {
-  HandoffStatusDto,
-  HandoffTypeDto,
-  MemberDto,
-} from '@/features/handoffs/api/handoff.schema';
+import type { MemberDto } from '@/features/stores/api/store.schema';
+import type { HandoffTypeDto } from '@/features/handoffs/api/handoff.schema';
 
-export const HANDOFF_SCOPES = ['all', 'received', 'sent'] as const;
+const HANDOFF_SCOPES = ['all', 'received', 'sent'] as const;
 export type HandoffScope = (typeof HANDOFF_SCOPES)[number];
 
 export function isHandoffScope(value: string | undefined): value is HandoffScope {
   return HANDOFF_SCOPES.some((scope) => scope === value);
 }
 
-export type HandoffDirection = 'sent' | 'received';
-
 export type HandoffCardModel = {
   id: string;
-  direction: HandoffDirection;
-  type: HandoffTypeDto;
+  direction: 'sent' | 'received';
   typeLabel: string;
   title: string;
   dateLabel: string;
-  status: HandoffStatusDto;
   statusLabel: string;
-  senderName: string;
-  recipientName: string;
   canManage: boolean;
-  canOpenDetail: boolean;
 };
 
 export type HandoffDetailAttachmentModel = {
@@ -34,7 +24,6 @@ export type HandoffDetailAttachmentModel = {
 };
 
 export type HandoffDetailModel = {
-  id: string;
   type: HandoffTypeDto;
   typeLabel: string;
   title: string;
@@ -46,18 +35,11 @@ export type HandoffDetailModel = {
   canManage: boolean;
 };
 
-export type RecipientModel = {
-  member: MemberDto;
-};
-
 export type LocalAttachment = {
   localId: string;
   uri: string;
-  fileName: string;
   mimeType: 'image/jpeg' | 'image/png' | 'image/webp';
   sizeBytes: number;
-  width: number;
-  height: number;
   attachmentId?: number;
   uploadStatus?: 'ready' | 'uploading' | 'complete' | 'failed';
   isLinked?: boolean;
@@ -67,6 +49,6 @@ export type HandoffDraft = {
   type: HandoffTypeDto | null;
   title: string;
   body: string;
-  recipient: RecipientModel | null;
+  recipient: MemberDto | null;
   attachments: LocalAttachment[];
 };

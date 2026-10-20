@@ -29,14 +29,14 @@ export function ScheduleActions({ id, now, onClose }: ScheduleActionsProps) {
   const [deleted, setDeleted] = useState(false);
   const context = useMainContext();
   const query = useQuery({
-    ...scheduleQueries.detail(context.workspaceId ?? 0, id),
-    enabled: Boolean(context) && !deleted,
+    ...scheduleQueries.detail(context.workspaceId, id),
+    enabled: !deleted,
   });
   const router = useRouter();
   const client = useQueryClient();
   const mutation = useMutation({
     mutationKey: ['schedules', 'delete'],
-    mutationFn: () => removeSchedule(context.workspaceId ?? 0, id),
+    mutationFn: () => removeSchedule(context.workspaceId, id),
     onError: async (error) => {
       logger.error('근무 삭제 실패', error);
       if (isAppError(error) && [403, 404, 409].includes(error.status ?? 0)) {
@@ -148,7 +148,7 @@ export function ScheduleActions({ id, now, onClose }: ScheduleActionsProps) {
               />
               <Button
                 label="취소"
-                variant="secondary"
+                tone="weak"
                 disabled={mutation.isPending}
                 onPress={() => setConfirming(false)}
               />
@@ -188,7 +188,6 @@ const styles = StyleSheet.create({
   actions: { gap: spacing.sm },
   details: { gap: spacing.xs },
   detailRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
-  // Figma 1097:43247: 14px 아이콘 + 4px 간격 + 근무시간 라벨(49px).
   detailLabel: { width: 67, flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
   detailValue: { flex: 1 },
 });

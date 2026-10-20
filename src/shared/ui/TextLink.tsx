@@ -3,16 +3,10 @@ import { Pressable, StyleSheet } from 'react-native';
 import { Text } from '@/shared/ui/Text';
 import { spacing, type ThemeColorName } from '@/theme';
 
-/**
- * 본문 안의 텍스트 버튼. 시안에서 두 가지로 쓰인다:
- *   link(파랑)        "재전송", "이메일 다시 입력하기"
- *   foregroundSubtle(회색) "로그인 화면으로 돌아가기"
- */
-export type TextLinkProps = {
+type TextLinkProps = {
   label: string;
   onPress: () => void;
   color?: Extract<ThemeColorName, 'foregroundBlueDefault' | 'foregroundSubtle'>;
-  /** 재발송 쿨다운처럼 잠시 못 누르는 상태. 색이 죽고 탭이 막힌다. */
   disabled?: boolean;
 };
 

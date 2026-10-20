@@ -55,7 +55,6 @@ export function HandoffScopeTabs({ value, onChange }: HandoffScopeTabsProps) {
 }
 
 const styles = StyleSheet.create({
-  // TODO(design-system): 필터 탭의 64px 최소 폭·44px 높이를 칩 컴포넌트 토큰으로 동기화한다.
   root: {
     flexDirection: 'row',
     gap: spacing.sm,

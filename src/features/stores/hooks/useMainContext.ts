@@ -1,7 +1,7 @@
 import { createContext, useContext } from 'react';
 import type { UserProfile } from '@/features/auth/api/auth.schema';
 import type { Membership } from '@/features/stores/api/store.schema';
-export type MainContext = {
+type MainContext = {
   profile: UserProfile;
   membership: Membership;
   workspaceId: number;

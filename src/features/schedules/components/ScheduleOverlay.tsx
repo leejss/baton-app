@@ -12,9 +12,8 @@ type ScheduleOverlayProps = {
   children: ReactNode;
   onClose: () => void;
   busy?: boolean;
-  variant?: 'default' | 'warning' | 'alert' | 'details';
+  variant?: 'default' | 'details';
   description?: ReactNode;
-  icon?: ReactNode;
 };
 
 export function ScheduleOverlay({
@@ -25,7 +24,6 @@ export function ScheduleOverlay({
   busy = false,
   variant = 'default',
   description,
-  icon,
 }: ScheduleOverlayProps) {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
@@ -65,57 +63,28 @@ export function ScheduleOverlay({
           style={[
             styles.card,
             variant !== 'default' && styles.dialog,
-            variant === 'alert' && styles.alert,
             variant === 'details' && styles.details,
             variant !== 'default' && shadows.default,
             {
               backgroundColor: colors.backgroundDefault,
               maxHeight: height - insets.top - spacing.md,
-              paddingBottom: variant === 'default' ? spacing.lg : variant === 'details' ? 21 : 20,
+              paddingBottom: variant === 'default' ? spacing.lg : 21,
             },
           ]}
         >
-          {variant === 'default' || variant === 'details' ? (
-            <View style={styles.textGroup}>
-              <View style={styles.heading}>
-                <Text
-                  variant="subheading"
-                  weight={variant === 'details' ? 'bold' : 'semibold'}
-                  style={styles.title}
-                >
-                  {title}
-                </Text>
-                {closeButton}
-              </View>
-              {description}
+          <View style={styles.textGroup}>
+            <View style={styles.heading}>
+              <Text
+                variant="subheading"
+                weight={variant === 'details' ? 'bold' : 'semibold'}
+                style={styles.title}
+              >
+                {title}
+              </Text>
+              {closeButton}
             </View>
-          ) : (
-            <View>
-              {variant === 'warning' && closeButton}
-              <View style={variant === 'warning' ? styles.warningContent : undefined}>
-                {icon}
-                <View style={styles.textGroup}>
-                  <Text
-                    accessibilityRole="header"
-                    variant={variant === 'alert' ? 'title' : 'subheading'}
-                    weight="semibold"
-                    style={variant === 'warning' && styles.centered}
-                  >
-                    {title}
-                  </Text>
-                  {description !== undefined && (
-                    <Text
-                      variant="bodySmall"
-                      color="foregroundDefault"
-                      style={variant === 'warning' && styles.centered}
-                    >
-                      {description}
-                    </Text>
-                  )}
-                </View>
-              </View>
-            </View>
-          )}
+            {description}
+          </View>
           {children}
         </View>
       </View>
@@ -130,10 +99,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: SCREEN_PADDING_X,
   },
-  // Figma 1097:41432(경고), 1097:41488(이탈)의 300px 폭·20px 패딩.
   dialog: { gap: 22 },
-  alert: { gap: 20 },
-  // Figma 1097:43247: 내용 204 + 상하 21 = 246.
   details: { paddingVertical: 21 },
   dialogClose: {
     alignSelf: 'flex-end',
@@ -143,9 +109,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  warningContent: { alignItems: 'center', gap: 22 },
   textGroup: { gap: 6, width: '100%' },
-  centered: { textAlign: 'center' },
   card: {
     flexShrink: 1,
     width: '100%',

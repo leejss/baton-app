@@ -25,7 +25,6 @@ type SchedulesScreenProps = {
   isManaging?: boolean;
 };
 
-/** 스크린은 클라이언트 선택 상태와 배치만 담당한다. 쿼리는 소비 컴포넌트 안에 있다. */
 export function SchedulesScreen({ initialDate, isManaging = false }: SchedulesScreenProps) {
   const now = useScheduleClock();
   const today = getTodayInSeoul(now);
@@ -105,7 +104,6 @@ export function SchedulesScreen({ initialDate, isManaging = false }: SchedulesSc
   );
 }
 const styles = StyleSheet.create({
-  // TODO(design-system): Figma 월간 근무표의 달력 위 여백 14px를 sync한다.
   root: { flex: 1 },
   scroll: { paddingBottom: spacing.xl },
   calendar: {

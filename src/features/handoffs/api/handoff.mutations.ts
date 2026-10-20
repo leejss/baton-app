@@ -17,7 +17,7 @@ import type {
   HandoffUpdateRequestDto,
 } from '@/features/handoffs/api/handoff.schema';
 
-export async function invalidateHandoffViews(client: QueryClient, workspaceId: number) {
+async function invalidateHandoffViews(client: QueryClient, workspaceId: number) {
   await Promise.all([
     client.invalidateQueries({ queryKey: handoffQueries.store(workspaceId) }),
     client.invalidateQueries({ queryKey: homeQueries.store(workspaceId) }),

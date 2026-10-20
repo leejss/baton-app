@@ -17,7 +17,8 @@ import { HandoffEditorFields } from '@/features/handoffs/components/HandoffEdito
 import { HandoffFooterActions } from '@/features/handoffs/components/HandoffFooterActions';
 import { HandoffRecipientCard } from '@/features/handoffs/components/HandoffRecipientCard';
 import { HandoffRecipientPickerModal } from '@/features/handoffs/components/HandoffRecipientPickerModal';
-import type { LocalAttachment, RecipientModel } from '@/features/handoffs/types';
+import type { LocalAttachment } from '@/features/handoffs/types';
+import type { MemberDto } from '@/features/stores/api/store.schema';
 import {
   handoffContentFormSchema,
   type HandoffContentFormValues,
@@ -105,11 +106,11 @@ export function HandoffEditContent({ ref, handoffId, onBack, onSaved }: HandoffE
     setPickerSelectedId(recipient.userId);
     setRecipientPickerVisible(true);
   };
-  const handleSelectRecipient = (item: RecipientModel) => setPickerSelectedId(item.member.userId);
+  const handleSelectRecipient = (item: MemberDto) => setPickerSelectedId(item.userId);
   const handleConfirmRecipient = () => {
-    const selected = recipients.find(({ member }) => member.userId === pickerSelectedId);
+    const selected = recipients.find((member) => member.userId === pickerSelectedId);
     if (selected === undefined) return;
-    setRecipient(selected.member);
+    setRecipient(selected);
     setRecipientPickerVisible(false);
   };
   const submit = handleSubmit((values) => {
@@ -205,7 +206,7 @@ export function HandoffEditContent({ ref, handoffId, onBack, onSaved }: HandoffE
           !hasChanges ||
           handoff.status !== 'UNCONFIRMED' ||
           handoff.sender.userId !== context.userId ||
-          !recipients.some((item) => item.member.userId === recipient.userId)
+          !recipients.some((item) => item.userId === recipient.userId)
         }
         primaryLoading={updateMutation.isPending}
         onPrimaryPress={() => void submit()}
@@ -233,7 +234,6 @@ const styles = StyleSheet.create({
     paddingTop: spacing.md,
     paddingBottom: spacing.xl,
     gap: spacing.lg,
-    // TODO(design-system): 수정 화면의 18px 좌우 여백을 레이아웃 토큰으로 동기화한다.
   },
   heading: { gap: spacing.xs },
   section: { gap: spacing.sm },

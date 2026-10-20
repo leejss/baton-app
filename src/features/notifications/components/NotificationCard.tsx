@@ -1,7 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 
 import type { Notification } from '@/features/notifications/types';
-import { IllustIcon, Pressable, Text, type IllustIconName } from '@/shared/ui';
+import { IllustIcon, Pressable, Text } from '@/shared/ui';
 import { spacing, useTheme } from '@/theme';
 
 type NotificationCardProps = {
@@ -9,21 +9,6 @@ type NotificationCardProps = {
   isOpening: boolean;
   onPress: (notification: Notification) => void;
 };
-
-const NOTIFICATION_ILLUST_ICONS = {
-  announcement: 'announcement',
-  handoffReceived: 'handoffReceived',
-  handoffConfirmed: 'handoffConfirmed',
-} as const satisfies Record<Notification['kind'], IllustIconName>;
-
-// Figma 943:103882의 치수. 전역 스케일을 변경하지 않고 이 카드에만 한정한다.
-const CARD = {
-  radius: 16,
-  paddingVertical: 18,
-  iconGap: 14,
-  textGap: 6,
-  dotSize: 6,
-} as const;
 
 export function NotificationCard({ notification, isOpening, onPress }: NotificationCardProps) {
   const { colors } = useTheme();
@@ -46,7 +31,7 @@ export function NotificationCard({ notification, isOpening, onPress }: Notificat
         pressed && styles.pressed,
       ]}
     >
-      <IllustIcon name={NOTIFICATION_ILLUST_ICONS[notification.kind]} />
+      <IllustIcon name={notification.kind} />
       <View style={styles.content}>
         <Text variant="caption" weight="semibold">
           {notification.heading}
@@ -71,18 +56,18 @@ const styles = StyleSheet.create({
   card: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    gap: CARD.iconGap,
-    borderRadius: CARD.radius,
+    gap: 14,
+    borderRadius: 16,
     paddingHorizontal: spacing.md,
-    paddingVertical: CARD.paddingVertical,
+    paddingVertical: 18,
     marginBottom: spacing.md,
   },
-  content: { flex: 1, minWidth: 0, gap: CARD.textGap },
-  dotSlot: { width: CARD.dotSize, height: CARD.dotSize },
+  content: { flex: 1, minWidth: 0, gap: 6 },
+  dotSlot: { width: 6, height: 6 },
   dot: {
-    width: CARD.dotSize,
-    height: CARD.dotSize,
-    borderRadius: CARD.dotSize / 2,
+    width: 6,
+    height: 6,
+    borderRadius: 3,
   },
   pressed: { opacity: 0.7 },
 });

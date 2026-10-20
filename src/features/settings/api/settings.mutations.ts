@@ -7,11 +7,12 @@ import {
   updateMemberRole,
 } from '@/features/stores/api/store.api';
 import { storeQueries } from '@/features/stores/api/store.queries';
+import type { Membership } from '@/features/stores/api/store.schema';
 import { selectWorkspace } from '@/features/stores/store/workspaceSelectionStore';
 import { useAuthStore } from '@/features/auth/store/authStore';
 import { AppError } from '@/shared/api/errors';
 import { ROUTES } from '@/shared/lib/routes';
-export async function leaveCurrentStore(workspaceId: number, _userId: number) {
+async function leaveCurrentStore(workspaceId: number) {
   const { membership } = await fetchWorkspace(workspaceId);
   if (membership.status !== 'ACTIVE')
     throw new AppError('server', '현재 워크스페이스 참여를 확인할 수 없어요.');
@@ -20,17 +21,13 @@ export async function leaveCurrentStore(workspaceId: number, _userId: number) {
 export function useLeaveCurrentStore(workspaceId: number, userId: number) {
   const client = useQueryClient();
   return useMutation({
-    mutationFn: () => leaveCurrentStore(workspaceId, userId),
+    mutationFn: () => leaveCurrentStore(workspaceId),
     onSuccess: async () => {
       if (useAuthStore.getState().session?.user.id !== userId) return;
       await selectWorkspace(client, userId, null);
       client.setQueryData(
         storeQueries.me().queryKey,
-        (
-          previous:
-            | { memberships: import('@/features/stores/api/store.schema').Membership[] }
-            | undefined,
-        ) => ({
+        (previous: { memberships: Membership[] } | undefined) => ({
           memberships: (previous?.memberships ?? []).filter(
             (item) => item.workspace.id !== workspaceId,
           ),

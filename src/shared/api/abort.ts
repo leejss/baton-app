@@ -17,7 +17,7 @@ function createTimeoutError(): Error {
   return error;
 }
 
-function getSignalReason(signal: AbortSignal): unknown {
+export function getAbortReason(signal: AbortSignal): unknown {
   // 일부 React Native 런타임은 abort(reason)을 무시하고 기본 reason만 노출한다.
   return abortReasons.get(signal) ?? signal.reason;
 }
@@ -29,17 +29,16 @@ function abortWithReason(controller: AbortController, reason: unknown): void {
 
 export function throwIfAborted(signal: AbortSignal): void {
   if (!signal.aborted) return;
-  throw getSignalReason(signal) ?? createAbortError();
+  throw getAbortReason(signal) ?? createAbortError();
 }
 
 export function combineSignals(signals: readonly AbortSignal[]): ManagedAbortSignal {
   const controller = new AbortController();
   const removeListeners: (() => void)[] = [];
-  let cleanedUp = false;
 
   const abortFrom = (source: AbortSignal) => {
     if (!controller.signal.aborted) {
-      abortWithReason(controller, getSignalReason(source) ?? createAbortError());
+      abortWithReason(controller, getAbortReason(source) ?? createAbortError());
     }
   };
 
@@ -57,8 +56,6 @@ export function combineSignals(signals: readonly AbortSignal[]): ManagedAbortSig
   return {
     signal: controller.signal,
     cleanup: () => {
-      if (cleanedUp) return;
-      cleanedUp = true;
       for (const removeListener of removeListeners) removeListener();
     },
   };
@@ -72,13 +69,7 @@ export function withAbortTimeout(
   const timeoutId = setTimeout(() => {
     abortWithReason(timeoutController, createTimeoutError());
   }, timeoutMs);
-  const clearTimeoutSignal = () => clearTimeout(timeoutId);
-  timeoutController.signal.addEventListener('abort', clearTimeoutSignal, { once: true });
-
-  const cleanupTimeout = () => {
-    clearTimeout(timeoutId);
-    timeoutController.signal.removeEventListener('abort', clearTimeoutSignal);
-  };
+  const cleanupTimeout = () => clearTimeout(timeoutId);
 
   if (signal === undefined) {
     return { signal: timeoutController.signal, cleanup: cleanupTimeout };
@@ -92,8 +83,4 @@ export function withAbortTimeout(
       cleanupTimeout();
     },
   };
-}
-
-export function getAbortReason(signal: AbortSignal): unknown {
-  return getSignalReason(signal);
 }

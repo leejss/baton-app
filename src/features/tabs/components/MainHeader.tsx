@@ -37,8 +37,8 @@ export function MainHeader({
     enabled: showNotification,
   });
   const membership = context.membership;
-  const storeLabel = membership && membership.workspace.name;
-  const roleLabel = membership?.role === 'ADMIN' ? '관리자' : '멤버';
+  const storeLabel = membership.workspace.name;
+  const roleLabel = membership.role === 'ADMIN' ? '관리자' : '멤버';
   const count = notifications.data?.unreadCount ?? 0;
   const badgeText = notifications.data?.badgeText ?? '';
   const headerBackgroundColor =
@@ -80,34 +80,32 @@ export function MainHeader({
           </View>
         )}
         <View style={styles.trailing}>
-          {membership ? (
-            <Pressable
-              accessibilityRole="button"
-              onPress={() => router.push(ROUTES.workspaces)}
-              accessibilityLabel={`${storeLabel}, ${roleLabel}, 워크스페이스 전환`}
-              style={[
-                styles.storeTag,
-                {
-                  backgroundColor: theme.colors.backgroundDefault,
-                  borderColor: theme.colors.surfaceNeutralSubtle,
-                },
-              ]}
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => router.push(ROUTES.workspaces)}
+            accessibilityLabel={`${storeLabel}, ${roleLabel}, 워크스페이스 전환`}
+            style={[
+              styles.storeTag,
+              {
+                backgroundColor: theme.colors.backgroundDefault,
+                borderColor: theme.colors.surfaceNeutralSubtle,
+              },
+            ]}
+          >
+            <Text
+              numberOfLines={1}
+              ellipsizeMode="tail"
+              variant="caption"
+              weight="medium"
+              style={styles.storeName}
             >
-              <Text
-                numberOfLines={1}
-                ellipsizeMode="tail"
-                variant="caption"
-                weight="medium"
-                style={styles.storeName}
-              >
-                {storeLabel}
-              </Text>
-              <Text variant="caption" weight="medium">
-                {' / '}
-                {roleLabel}
-              </Text>
-            </Pressable>
-          ) : null}
+              {storeLabel}
+            </Text>
+            <Text variant="caption" weight="medium">
+              {' / '}
+              {roleLabel}
+            </Text>
+          </Pressable>
           {showNotification && notifications.isError && (
             <Pressable
               accessibilityRole="button"

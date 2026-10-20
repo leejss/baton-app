@@ -84,9 +84,8 @@ export function HandoffContentScreen({
   });
   const recipientsQuery = useQuery(handoffQueries.recipients(context.workspaceId, context.userId));
   const effectiveRecipient =
-    (recipient
-      ? recipientsQuery.data?.find((item) => item.member.userId === recipient.member.userId)
-      : null) ?? null;
+    (recipient ? recipientsQuery.data?.find((item) => item.userId === recipient.userId) : null) ??
+    null;
 
   const createMutation = useMutation(handoffMutations(queryClient, context.workspaceId).create());
 
@@ -176,7 +175,7 @@ export function HandoffContentScreen({
               받는 사람
             </Text>
             <HandoffRecipientCard
-              recipient={effectiveRecipient?.member ?? null}
+              recipient={effectiveRecipient}
               onPress={() => {
                 if (!createMutation.isPending) onRecipientPress();
               }}
@@ -211,5 +210,4 @@ const styles = StyleSheet.create({
   content: { width: '100%', gap: 32 },
   mainSection: { gap: 20 },
   recipientSection: { gap: 11 },
-  // TODO(design-system): 작성 화면의 28/32/20/11px 간격을 레이아웃 토큰으로 동기화한다.
 });

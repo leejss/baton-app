@@ -1,6 +1,5 @@
 import { Alert, StyleSheet, View } from 'react-native';
 import { normalizeError } from '@/shared/api/errors';
-import { logger } from '@/shared/lib/logger';
 import { Button } from '@/shared/ui';
 import { isSocialSignupTokenInvalid, useSignUp } from '@/features/auth/api/signup.mutations';
 import { TERMS, type TermsCode } from '@/features/auth/api/signup.schema';
@@ -11,25 +10,22 @@ import { useCountdown } from '@/shared/hooks/useCountdown';
 import { SignupLayout } from '@/features/auth/components/SignupLayout';
 import { TermsCheckItem } from '@/features/auth/components/TermsCheckItem';
 import {
-  getStepProgress,
   hasRequiredAgreements,
   hasSocialSignupTokenExpired,
   toAgreementDecisions,
   useSignupStore,
 } from '@/features/auth/store/signupStore';
 
-export type SignupTermsScreenProps = {
+type SignupTermsScreenProps = {
   onBack: () => void;
-  onOpenTerm?: (code: TermsCode) => void;
+  onOpenTerm: (code: TermsCode) => void;
   onComplete: () => void;
   onSocialSignupExpired: () => void;
   onSignIn: () => void;
 };
-const notWired = (code: TermsCode) =>
-  logger.warn('약관 본문 링크가 아직 연결되지 않았습니다', { code });
 export function SignupTermsScreen({
   onBack,
-  onOpenTerm = notWired,
+  onOpenTerm,
   onComplete,
   onSocialSignupExpired,
   onSignIn,
@@ -109,7 +105,7 @@ export function SignupTermsScreen({
     <SignupLayout
       onBack={onBack}
       isBackDisabled={operation.isPending}
-      progress={getStepProgress('terms')}
+      progress={{ current: 2, total: 2 }}
       title="약관에 동의해주세요"
       description={
         submissionUncertain
@@ -120,7 +116,7 @@ export function SignupTermsScreen({
       }
       action={
         <Button
-          variant="accent"
+          color="blue"
           label={
             submissionUncertain
               ? '소셜 로그인으로 확인'

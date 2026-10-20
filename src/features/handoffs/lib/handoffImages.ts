@@ -35,7 +35,6 @@ async function prepareAttachment(
 
   let uri = asset.uri;
   let width = asset.width;
-  let height = asset.height;
   let sizeBytes = originalSize ?? MAX_IMAGE_BYTES + 1;
   let mimeType = normalizeMimeType(originalMimeType);
 
@@ -43,7 +42,6 @@ async function prepareAttachment(
     const firstPass = await renderJpeg(uri, width > 2_048 ? 2_048 : undefined, 0.78);
     uri = firstPass.uri;
     width = firstPass.width;
-    height = firstPass.height;
     sizeBytes = getFileSize(uri) ?? sizeBytes;
     mimeType = 'image/jpeg';
   }
@@ -51,8 +49,6 @@ async function prepareAttachment(
   if (sizeBytes > MAX_IMAGE_BYTES) {
     const secondPass = await renderJpeg(uri, width > 1_600 ? 1_600 : undefined, 0.6);
     uri = secondPass.uri;
-    width = secondPass.width;
-    height = secondPass.height;
     sizeBytes = getFileSize(uri) ?? sizeBytes;
   }
 
@@ -62,17 +58,13 @@ async function prepareAttachment(
 
   const localId = `${Date.now()}-${index}-${asset.assetId ?? asset.fileName ?? 'image'}`;
 
-  const attachment: LocalAttachment = {
+  return {
     localId,
     uri,
-    fileName: mimeType === 'image/jpeg' ? `${localId}.jpg` : (asset.fileName ?? `${localId}.png`),
     mimeType,
     sizeBytes,
-    width,
-    height,
     uploadStatus: 'ready',
   };
-  return attachment;
 }
 
 async function renderJpeg(uri: string, width: number | undefined, compress: number) {

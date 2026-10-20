@@ -8,7 +8,7 @@ import { useCreateStore } from '@/features/stores/api/store.mutations';
 import { StoreStepLayout } from '@/features/stores/components/StoreStepLayout';
 import { storeNameFormSchema, type StoreNameForm } from '@/features/stores/lib/validation';
 import { useStoreCreateStore } from '@/features/stores/store/storeCreateStore';
-export type StoreCreateNameScreenProps = { onBack: () => void; onNext: () => void };
+type StoreCreateNameScreenProps = { onBack: () => void; onNext: () => void };
 export function StoreCreateNameScreen({ onBack, onNext }: StoreCreateNameScreenProps) {
   const draft = useStoreCreateStore();
   const create = useCreateStore();

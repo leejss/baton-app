@@ -1,9 +1,10 @@
 import { create } from 'zustand';
 
 import type { HandoffTypeDto } from '@/features/handoffs/api/handoff.schema';
-import type { HandoffDraft, LocalAttachment, RecipientModel } from '@/features/handoffs/types';
+import type { HandoffDraft, LocalAttachment } from '@/features/handoffs/types';
+import type { MemberDto } from '@/features/stores/api/store.schema';
 
-export const EMPTY_HANDOFF_DRAFT: HandoffDraft = {
+const EMPTY_HANDOFF_DRAFT: HandoffDraft = {
   type: null,
   title: '',
   body: '',
@@ -14,7 +15,7 @@ export const EMPTY_HANDOFF_DRAFT: HandoffDraft = {
 type HandoffDraftState = HandoffDraft & {
   setType: (type: HandoffTypeDto) => void;
   setContent: (title: string, body: string) => void;
-  setRecipient: (recipient: RecipientModel) => void;
+  setRecipient: (recipient: MemberDto) => void;
   addAttachments: (attachments: LocalAttachment[]) => void;
   updateAttachment: (localId: string, patch: Partial<LocalAttachment>) => void;
   removeAttachment: (localId: string) => void;

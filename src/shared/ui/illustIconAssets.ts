@@ -96,20 +96,3 @@ export const ILLUST_ICON_ASSETS = {
 } as const satisfies Record<string, IllustIconAsset>;
 
 export type IllustIconName = keyof typeof ILLUST_ICON_ASSETS;
-
-/** Figma 프레임에 배치된 순서. 에셋 카탈로그나 디자인 확인 화면에서 재사용한다. */
-export const ILLUST_ICON_ORDER = [
-  'home',
-  'taskProcessing',
-  'storeStatus',
-  'other',
-  'workScheduleEdit',
-  'workScheduleAdd',
-  'calendar',
-  'announcement',
-  'sent',
-  'received',
-  'handoffReceived',
-  'handoffConfirmed',
-  'workSchedule',
-] as const satisfies readonly IllustIconName[];

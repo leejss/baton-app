@@ -48,7 +48,6 @@ export function MonthPicker({ visible, month, today, onSelect, onClose }: MonthP
   );
 }
 const styles = StyleSheet.create({
-  // TODO(design-system): 월 선택 목록의 최대 높이 360px·행 높이 48px 기준을 sync한다.
   list: { maxHeight: 360 },
   item: {
     minHeight: 48,

@@ -29,7 +29,6 @@ export function CalendarDay({
   onSelect,
 }: CalendarDayProps) {
   const { colors } = useTheme();
-  const hasStrongSelection = selected;
   return (
     <Pressable
       accessibilityRole="button"
@@ -43,16 +42,14 @@ export function CalendarDay({
         style={[
           styles.circle,
           (today || selected) && {
-            backgroundColor: hasStrongSelection
-              ? colors.surfaceBlueStrong
-              : colors.surfaceBlueSubtle,
+            backgroundColor: selected ? colors.surfaceBlueStrong : colors.surfaceBlueSubtle,
           },
         ]}
       >
         <Text
           weight="medium"
           color={
-            hasStrongSelection
+            selected
               ? 'foregroundInverse'
               : outside || muted
                 ? 'foregroundDisabled'
@@ -97,7 +94,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  today: {},
   dots: { height: 4, flexDirection: 'row', alignItems: 'center', gap: 2, overflow: 'visible' },
   dot: { width: 4, height: 4, borderRadius: radius.full },
   more: { width: 4, height: 4 },

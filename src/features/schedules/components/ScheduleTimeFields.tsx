@@ -12,6 +12,11 @@ type ScheduleTimeFieldsProps = {
   onChange: () => void;
 };
 
+const TIME_FIELDS = [
+  { name: 'startTime', label: '출근' },
+  { name: 'endTime', label: '퇴근' },
+] as const;
+
 export function ScheduleTimeFields({
   control,
   disabled,
@@ -20,58 +25,34 @@ export function ScheduleTimeFields({
 }: ScheduleTimeFieldsProps) {
   return (
     <View style={styles.row}>
-      <View style={styles.field}>
-        <Controller
-          control={control}
-          name="startTime"
-          render={({ field, fieldState }) => (
-            <TextField
-              appearance="time"
-              accessibilityLabel="출근 시간"
-              label="출근"
-              placeholder="00:00"
-              keyboardType="number-pad"
-              value={field.value}
-              onChangeText={(text) => {
-                field.onChange(formatTimeInput(text));
-                onChange();
-              }}
-              ref={field.ref}
-              onBlur={field.onBlur}
-              disabled={disabled}
-              readOnly={readOnly}
-              status={fieldState.error ? 'error' : 'none'}
-              subtitle={fieldState.error?.message}
-            />
-          )}
-        />
-      </View>
-      <View style={styles.field}>
-        <Controller
-          control={control}
-          name="endTime"
-          render={({ field, fieldState }) => (
-            <TextField
-              appearance="time"
-              accessibilityLabel="퇴근 시간"
-              label="퇴근"
-              placeholder="00:00"
-              keyboardType="number-pad"
-              value={field.value}
-              onChangeText={(text) => {
-                field.onChange(formatTimeInput(text));
-                onChange();
-              }}
-              ref={field.ref}
-              onBlur={field.onBlur}
-              disabled={disabled}
-              readOnly={readOnly}
-              status={fieldState.error ? 'error' : 'none'}
-              subtitle={fieldState.error?.message}
-            />
-          )}
-        />
-      </View>
+      {TIME_FIELDS.map(({ name, label }) => (
+        <View key={name} style={styles.field}>
+          <Controller
+            control={control}
+            name={name}
+            render={({ field, fieldState }) => (
+              <TextField
+                appearance="time"
+                accessibilityLabel={`${label} 시간`}
+                label={label}
+                placeholder="00:00"
+                keyboardType="number-pad"
+                value={field.value}
+                onChangeText={(text) => {
+                  field.onChange(formatTimeInput(text));
+                  onChange();
+                }}
+                ref={field.ref}
+                onBlur={field.onBlur}
+                disabled={disabled}
+                readOnly={readOnly}
+                status={fieldState.error ? 'error' : 'none'}
+                subtitle={fieldState.error?.message}
+              />
+            )}
+          />
+        </View>
+      ))}
     </View>
   );
 }

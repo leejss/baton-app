@@ -10,9 +10,7 @@ import { isAppleSignInAvailable } from '@/features/auth/lib/appleAuth';
 import { useAuthStore } from '@/features/auth/store/authStore';
 import { useSignupStore } from '@/features/auth/store/signupStore';
 
-export type UseSocialSignInParams = { onSignupRequired: () => void };
-
-export function useSocialSignIn({ onSignupRequired }: UseSocialSignInParams) {
+export function useSocialSignIn({ onSignupRequired }: { onSignupRequired: () => void }) {
   const kakao = useKakaoSignIn();
   const apple = useAppleSignIn();
   const operation = useAuthOperation('login');
@@ -36,8 +34,9 @@ export function useSocialSignIn({ onSignupRequired }: UseSocialSignInParams) {
       async ({ signal, isCurrent, complete }) => {
         const outcome = await (provider === 'kakao' ? kakao : apple).mutateAsync({ signal });
         if (!isCurrent()) return;
-        if (outcome.status === 'signedIn') {
-          await useAuthStore.getState().signIn(outcome.session, signal);
+        if (outcome.status === 'LOGGED_IN') {
+          const { status: _status, ...session } = outcome;
+          await useAuthStore.getState().signIn(session, signal);
           useSignupStore.getState().clear();
           return;
         }

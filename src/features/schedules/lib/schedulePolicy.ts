@@ -20,9 +20,3 @@ export const scheduleFormSchema = z
   });
 export const canEditSchedule = (item: ScheduleItem, userId: number, now: Date): boolean =>
   item.member.id === userId && item.member.isActive && !hasStarted(item.date, item.startTime, now);
-export const overlaps = (
-  a: Pick<ScheduleItem, 'startTime' | 'endTime'>,
-  b: Pick<ScheduleItem, 'startTime' | 'endTime'>,
-) =>
-  timeMinutes(a.startTime) < timeMinutes(b.endTime) &&
-  timeMinutes(b.startTime) < timeMinutes(a.endTime);

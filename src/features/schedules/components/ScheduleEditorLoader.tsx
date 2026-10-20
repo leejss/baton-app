@@ -17,7 +17,7 @@ type ScheduleEditorLoaderProps = {
 
 export function ScheduleEditorLoader({ id, initialDate }: ScheduleEditorLoaderProps) {
   const context = useMainContext();
-  const detail = useQuery(scheduleQueries.detail(context.workspaceId ?? 0, id ?? 0));
+  const detail = useQuery(scheduleQueries.detail(context.workspaceId, id ?? 0));
   const router = useRouter();
   if (id !== undefined) {
     if (id <= 0 || (!detail.data && isAppError(detail.error) && detail.error.status === 404))

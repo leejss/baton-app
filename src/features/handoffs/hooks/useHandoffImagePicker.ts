@@ -9,7 +9,6 @@ type UseHandoffImagePickerOptions = {
   onSelected: (attachments: LocalAttachment[]) => void;
 };
 
-/** 사진 정책 안내와 최대 개수 계산을 작성·수정 화면이 같은 방식으로 처리하게 한다. */
 export function useHandoffImagePicker({
   attachmentCount,
   onSelected,

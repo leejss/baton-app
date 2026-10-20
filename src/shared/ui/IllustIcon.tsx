@@ -3,7 +3,7 @@ import { StyleSheet, type StyleProp, type ViewStyle, View } from 'react-native';
 
 import { ILLUST_ICON_ASSETS, type IllustIconName } from '@/shared/ui/illustIconAssets';
 
-export type IllustIconProps = {
+type IllustIconProps = {
   /** Figma `Illust Icon` 에셋 이름. */
   name: IllustIconName;
   /** 아이콘이 차지하는 정사각형 프레임 크기(픽셀). 생략하면 에셋의 기본 크기를 사용한다. */

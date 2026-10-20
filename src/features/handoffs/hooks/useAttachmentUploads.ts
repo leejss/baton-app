@@ -80,6 +80,5 @@ export function useAttachmentUploads({ attachments, onAdd, onUpdate, onRemove }:
     retry,
     remove,
     isReady: attachments.every((file) => file.uploadStatus === 'complete'),
-    isUploading: attachments.some((file) => file.uploadStatus === 'uploading'),
   };
 }

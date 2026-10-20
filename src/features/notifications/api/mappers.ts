@@ -1,6 +1,5 @@
 import type { NotificationDto } from '@/features/notifications/api/notification.schema';
 import {
-  NOTIFICATION_RETENTION_MS,
   type Notification,
   type NotificationKind,
   type NotificationTarget,
@@ -30,11 +29,6 @@ export function toNotification(dto: NotificationDto): Notification {
     kind,
     heading: HEADINGS[kind],
     message: dto.body?.trim() || dto.title,
-    createdAt,
-    expiresAt: Math.min(
-      createdAt + NOTIFICATION_RETENTION_MS,
-      dto.expiresAt ? Date.parse(dto.expiresAt) : Infinity,
-    ),
     timeLabel: formatNotificationTime(createdAt),
     isUnread: dto.status === 'UNREAD',
     target,

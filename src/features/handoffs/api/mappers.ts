@@ -1,3 +1,4 @@
+import type { MemberDto } from '@/features/stores/api/store.schema';
 import type {
   AttachmentDto,
   HandoffCreateRequestDto,
@@ -6,14 +7,12 @@ import type {
   HandoffScopeDto,
   HandoffStatusDto,
   HandoffTypeDto,
-  MemberDto,
 } from '@/features/handoffs/api/handoff.schema';
 import type {
   HandoffCardModel,
   HandoffDetailModel,
   HandoffDraft,
   HandoffScope,
-  RecipientModel,
   LocalAttachment,
 } from '@/features/handoffs/types';
 import { formatRelativeSeoulDate } from '@/shared/lib/formatters';
@@ -61,16 +60,11 @@ export function toHandoffCardModel(
   return {
     id: String(item.id),
     direction: isSender ? 'sent' : 'received',
-    type: item.type,
     typeLabel: getHandoffTypeLabel(item.type),
     title: item.title,
     dateLabel: formatRelativeSeoulDate(item.sentAt, now),
-    status: item.status,
     statusLabel: STATUS_LABELS[item.status],
-    senderName: item.sender.displayName,
-    recipientName: item.recipient.user.displayName,
     canManage: scope !== 'received' && isSender && item.status === 'UNCONFIRMED',
-    canOpenDetail: true,
   };
 }
 
@@ -80,7 +74,6 @@ export function toHandoffDetailModel(
   now = new Date(),
 ): HandoffDetailModel {
   return {
-    id: String(handoff.id),
     type: handoff.type,
     typeLabel: getHandoffTypeLabel(handoff.type),
     title: handoff.title,
@@ -99,11 +92,10 @@ export function toHandoffDetailModel(
   };
 }
 
-export function toRecipientModels(members: MemberDto[], viewerId: number): RecipientModel[] {
+export function getHandoffRecipients(members: MemberDto[], viewerId: number): MemberDto[] {
   return members
     .filter((member) => member.status === 'ACTIVE' && member.userId !== viewerId)
-    .map((member) => ({ member }))
-    .sort((a, b) => a.member.displayName.localeCompare(b.member.displayName, 'ko'));
+    .sort((a, b) => a.displayName.localeCompare(b.displayName, 'ko'));
 }
 
 export function toCreateRequest(draft: HandoffDraft): HandoffCreateRequestDto {
@@ -121,7 +113,7 @@ export function toCreateRequest(draft: HandoffDraft): HandoffCreateRequestDto {
     type: draft.type,
     title: draft.title.trim(),
     body: draft.body.trim(),
-    recipientId: draft.recipient.member.userId,
+    recipientId: draft.recipient.userId,
     attachmentIds: draft.attachments
       .map(({ attachmentId }) => attachmentId)
       .filter((id): id is number => id !== undefined),
@@ -132,11 +124,8 @@ export function toLocalAttachments(attachments: AttachmentDto[]): LocalAttachmen
   return attachments.map((attachment) => ({
     localId: String(attachment.id),
     uri: attachment.downloadUrl ?? '',
-    fileName: String(attachment.id),
     mimeType: attachment.contentType,
     sizeBytes: attachment.sizeBytes,
-    width: 0,
-    height: 0,
     attachmentId: attachment.id,
     uploadStatus: 'complete',
     isLinked: true,

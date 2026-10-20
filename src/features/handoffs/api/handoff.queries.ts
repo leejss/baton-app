@@ -2,7 +2,7 @@ import { fetchMembers } from '@/features/stores/api/store.api';
 import { AppError } from '@/shared/api/errors';
 import { queryOptions, infiniteQueryOptions } from '@tanstack/react-query';
 import { fetchHandoffs, fetchHandoff } from '@/features/handoffs/api/handoff.api';
-import { toHandoffScopeDto, toRecipientModels } from '@/features/handoffs/api/mappers';
+import { toHandoffScopeDto, getHandoffRecipients } from '@/features/handoffs/api/mappers';
 import type { HandoffScope } from '@/features/handoffs/types';
 export const handoffQueries = {
   all: () => ['handoffs'] as const,
@@ -42,6 +42,6 @@ export const handoffQueries = {
     queryOptions({
       queryKey: [...handoffQueries.recipientsKey(workspaceId), userId],
       queryFn: async ({ signal }) =>
-        toRecipientModels(await fetchMembers(workspaceId, signal), userId),
+        getHandoffRecipients(await fetchMembers(workspaceId, signal), userId),
     }),
 };

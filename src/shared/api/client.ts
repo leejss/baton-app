@@ -13,19 +13,8 @@ import {
 import { normalizeApiRoute, readHttpResponse } from '@/shared/api/httpResponse';
 import { logger } from '@/shared/lib/logger';
 
-/**
- * HTTP 단일 진입점. 화면·훅은 여기를 직접 부르지 않고 각 도메인의 api 모듈을 거친다.
- *
- * 계약(`openapi.yaml`)의 공통 규칙을 여기 한 곳에서만 처리한다:
- * - 모든 JSON 응답의 `{ meta, data }` 래퍼 벗기기
- * - `meta.errorCode`를 `AppError.errorCode`로 정규화
- * - `Authorization: Bearer` 주입과 `401` 시 1회 토큰 갱신 후 재시도
- */
 const TIMEOUT_MS = 10_000;
 
-export { API_URL } from '@/shared/config/api';
-
-/** 계약 §1의 공통 응답 래퍼. 본문이 있는 모든 응답이 이 모양이다. */
 const envelopeSchema = z.object({
   meta: z.object({
     result: z.enum(['SUCCESS', 'FAIL']),
@@ -35,29 +24,15 @@ const envelopeSchema = z.object({
   data: z.unknown().nullish(),
 });
 
-// ─────────────────────────────────────────────────────────────
-// 인증 브리지
-// ─────────────────────────────────────────────────────────────
-
-/**
- * 토큰 보관은 `authStore`가 하고 주입은 여기가 한다. 서로 import 하면 순환이 되므로
- * 스토어가 자기 자신을 등록하는 방향으로만 연결한다.
- */
-export type AuthBridge = {
+// 인증 스토어가 등록해 HTTP 계층과의 순환 import를 피한다.
+type AuthBridge = {
   getAccessToken: () => string | null;
   getRefreshToken: () => string | null;
-  /** 갱신된 토큰 쌍을 저장한다. */
   onTokensRefreshed: (tokens: RefreshedTokens) => Promise<void>;
-  /** Refresh Token까지 만료·폐기됐을 때. 로그아웃 상태로 되돌린다. */
   onSessionExpired: () => Promise<void>;
 };
 
-export type RefreshedTokens = {
-  accessToken: string;
-  refreshToken: string;
-  accessTokenExpiresAt: string;
-  refreshTokenExpiresAt: string;
-};
+export type RefreshedTokens = z.infer<typeof tokenPairSchema>;
 
 const tokenPairSchema = z.object({
   accessToken: z.string().min(1),
@@ -77,25 +52,13 @@ export function registerAuthBridge(bridge: AuthBridge): void {
   authBridge = bridge;
 }
 
-/** 테스트 전용. */
-export function clearAuthBridge(): void {
-  authBridge = null;
-  refreshInFlight = null;
-}
-
-// ─────────────────────────────────────────────────────────────
-// 요청
-// ─────────────────────────────────────────────────────────────
-
-export type RequestOptions = {
+type RequestOptions = {
   signal?: AbortSignal;
-  /** `false`면 토큰을 싣지 않는다. 계약의 `공개` 엔드포인트용. */
   auth?: boolean;
 };
 
 type Method = 'GET' | 'POST' | 'PATCH' | 'DELETE';
 
-/** `Retry-After`는 초 단위 정수다. 계약이 HTTP-date 형식은 쓰지 않는다. */
 function readRetryAfter(response: Response): number | null {
   const raw = response.headers.get('Retry-After');
   if (raw === null) {
@@ -155,7 +118,6 @@ async function fetchOnce(
     }
   }
 
-  // 개발 빌드에서만 동작한다. 프로덕션에서는 호출해도 아무 일도 하지 않는다.
   const startedAt = Date.now();
   const route = normalizeApiRoute(path);
   const log = logRequestStart(method, path, isAuthorized, startedAt);
@@ -204,10 +166,7 @@ async function fetchOnce(
   }
 }
 
-/**
- * 동시에 여러 요청이 401을 받아도 갱신은 한 번만 한다.
- * 각자 갱신하면 Refresh Token 로테이션 때문에 뒤따르는 요청이 폐기된 토큰을 쓰게 된다.
- */
+// 동시 401 응답은 토큰 갱신 한 번을 공유한다.
 type RefreshResult = { refreshed: boolean; failure?: AppError };
 let refreshInFlight: Promise<RefreshResult> | null = null;
 
@@ -287,7 +246,6 @@ async function request(
   }
 }
 
-/** 본문을 스키마로 검증해서 돌려준다. 서버 응답을 그대로 믿지 않는다. */
 async function requestJson<T>(
   method: Method,
   path: string,
@@ -344,7 +302,6 @@ export function patch<T>(
   return requestJson('PATCH', path, body, schema, options);
 }
 
-/** 응답 본문이 없는 요청(`204`). */
 export async function postVoid(
   path: string,
   body: unknown,
@@ -353,15 +310,10 @@ export async function postVoid(
   await request('POST', path, body, options);
 }
 
-/**
- * 본문 없는 DELETE. 계약상 대부분의 삭제는 본문이 없다.
- * `DELETE /users/me`처럼 확인 플래그를 싣는 예외는 `delWithBody`를 쓴다.
- */
 export async function del(path: string, options: RequestOptions = {}): Promise<void> {
   await request('DELETE', path, undefined, options);
 }
 
-/** 본문이 있는 DELETE. 회원 탈퇴의 `impactAcknowledged`처럼 확인 의사를 실어야 할 때만. */
 export async function delWithBody(
   path: string,
   body: unknown,
@@ -370,7 +322,6 @@ export async function delWithBody(
   await request('DELETE', path, body, options);
 }
 
-/** 응답 본문 없는 PATCH. */
 export async function patchVoid(
   path: string,
   body: unknown,

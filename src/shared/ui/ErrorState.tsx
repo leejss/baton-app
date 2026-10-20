@@ -23,7 +23,7 @@ export function ErrorState({ error, onRetry, onBack }: ErrorStateProps) {
         {appError.message}
       </Text>
       {onBack && <Button label="이전 화면으로" onPress={onBack} />}
-      {onRetry !== undefined && <Button label="다시 시도" variant="secondary" onPress={onRetry} />}
+      {onRetry !== undefined && <Button label="다시 시도" tone="weak" onPress={onRetry} />}
     </View>
   );
 }

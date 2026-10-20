@@ -88,7 +88,6 @@ const styles = StyleSheet.create({
     paddingTop: 28,
     paddingBottom: 32,
     gap: 20,
-    // TODO(design-system): Figma 732:21450의 28/20px 간격을 레이아웃 토큰으로 동기화한다.
   },
   options: { gap: 16 },
 });

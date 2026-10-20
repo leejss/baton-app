@@ -1,11 +1,8 @@
 import { memberSchema } from '@/features/stores/api/store.schema';
 import { z } from 'zod';
 
-export const handoffTypeSchema = z.enum(['WORK_TASK', 'STORE_STATUS', 'OTHER']);
-export const handoffStatusSchema = z.enum(['UNCONFIRMED', 'CONFIRMED', 'TERMINATED']);
-export const handoffScopeSchema = z.enum(['ALL', 'RECEIVED', 'SENT']);
-
-export { memberSchema } from '@/features/stores/api/store.schema';
+const handoffTypeSchema = z.enum(['WORK_TASK', 'STORE_STATUS', 'OTHER']);
+const handoffStatusSchema = z.enum(['UNCONFIRMED', 'CONFIRMED', 'TERMINATED']);
 
 const handoffRecipientSchema = z.object({
   user: memberSchema,
@@ -28,7 +25,7 @@ export const fileSchema = z.object({
   downloadUrlExpiresAt: z.iso.datetime({ offset: true }).nullish(),
 });
 
-export const attachmentSchema = fileSchema.extend({ purpose: z.literal('HANDOVER') });
+const attachmentSchema = fileSchema.extend({ purpose: z.literal('HANDOVER') });
 
 export const handoffListItemSchema = z.object({
   workspaceId: z.number().int().positive(),
@@ -66,11 +63,9 @@ export const handoffUpdateRequestSchema = handoffCreateRequestSchema.omit({
 
 export type HandoffTypeDto = z.infer<typeof handoffTypeSchema>;
 export type HandoffStatusDto = z.infer<typeof handoffStatusSchema>;
-export type HandoffScopeDto = z.infer<typeof handoffScopeSchema>;
-export type MemberDto = z.infer<typeof memberSchema>;
+export type HandoffScopeDto = 'ALL' | 'RECEIVED' | 'SENT';
 export type AttachmentDto = z.infer<typeof attachmentSchema>;
 export type HandoffListItemDto = z.infer<typeof handoffListItemSchema>;
-export type HandoffPageDto = z.infer<typeof handoffPageSchema>;
 export type HandoffDto = z.infer<typeof handoffSchema>;
 export type HandoffCreateRequestDto = z.infer<typeof handoffCreateRequestSchema>;
 export type HandoffUpdateRequestDto = z.infer<typeof handoffUpdateRequestSchema>;

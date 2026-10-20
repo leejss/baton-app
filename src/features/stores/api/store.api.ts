@@ -24,8 +24,6 @@ export const transferManager = (workspaceId: number, userId: number) =>
   postVoid(`/workspaces/${workspaceId}/manager-transfer`, { userId });
 export const updateMemberRole = (workspaceId: number, userId: number, role: 'ADMIN' | 'MEMBER') =>
   patchVoid(`/workspaces/${workspaceId}/members/${userId}`, { role });
-export const removeMember = (workspaceId: number, userId: number) =>
-  del(`/workspaces/${workspaceId}/members/${userId}`);
 export const createStore = (params: CreateStoreParams, signal?: AbortSignal) =>
   post('/workspaces', params, storeContextSchema, { signal });
 export const previewStoreInvitation = (token: string, signal?: AbortSignal) =>

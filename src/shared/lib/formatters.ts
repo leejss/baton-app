@@ -4,7 +4,6 @@ import {
   getSeoulCalendarDate,
   SEOUL_TIME_ZONE,
 } from '@/shared/lib/date';
-import { timeMinutes } from '@/shared/lib/time';
 
 const FULL_WEEKDAY_LABELS = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'];
 const SHORT_WEEKDAY_LABELS = ['일', '월', '화', '수', '목', '금', '토'];
@@ -18,7 +17,7 @@ const NOTIFICATION_TIME_FORMATTER = new Intl.DateTimeFormat('en-CA', {
   hourCycle: 'h23',
 });
 
-export type KoreanWeekdayStyle = 'long' | 'short';
+type KoreanWeekdayStyle = 'long' | 'short';
 
 export function formatKoreanDate(
   value: string,
@@ -60,17 +59,6 @@ export function formatRelativeSeoulDate(value: string, now: Date = new Date()): 
   });
 
   return formatter.format(date);
-}
-
-export function formatSeoulDateTime(value: string): string {
-  return new Intl.DateTimeFormat('ko-KR', {
-    timeZone: SEOUL_TIME_ZONE,
-    month: 'numeric',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,
-  }).format(new Date(value));
 }
 
 export function formatNotificationTime(value: Date | number): string {
@@ -117,9 +105,4 @@ export function formatDuration(remainingMs: number): string {
   const seconds = totalSeconds % 60;
 
   return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-}
-
-export function formatTimeRangeDuration(start: string, end: string): string {
-  const minutes = timeMinutes(end) - timeMinutes(start);
-  return `${Math.floor(minutes / 60)}시간${minutes % 60 ? ` ${minutes % 60}분` : ''}`;
 }

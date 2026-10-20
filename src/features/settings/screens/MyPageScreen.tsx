@@ -1,11 +1,11 @@
 import { ProfilePhotoControls } from '@/features/settings/components/ProfilePhotoControls';
 import { logger } from '@/shared/lib/logger';
-import { useMutation } from '@tanstack/react-query';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { useAuthStore } from '@/features/auth/store/authStore';
+import { useSignOut } from '@/features/auth/api/account.mutations';
 import { requestNotificationPermission } from '@/features/notifications/lib/notificationPermissions';
 import { EditNameDialog } from '@/features/settings/components/EditNameDialog';
 import { SettingsDialog } from '@/features/settings/components/SettingsDialog';
@@ -26,14 +26,7 @@ export function MyPageScreen() {
   const { profile, canManage } = useMainContext();
   const [dialog, setDialog] = useState<'name' | 'logout' | null>(null);
   const { feedback, setFeedback } = useSettingsFeedback();
-  const signOut = useAuthStore((state) => state.signOut);
-  const logout = useMutation({
-    mutationFn: () => signOut(),
-    onError: (error) => {
-      logger.error('로그아웃 실패', error);
-      return setFeedback({ tone: 'error', message: normalizeError(error).message });
-    },
-  });
+  const logout = useSignOut();
   return (
     <View style={[styles.root, { backgroundColor: colors.backgroundDefault }]}>
       <MainHeader title="마이페이지" />
@@ -49,7 +42,6 @@ export function MyPageScreen() {
         <ProfilePhotoControls />
         <SettingsSection>
           <SettingsRow label="이름" value={profile.displayName} onPress={() => setDialog('name')} />
-          <SettingsRow label="이메일" value={profile.email ?? '제공되지 않음'} />
         </SettingsSection>
         <SettingsSection title="워크스페이스" spacing="spacious">
           <SettingsRow
@@ -117,7 +109,12 @@ export function MyPageScreen() {
         confirmLabel="로그아웃"
         isPending={logout.isPending}
         onCancel={() => setDialog(null)}
-        onConfirm={() => logout.mutate()}
+        onConfirm={() =>
+          logout.mutate(undefined, {
+            onError: (error) =>
+              setFeedback({ tone: 'error', message: normalizeError(error).message }),
+          })
+        }
       >
         {logout.error && (
           <SettingsMessage tone="error" message={normalizeError(logout.error).message} />

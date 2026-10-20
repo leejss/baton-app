@@ -20,7 +20,6 @@ export function HandoffAvatar({ profileImage, style }: HandoffAvatarProps) {
 }
 
 const styles = StyleSheet.create({
-  // TODO(design-system): 프로필 아바타의 44px 크기를 아이콘·아바타 토큰에 동기화한다.
   root: {
     width: 44,
     height: 44,

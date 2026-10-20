@@ -80,7 +80,7 @@ export function WorkspacesScreen() {
           <Button
             label="새 워크스페이스 만들기"
             onPress={() => {
-              useStoreCreateStore.getState().start();
+              useStoreCreateStore.getState().clear();
               router.push(ROUTES.storeCreate.index);
             }}
           />

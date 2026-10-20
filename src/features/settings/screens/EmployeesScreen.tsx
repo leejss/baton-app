@@ -15,15 +15,14 @@ export function EmployeesScreen() {
   const { colors } = useTheme();
   const { workspaceId, userId, canManage } = useMainContext();
   const [search, setSearch] = useState('');
-  const query = search.trim();
+  const query = search.trim().toLowerCase();
   const members = useQuery(storeQueries.members(workspaceId));
   const role = useUpdateMemberRole(workspaceId);
   const active = members.data?.filter((member) => member.status === 'ACTIVE') ?? [];
   const admins = active.filter((member) => member.role === 'ADMIN').length;
   const filtered = active.filter(
     (member) =>
-      !query ||
-      `${member.displayName} ${member.email ?? ''}`.toLowerCase().includes(query.toLowerCase()),
+      !query || `${member.displayName} ${member.email ?? ''}`.toLowerCase().includes(query),
   );
   return (
     <View style={[styles.root, { backgroundColor: colors.backgroundDefault }]}>

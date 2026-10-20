@@ -7,8 +7,6 @@ import {
   type TermsCode,
 } from '@/features/auth/api/signup.schema';
 
-export type SignupStep = 'name' | 'terms';
-export const SIGNUP_STEPS: readonly SignupStep[] = ['name', 'terms'];
 type Agreements = Record<TermsCode, boolean>;
 type SignupState = {
   provider: SocialProvider | null;
@@ -32,7 +30,7 @@ type SignupActions = {
   setPendingSession: (session: Session) => void;
   clear: () => void;
 };
-export type SignupStore = SignupState & SignupActions;
+type SignupStore = SignupState & SignupActions;
 const EMPTY: SignupState = {
   provider: null,
   socialSignupToken: null,
@@ -66,10 +64,6 @@ export const useSignupStore = create<SignupStore>()((set) => ({
   setPendingSession: (pendingSession) => set({ pendingSession }),
   clear: () => set({ ...EMPTY }),
 }));
-export const getStepProgress = (step: SignupStep) => ({
-  current: SIGNUP_STEPS.indexOf(step) + 1,
-  total: SIGNUP_STEPS.length,
-});
 export function hasSocialSignupTokenExpired(expiresAt: number | null, now = Date.now()): boolean {
   return expiresAt === null || !Number.isFinite(expiresAt) || expiresAt <= now;
 }

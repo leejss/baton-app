@@ -57,11 +57,6 @@ const styles = StyleSheet.create({
   root: {
     flex: 1,
   },
-  fullPageState: {
-    flexGrow: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   scrollContent: {
     alignItems: 'center',
     paddingTop: spacing.xs,
@@ -74,7 +69,6 @@ const styles = StyleSheet.create({
     gap: 22,
   },
   greeting: {
-    // Figma node 732:17465의 22px Bold / 26px line box를 따른다.
     fontSize: 22,
     lineHeight: 26,
   },

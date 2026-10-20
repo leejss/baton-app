@@ -2,7 +2,7 @@ import type { HomeWeekDay } from '@/features/home/types';
 import { addCalendarDays, getCalendarDateParts, getCalendarWeekday } from '@/shared/lib/date';
 import { formatKoreanDate } from '@/shared/lib/formatters';
 
-export function getMondayOfWeek(date: string): string {
+function getMondayOfWeek(date: string): string {
   const daysSinceMonday = (getCalendarWeekday(date) + 6) % 7;
   return addCalendarDays(date, -daysSinceMonday);
 }

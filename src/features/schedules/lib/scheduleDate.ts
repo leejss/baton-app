@@ -6,7 +6,7 @@ export function shiftMonth(month: string, amount: number): string {
   return date.toISOString().slice(0, 7);
 }
 
-export function monthDates(month: string): string[] {
+function monthDates(month: string): string[] {
   const end = `${shiftMonth(month, 1)}-01`;
   const result: string[] = [];
   for (let date = `${month}-01`; date < end; date = addCalendarDays(date, 1)) result.push(date);

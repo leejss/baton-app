@@ -67,7 +67,6 @@ const styles = StyleSheet.create({
     width: 70,
     height: 70,
     borderRadius: radius.md,
-    // TODO(design-system): Figma 첨부 썸네일의 70px 크기를 토큰화한다.
   },
   remove: {
     position: 'absolute',

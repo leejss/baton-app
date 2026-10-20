@@ -1,15 +1,15 @@
 import { z } from 'zod';
 import { profileImageSchema } from '@/features/auth/api/auth.schema';
 
-export const workspaceRoleSchema = z.enum(['ADMIN', 'MEMBER']);
-export const storeSchema = z.object({
+const workspaceRoleSchema = z.enum(['ADMIN', 'MEMBER']);
+const storeSchema = z.object({
   id: z.number().int().positive(),
   name: z.string().min(1),
   status: z.enum(['ACTIVE', 'INACTIVE']),
   createdAt: z.iso.datetime({ offset: true }),
   deactivatedAt: z.iso.datetime({ offset: true }).nullable(),
 });
-export const membershipSchema = z.object({
+const membershipSchema = z.object({
   workspace: storeSchema,
   role: workspaceRoleSchema,
   status: z.enum(['ACTIVE', 'LEFT']),
@@ -40,8 +40,6 @@ export const storeInvitationPreviewSchema = z.object({
 });
 export type MemberDto = z.infer<typeof memberSchema>;
 export type Membership = z.infer<typeof membershipSchema>;
-export type Store = z.infer<typeof storeSchema>;
-export type InvitationCode = z.infer<typeof invitationCodeSchema>;
 export type StoreContext = z.infer<typeof storeContextSchema>;
 export type StoreInvitationPreview = z.infer<typeof storeInvitationPreviewSchema>;
 export type CreateStoreParams = { name: string };

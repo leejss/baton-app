@@ -1,6 +1,6 @@
 import { z } from 'zod';
 /** 닉네임은 기존 이름 변경과 같은 2~20자 한글·영문 규칙을 유지한다. */
-export const displayNameSchema = z
+const displayNameSchema = z
   .string()
   .trim()
   .min(1, '이름을 입력해주세요.')

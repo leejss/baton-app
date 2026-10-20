@@ -8,7 +8,7 @@ const SEOUL_CALENDAR_DATE_FORMATTER = new Intl.DateTimeFormat('en-US', {
   day: '2-digit',
 });
 
-export type CalendarDateParts = {
+type CalendarDateParts = {
   day: number;
   month: number;
   year: number;
@@ -95,12 +95,4 @@ export function getSeoulCalendarDate(value: Date | number): string {
 
 export function getTodayInSeoul(now: Date = new Date()): string {
   return getSeoulCalendarDate(now);
-}
-
-export function rangeDates(start: string, end: string): string[] {
-  if (!isCalendarDate(start) || !isCalendarDate(end) || end < start) return [];
-
-  const result: string[] = [];
-  for (let date = start; date <= end; date = addCalendarDays(date, 1)) result.push(date);
-  return result;
 }

@@ -10,7 +10,7 @@ import { getAbortReason } from '@/shared/api/abort';
  * 화면이 소셜 인증 실패와 네트워크 실패를 다르게 안내해야 해서
  * 둘을 한 필드에 섞지 않는다.
  */
-export type AppErrorCode =
+type AppErrorCode =
   | 'network'
   | 'timeout'
   | 'canceled'
@@ -34,7 +34,7 @@ export type HttpDiagnostics = {
  * 계약에 정의된 오류 코드. 화면 분기에 실제로 쓰는 것만 좁혀 둔다.
  * 목록 전체는 wiki `wiki/api-spec.md` §11에 있다.
  */
-export type ServerErrorCode =
+type ServerErrorCode =
   | 'VALIDATION_ERROR'
   | 'UNAUTHORIZED'
   | 'FORBIDDEN'

@@ -2,7 +2,7 @@ import { Platform, StyleSheet, Text as RNText, type TextProps } from 'react-nati
 
 import { useTheme, type FontWeightName, type TextVariant, type ThemeColorName } from '@/theme';
 
-export type AppTextProps = TextProps & {
+type AppTextProps = TextProps & {
   /** Figma 타입 스케일의 역할. `displayLarge` ~ `caption`. */
   variant?: TextVariant;
   /** 같은 역할 안에서의 굵기. Figma 그리드의 두 번째 축이다. */

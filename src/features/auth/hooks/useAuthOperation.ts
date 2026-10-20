@@ -14,7 +14,7 @@ const useOperations = create<Operations>(() => ({
   signup: null,
 }));
 
-export type AuthOperationContext = {
+type AuthOperationContext = {
   signal: AbortSignal;
   isCurrent: () => boolean;
   /** 서버에서 상태를 바꾸는 요청을 떠날 때 로컬의 불확실한 결과를 정리한다. */

@@ -8,7 +8,7 @@ import { Text } from '@/shared/ui/Text';
 import { X } from '@/shared/ui/icons';
 import { spacing, useTheme } from '@/theme';
 
-export type BottomSheetProps = {
+type BottomSheetProps = {
   visible: boolean;
   children: ReactNode;
   title?: string;
@@ -130,7 +130,6 @@ const styles = StyleSheet.create({
   },
   content: {
     paddingHorizontal: spacing.md,
-    // 기존 인수인계 시트의 여백을 유지한다. TODO(design-system): 20px를 토큰과 동기화한다.
     paddingTop: 20,
     // 하단 안전영역과 키보드 대응은 네이티브 시트가 담당한다.
     gap: spacing.md,

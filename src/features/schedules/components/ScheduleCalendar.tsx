@@ -13,12 +13,10 @@ type ScheduleCalendarProps = {
   mode?: 'single' | 'readonly';
   counts?: Readonly<Record<string, number>>;
   minDate?: string;
-  compact?: boolean;
   onSelect: (date: string) => void;
   onMoveMonth?: (direction: number) => void;
 };
 
-/** 순수 캘린더: 서버·라우터와 무관하며 조회/등록/수정에서 함께 사용한다. */
 export function ScheduleCalendar({
   month,
   today,
@@ -26,18 +24,12 @@ export function ScheduleCalendar({
   mode = 'single',
   counts = {},
   minDate,
-  compact = false,
   onSelect,
   onMoveMonth,
 }: ScheduleCalendarProps) {
   const { fontScale } = useWindowDimensions();
   const minimumDateRowHeight = Math.max(60, Math.ceil(fontScale * 28) + 24);
-  const allDates = calendarDates(month);
-  const selectedIndex = allDates.indexOf(selectedDate || today);
-  const canCompact = compact && selectedIndex >= 0;
-  const dates = canCompact
-    ? allDates.slice(Math.floor(selectedIndex / 7) * 7, Math.floor(selectedIndex / 7) * 7 + 7)
-    : allDates;
+  const dates = calendarDates(month);
   const weekCount = Math.ceil(dates.length / 7);
   const rowHeights = Array.from({ length: weekCount }, (_, index) => {
     if (weekCount === 1) return minimumDateRowHeight;

@@ -2,11 +2,11 @@ const SENSITIVE_KEY =
   /(^|[._-])(authorization|password|passcode|secret|token|api[_-]?key|email|phone|name|otp|code|card|cvv|billing|contact|address)([._-]|$)/i;
 const LOG_LIMIT = 4096;
 
-export function isSensitiveLogKey(key: string): boolean {
+function isSensitiveLogKey(key: string): boolean {
   return SENSITIVE_KEY.test(key.replace(/([a-z])([A-Z])/g, '$1_$2'));
 }
 
-export function redactLogText(message: string): string {
+function redactLogText(message: string): string {
   return message
     .replace(/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi, '[REDACTED_EMAIL]')
     .replace(/\bBearer\s+\S+/gi, 'Bearer [REDACTED]')

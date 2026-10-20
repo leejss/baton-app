@@ -12,7 +12,6 @@ type UseUnsavedHandoffGuardOptions = {
   onLeave: () => void;
 };
 
-/** 헤더와 Android 하드웨어 뒤로가기에 동일한 미저장 이탈 정책을 적용한다. */
 export function useUnsavedHandoffGuard({
   continueLabel = '계속 작성',
   hasChanges,

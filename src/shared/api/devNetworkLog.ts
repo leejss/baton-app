@@ -2,7 +2,7 @@ import { normalizeError } from '@/shared/api/errors';
 import { logger } from '@/shared/lib/logger';
 import { normalizeApiRoute } from '@/shared/api/httpResponse';
 
-export type NetworkLogHandle = {
+type NetworkLogHandle = {
   succeeded: (response: Response) => void;
   failed: (error: unknown) => void;
 };

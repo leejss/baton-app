@@ -5,7 +5,6 @@ import { signUpWithSocial } from '@/features/auth/api/signup.api';
 import type { SocialSignUpParams } from '@/features/auth/api/signup.schema';
 export const isSocialSignupTokenInvalid = (error: unknown): boolean =>
   hasServerErrorCode(error, 'SOCIAL_SIGNUP_TOKEN_INVALID');
-/** 완료 화면에서 시작하기 전까지 로그인 세션은 가입 상태에 둔다. */
 export function useSignUp() {
   return useMutation({
     networkMode: 'always',

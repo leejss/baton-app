@@ -7,7 +7,7 @@ import { signInWithApple } from '@/features/auth/lib/appleAuth';
 import { signInWithKakao } from '@/features/auth/lib/kakaoAuth';
 import { requestNativeSignIn } from '@/features/auth/lib/nativeSignIn';
 
-export function isCanceled(error: unknown): boolean {
+function isCanceled(error: unknown): boolean {
   return isAppError(error) && error.code === 'canceled';
 }
 

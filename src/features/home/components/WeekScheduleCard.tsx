@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
-import { mapHomeScheduleModel } from '@/features/home/api/mappers';
+import { mapHomeShifts } from '@/features/home/api/mappers';
 import { homeQueries } from '@/features/home/api/home.queries';
 import { HomeShiftRow } from '@/features/home/components/HomeShiftRow';
 import { WeekDayButton } from '@/features/home/components/WeekDayButton';
@@ -28,10 +28,7 @@ export function WeekScheduleCard({
   const theme = useTheme();
   const [selectedDate, setSelectedDate] = useState(initialDate);
   const summaryQuery = useQuery(homeQueries.summary(workspaceId, selectedDate));
-  const model =
-    summaryQuery.data === undefined
-      ? undefined
-      : mapHomeScheduleModel(summaryQuery.data, selectedDate);
+  const shifts = summaryQuery.data === undefined ? undefined : mapHomeShifts(summaryQuery.data);
   const title = formatKoreanDate(selectedDate);
   const weekDays = getHomeWeekDays(selectedDate);
   const handleDetailsPress = () => onDetailsPress(selectedDate);
@@ -71,14 +68,14 @@ export function WeekScheduleCard({
             failed={summaryQuery.isError && summaryQuery.data !== undefined}
             onRetry={handleQueryRetry}
           />
-          {model &&
-            (model.items.length === 0 ? (
+          {shifts &&
+            (shifts.length === 0 ? (
               <Text color="foregroundDefault" style={styles.emptyText}>
                 해당 날짜에 등록된 근무 일정이 없습니다.
               </Text>
             ) : (
               <View style={styles.shifts}>
-                {model.items.map((item) => (
+                {shifts.map((item) => (
                   <HomeShiftRow key={item.id} item={item} />
                 ))}
               </View>
@@ -90,7 +87,6 @@ export function WeekScheduleCard({
 }
 
 const styles = StyleSheet.create({
-  // TODO(design-system): Figma node 1095:31293의 흰 surface, 24px radius, 18/22/26/28px 값은 홈에만 격리한다.
   card: {
     width: '100%',
     paddingTop: 28,

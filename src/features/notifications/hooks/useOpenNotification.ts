@@ -111,6 +111,5 @@ export function useOpenNotification(scope: NotificationScope) {
     open,
     openingId,
     message,
-    clearMessage,
   };
 }

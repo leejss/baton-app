@@ -3,13 +3,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { ArrowLeftS } from '@/shared/ui/icons';
 import { SCREEN_PADDING_X, spacing } from '@/theme';
 
-/**
- * 인증 플로우 공통 헤더. 시안 `IOS Navigation Bar`의 아래쪽 `Navigation Bar`(높이 62)다.
- *
- * 시작 화면은 뒤로가기가 없지만 헤더 높이는 그대로 차지한다 — 두 화면의 로고·제목이
- * 같은 높이에서 시작해야 전환할 때 튀지 않는다.
- */
-export type AuthHeaderProps = {
+type AuthHeaderProps = {
   onBack?: () => void;
   isBackDisabled?: boolean;
 };
@@ -47,5 +41,4 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-  icon: { width: ICON_SIZE, height: ICON_SIZE },
 });

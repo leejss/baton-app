@@ -150,5 +150,4 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-end',
     fontVariant: ['tabular-nums'],
   },
-  // TODO(design-system): Figma foreground/strong가 시맨틱 컬러에 추가되면 입력 원시 색상을 교체한다.
 });

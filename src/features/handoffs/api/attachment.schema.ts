@@ -5,4 +5,3 @@ export const uploadSchema = z.object({
   expiresAt: z.iso.datetime({ offset: true }),
   requiredHeaders: z.record(z.string(), z.string()),
 });
-export type UploadTicket = z.infer<typeof uploadSchema>;

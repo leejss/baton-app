@@ -6,8 +6,8 @@ import * as Device from 'expo-device';
 
 import { appInfo } from '@/shared/lib/appInfo';
 
-export type LogAttribute = string | number | boolean | null;
-export type LogAttributes = Readonly<Record<string, LogAttribute>>;
+type LogAttribute = string | number | boolean | null;
+type LogAttributes = Readonly<Record<string, LogAttribute>>;
 
 type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 

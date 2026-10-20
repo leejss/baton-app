@@ -1,11 +1,10 @@
 import type { ProfileImage } from '@/features/auth/api/auth.schema';
-
-export type HomeHandoffStatus = 'UNCONFIRMED' | 'CONFIRMED' | 'TERMINATED';
+import type { HandoffStatusDto } from '@/features/handoffs/api/handoff.schema';
 
 export type HomeHandoffItem = {
   canConfirm: boolean;
   id: number;
-  status: HomeHandoffStatus;
+  status: HandoffStatusDto;
   title: string;
 };
 
@@ -22,17 +21,9 @@ export type HomeShiftItem = {
   name: string;
   profileImage: ProfileImage;
   startTime: string;
-  userId: number;
 };
 
 export type HomeHandoffSectionModel = {
   items: HomeHandoffItem[];
   totalCount: number;
-};
-
-export type HomeScheduleModel = {
-  items: HomeShiftItem[];
-  selectedDate: string;
-  title: string;
-  weekDays: HomeWeekDay[];
 };
