@@ -2,7 +2,7 @@ import type { ConfigContext, ExpoConfig } from 'expo/config';
 
 import packageJson from './package.json';
 
-type AppVariant = 'development' | 'preview' | 'production';
+type AppVariant = 'development' | 'production';
 
 const APP = {
   name: 'baton',
@@ -23,11 +23,6 @@ const VARIANTS: Record<
     schemeSuffix: '-dev',
     bundleIdentifierSuffix: '.dev',
   },
-  preview: {
-    nameSuffix: ' Preview',
-    schemeSuffix: '-preview',
-    bundleIdentifierSuffix: '.preview',
-  },
   production: {
     nameSuffix: '',
     schemeSuffix: '',
@@ -36,11 +31,14 @@ const VARIANTS: Record<
 };
 
 export default ({ config }: ConfigContext): ExpoConfig => {
-  const variant = (process.env.APP_VARIANT ?? 'development') as AppVariant;
-  const variantConfig = VARIANTS[variant] ?? VARIANTS.development;
+  const variant = process.env.APP_VARIANT;
+  if (variant !== 'development' && variant !== 'production') {
+    throw new Error('APP_VARIANT must be explicitly set to development or production.');
+  }
+  const variantConfig = VARIANTS[variant];
   const appleTeamId = process.env.APPLE_TEAM_ID;
   const iosBundleIdentifier = process.env.IOS_BUNDLE_IDENTIFIER;
-  const kakaoAppKey = process.env.KAKAO_NATIVE_APP_KEY;
+  const kakaoAppKey = process.env.KAKAO_NATIVE_APP_KEY?.trim() || undefined;
 
   return {
     ...config,

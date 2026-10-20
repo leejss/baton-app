@@ -17,13 +17,6 @@
         "simulator": true
       }
     },
-    "preview": {
-      "distribution": "internal",
-      "environment": "preview",
-      "env": {
-        "APP_VARIANT": "preview"
-      }
-    },
     "production": {
       "distribution": "store",
       "environment": "production",
