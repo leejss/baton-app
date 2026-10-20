@@ -35,9 +35,6 @@
   },
   "submit": {
     "production": {
-      "android": {
-        "track": "internal"
-      },
       "ios": {}
     }
   }

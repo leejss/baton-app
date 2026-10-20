@@ -1,4 +1,5 @@
 import { login as kakaoLogin, logout as kakaoLogout } from '@react-native-seoul/kakao-login';
+import Constants from 'expo-constants';
 
 import { AppError, normalizeError } from '@/shared/api/errors';
 
@@ -18,7 +19,7 @@ function isUserCancellation(error: unknown): boolean {
   const code = 'code' in error ? String(error.code) : '';
   const message = 'message' in error ? String(error.message) : '';
 
-  // iOS는 E_CANCELLED_OPERATION, Android는 메시지에 cancel이 섞여 내려온다.
+  // SDK는 오류 코드나 메시지에 인증 취소를 표시한다.
   return /cancel/i.test(code) || /cancel/i.test(message);
 }
 
@@ -27,6 +28,9 @@ function isUserCancellation(error: unknown): boolean {
  * 이 토큰은 저장하지 않고 곧바로 서버에 넘겨 우리 세션으로 교환한다.
  */
 export async function signInWithKakao(): Promise<string> {
+  if (Constants.expoConfig?.extra?.kakaoLoginConfigured !== true) {
+    throw new AppError('configuration', '카카오 로그인 설정이 아직 준비되지 않았어요.');
+  }
   try {
     const token = await kakaoLogin();
     if (token.accessToken === undefined || token.accessToken === '') {
@@ -46,6 +50,9 @@ export async function signInWithKakao(): Promise<string> {
  * (카카오 쪽만 남아 있는 것보다 앱이 로그아웃 상태가 되는 게 사용자 기대에 가깝다.)
  */
 export async function signOutFromKakao(): Promise<void> {
+  if (Constants.expoConfig?.extra?.kakaoLoginConfigured !== true) {
+    return;
+  }
   try {
     await kakaoLogout();
   } catch {

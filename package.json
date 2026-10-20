@@ -66,19 +66,13 @@
   "scripts": {
     "start": "expo start",
     "start:development": "expo start --dev-client",
-    "reset-project": "node ./scripts/reset-project.js",
-    "prebuild:clean": "expo prebuild --clean",
-    "run:android": "expo run:android",
+    "prebuild:ios": "expo prebuild --clean --platform ios",
     "run:ios": "expo run:ios",
-    "build:development": "npx eas-cli@latest build --profile development --platform all",
-    "build:development:android": "npx eas-cli@latest build --profile development --platform android",
-    "build:development:ios": "npx eas-cli@latest build --profile development --platform ios",
+    "build:development": "npx eas-cli@latest build --profile development --platform ios",
     "format": "biome format --write .",
     "format:check": "biome format .",
     "lint": "expo lint",
-    "typecheck": "expo customize tsconfig.json && tsc --noEmit",
-    "validate:app-config": "node ./scripts/validate-app-config.js",
-    "eas-build-post-install": "npm run validate:app-config"
+    "typecheck": "expo customize tsconfig.json && tsc --noEmit"
   },
   "private": true
 }
