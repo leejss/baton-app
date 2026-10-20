@@ -76,7 +76,7 @@
     "format": "biome format --write .",
     "format:check": "biome format .",
     "lint": "expo lint",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "expo customize tsconfig.json && tsc --noEmit",
     "validate:app-config": "node ./scripts/validate-app-config.js",
     "eas-build-post-install": "npm run validate:app-config"
   },

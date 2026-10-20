@@ -18,24 +18,25 @@ export function StoreCreateNameScreen({ onBack, onNext }: StoreCreateNameScreenP
     mode: 'onChange',
     defaultValues: { storeName: draft.storeName },
   });
-  const submit = handleSubmit(({ storeName }) => {
-    if (submitting.current || create.isPending) return;
-    submitting.current = true;
-    draft.setStoreName(storeName.trim());
-    create.mutate(
-      { name: storeName.trim() },
-      {
-        onSuccess: (context) => {
-          draft.setCreatedContext(context);
-          onNext();
+  const submit = () =>
+    handleSubmit(({ storeName }) => {
+      if (submitting.current || create.isPending) return;
+      submitting.current = true;
+      draft.setStoreName(storeName.trim());
+      create.mutate(
+        { name: storeName.trim() },
+        {
+          onSuccess: (context) => {
+            draft.setCreatedContext(context);
+            onNext();
+          },
+          onError: (error) => {
+            submitting.current = false;
+            Alert.alert('워크스페이스를 만들지 못했어요', normalizeError(error).message);
+          },
         },
-        onError: (error) => {
-          submitting.current = false;
-          Alert.alert('워크스페이스를 만들지 못했어요', normalizeError(error).message);
-        },
-      },
-    );
-  });
+      );
+    })();
   return (
     <StoreStepLayout
       onBack={() => {

@@ -12,18 +12,22 @@ export function useProfilePhoto() {
   const client = useQueryClient();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string>();
+  const [previousUserId, setPreviousUserId] = useState(userId);
   const controller = useRef<AbortController | null>(null);
   const mounted = useRef(true);
   useEffect(() => {
     mounted.current = true;
-    setPending(false);
-    setError(undefined);
     return () => {
       mounted.current = false;
       controller.current?.abort();
       controller.current = null;
     };
   }, [userId]);
+  if (previousUserId !== userId) {
+    setPreviousUserId(userId);
+    setPending(false);
+    setError(undefined);
+  }
   const save = async (reset: boolean) => {
     if (!userId || controller.current) return;
     const request = new AbortController();

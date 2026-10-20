@@ -14,22 +14,31 @@ export default function WorkspaceInvitationRoute() {
   const incoming = typeof params.token === 'string' ? params.token : null;
   const status = useAuthStore((state) => state.status);
   const { token, preview, hydrated } = useStoreJoinStore();
-  const [error, setError] = useState<unknown>();
+  const [failure, setFailure] = useState<{
+    token: string | null;
+    retry: number;
+    cause: unknown;
+  }>();
   const [retry, setRetry] = useState(0);
+  if (failure && (failure.token !== token || failure.retry !== retry)) setFailure(undefined);
+  const error = failure?.token === token && failure.retry === retry ? failure.cause : undefined;
   useEffect(() => {
     if (!incoming || !/^[A-Za-z0-9_-]+$/.test(incoming)) return;
-    if (token !== incoming) void useStoreJoinStore.getState().setToken(incoming).catch(setError);
-  }, [incoming]);
+    if (token !== incoming)
+      void useStoreJoinStore
+        .getState()
+        .setToken(incoming)
+        .catch((cause) => setFailure({ token: incoming, retry, cause }));
+  }, [incoming, token, retry]);
   useEffect(() => {
     if (status !== 'signedIn' || !token || (incoming && incoming !== token)) return;
     const controller = new AbortController();
-    setError(undefined);
     void previewStoreInvitation(token, controller.signal)
       .then((result) => {
         if (!controller.signal.aborted) useStoreJoinStore.getState().setPreview(result);
       })
-      .catch((failure) => {
-        if (!controller.signal.aborted) setError(failure);
+      .catch((cause) => {
+        if (!controller.signal.aborted) setFailure({ token, retry, cause });
       });
     return () => controller.abort();
   }, [status, token, incoming, retry]);

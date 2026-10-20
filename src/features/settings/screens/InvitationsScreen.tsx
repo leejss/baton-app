@@ -33,11 +33,7 @@ export function InvitationsScreen() {
   useEffect(() => {
     if (!code) return;
     const remaining = Date.parse(code.expiresAt) - Date.now();
-    if (remaining <= 0) {
-      setNow(Date.now());
-      return;
-    }
-    const timer = setTimeout(() => setNow(Date.now()), remaining);
+    const timer = setTimeout(() => setNow(Date.now()), Math.max(0, remaining));
     return () => clearTimeout(timer);
   }, [code]);
   const isValid = !!code && code.status === 'ACTIVE' && Date.parse(code.expiresAt) > now;
